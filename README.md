@@ -1,6 +1,6 @@
 # Dex Memoria
 
-Versao atual: `0.1.1`
+Versao atual: `0.1.2`
 
 `dex-memoria` e um pacote documental para orientar o ciclo de vida de memoria operacional em projetos Dex Agent.
 
@@ -40,23 +40,39 @@ dump de contexto.
 
 ## Instalacao Rapida
 
+Via npm/npx a partir do GitHub:
+
+```bash
+npx github:dex-agent/dex-memoria doctor
+npx github:dex-agent/dex-memoria install
+```
+
+No Windows, para atualizar a skill local padrao do Dex Agent:
+
+```powershell
+npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
+```
+
+Depois de publicar no npm registry, use `npx dex-memoria@latest ...`.
+
 Em outra maquina, clone este repo:
 
 ```bash
-git clone https://github.com/crsantosxx/dex-memoria.git
+git clone https://github.com/dex-agent/dex-memoria.git
 cd dex-memoria
 ```
 
 No Windows PowerShell:
 
 ```powershell
-git clone https://github.com/crsantosxx/dex-memoria.git
+git clone https://github.com/dex-agent/dex-memoria.git
 Set-Location dex-memoria
 ```
 
-`dex-memoria` nao tem instalador `npm`, `pip` ou runtime proprio nesta versao.
-Instalar significa deixar este repo disponivel para consulta, referencia ou copia
-controlada em outro projeto.
+O pacote npm e um distribuidor dos arquivos documentais. Ele nao instala runtime
+do bot, nao executa hooks, nao grava ledger e nao cria automacao do Dex Agent.
+Instalar significa deixar o contrato disponivel para consulta, referencia ou
+copia controlada em outro projeto.
 
 ## Usar Em Outro Projeto
 
@@ -100,7 +116,7 @@ Instale dex-memoria neste projeto.
 Contexto:
 - dex-memoria e um pacote documental/skill de contrato de memoria.
 - Ele nao e runtime, nao executa hooks, nao grava memoria sozinho e nao cria comandos automaticamente.
-- Repo oficial: https://github.com/crsantosxx/dex-memoria
+- Repo oficial: https://github.com/dex-agent/dex-memoria
 
 Tarefa:
 1. Verifique se ja existe uma copia local de dex-memoria neste projeto.
@@ -145,4 +161,4 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo publica a versao documental `0.1.1`. O proximo passo seguro e integrar referencias a partir do `dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2 inexistentes.
+Este repo publica a versao documental `0.1.2` com distribuicao npm inicial. O proximo passo seguro e integrar referencias a partir do `dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2 inexistentes.

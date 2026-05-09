@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 - 2026-05-09
+
+- Adiciona empacotamento npm com `package.json`.
+- Inclui CLI `dex-memoria` com comandos `doctor`, `install` e `version`.
+- Mantem a fronteira da V1: o pacote distribui contrato documental, nao runtime do Dex Agent.
+
 ## 0.1.1 - 2026-05-02
 
 - Adiciona guia de instalacao, uso e ativacao em `docs/usage.md`.

@@ -22,10 +22,48 @@ global curto. Nao e a skill/pacote antigo arquivado.
 
 ## Instalacao
 
+### Usar Via npm/npx
+
+Use este modo quando quiser instalar ou atualizar a copia local sem depender de
+`git remote`, branch ou pasta clonada:
+
+```bash
+npx github:dex-agent/dex-memoria doctor
+npx github:dex-agent/dex-memoria install
+```
+
+Depois de publicar no npm registry, o mesmo fluxo fica:
+
+```bash
+npx dex-memoria@latest doctor
+npx dex-memoria@latest install
+```
+
+Por padrao, o comando instala em:
+
+```text
+~/.dex-agent/skills/dex-memoria
+```
+
+No Windows PowerShell:
+
+```powershell
+npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
+```
+
+Para ver antes de copiar:
+
+```bash
+npx github:dex-agent/dex-memoria install --dry-run
+```
+
+O CLI incluido nesta V1 e apenas distribuidor documental. Ele nao cria runtime,
+hooks, inbox, ledger, tokens ou automacao do Dex Agent.
+
 ### Clonar O Repo
 
 ```bash
-git clone https://github.com/crsantosxx/dex-memoria.git
+git clone https://github.com/dex-agent/dex-memoria.git
 cd dex-memoria
 ```
 
