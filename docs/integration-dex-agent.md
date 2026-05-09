@@ -31,12 +31,13 @@ A spec `.harness/contracts/specs/archive-memory-systems.yaml` e as tasks
 `archive-memory-systems-*` registram que os alvos legados foram arquivados e
 desacoplados.
 
-Devem permanecer inativos, salvo decisao nova e explicita:
+Devem permanecer inativos, salvo decisao nova e explicita. Os caminhos abaixo
+sao placeholders historicos sanitizados, nao rotas locais recomendadas:
 
-- `C:\CodexProjetos\memory-bank`
-- `C:\Users\crsan\.agents\skills\memorizador`
-- `C:\CodexProjetos\memory_agent_codex_local`
-- `C:\Users\crsan\.codex\skills\roteador-memoria`
+- `<legacy-workspace>\memory-bank`
+- `<legacy-user-profile>\.agents\skills\memorizador`
+- `<legacy-workspace>\memory_agent_codex_local`
+- `<legacy-user-profile>\.codex\skills\roteador-memoria`
 
 Referencias historicas a esses nomes podem permanecer como evidencia ou aviso de
 nao reativacao, mas nao devem funcionar como instalacao ativa, rota viva,

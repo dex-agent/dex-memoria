@@ -162,3 +162,26 @@ Fonte de extracao:
 ## Estado Atual
 
 Este repo publica a versao documental `0.1.2` com distribuicao npm inicial. O proximo passo seguro e integrar referencias a partir do `dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2 inexistentes.
+
+## Camada Publica
+
+Este repositorio tambem inclui a camada publica minima para contribuicao e
+distribuicao segura:
+
+- `LICENSE`: licenca MIT.
+- `SECURITY.md`: politica para vulnerabilidades e exposicao acidental.
+- `CONTRIBUTING.md`: regras de contribuicao e validacao local.
+- `CODE_OF_CONDUCT.md`: expectativas de convivencia.
+- `.github/`: templates de issue, template de PR e CI.
+
+Validacao local:
+
+```bash
+npm run check
+npm run doctor
+npm run pack:check
+```
+
+O CI executa as mesmas validacoes principais para garantir que a versao `0.1.2`,
+os metadados do pacote e a relacao documental com `dex-agent` continuem
+alinhados sem incluir segredos ou runtime.

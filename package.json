@@ -8,10 +8,15 @@
     "dex-memoria": "bin/dex-memoria.js"
   },
   "files": [
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
     "bin/",
     "contracts/",
     "docs/",
     "examples/",
+    "scripts/",
     "templates/",
     "CHANGELOG.md",
     "DECISIONS.md",
@@ -32,6 +37,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "check": "node scripts/validate-public.js",
     "doctor": "node bin/dex-memoria.js doctor",
     "pack:check": "npm pack --dry-run"
   },

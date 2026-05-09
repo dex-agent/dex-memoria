@@ -30,8 +30,8 @@ Quando a pergunta for sobre como o bot grava, recupera, mostra ou injeta memoria
 
 ## Memorias Do Host Codex
 
-Este pacote nao deve incentivar escrita direta de conteudo grande em
-`C:\Users\crsan\.codex\memories` ou `${CODEX_HOME}\memories`.
+Este pacote nao deve incentivar escrita direta de conteudo grande em memorias
+globais do host, como `%CODEX_HOME%\memories` ou `${CODEX_HOME}/memories`.
 
 Quando houver memoria reutilizavel entre conversas, repos ou contextos, o
 contrato `memorizador` do `dex-memoria` deve usar memoria global como indice
