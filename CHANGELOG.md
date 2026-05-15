@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.3 - 2026-05-15
+
+- Documenta a arquitetura `L1 lembranca -> L2 memoria -> L3 conhecimento`.
+- Adiciona templates e exemplo sanitizado para recuperacao em camadas.
+- Adiciona simulacoes sanitizadas para validar aprendizado real e detectar
+  gatilhos sem ancora L2.
+- Reforca que o carregamento automatico das camadas pertence ao ambiente
+  consumidor; `dex-memoria` continua sem runtime proprio.
+
 ## 0.1.2 - 2026-05-09
 
 - Adiciona empacotamento npm com `package.json`.

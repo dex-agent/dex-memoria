@@ -44,6 +44,30 @@ Memoria operacional nao e apenas anotacao. Ela precisa responder:
 - quando nao deve ser lembrada;
 - como sai do estado vivo.
 
+Quando o problema for recuperacao recorrente de conhecimento, aplique tambem a
+arquitetura:
+
+```text
+L1 lembranca -> L2 memoria -> L3 conhecimento
+```
+
+- `L1 lembranca`: gatilhos curtos, sem conteudo longo, apontando para L2.
+- `L2 memoria`: detalhe operacional com ancoras estaveis.
+- `L3 conhecimento`: documentacao, tutoriais, modelos e exemplos sob demanda.
+
+`lembranca.md`, `memoria.md` e `conhecimento/` sao nomes canonicos
+recomendados. O carregamento automatico e responsabilidade do ambiente
+consumidor.
+
+Regra de caminho:
+
+- global roteia com gatilhos e ponteiros curtos;
+- tema reutiliza conhecimento de dominio;
+- projeto opera estado vivo e retomada.
+
+Nada entra em L2 sem gatilho L1 ou fonte viva equivalente. Nada entra em L3 sem
+ancora L2. Nada entra no global se so serve para um projeto.
+
 ## Precedencia Local Antes Da Global
 
 Antes de aplicar esta skill global, verifique se o repositorio da janela de contexto atual possui uma versao local de `dex-memoria`, nesta ordem:
@@ -95,6 +119,10 @@ Use os templates quando precisar criar ou fechar uma memoria:
 - `templates/memory-contract.md`
 - `templates/memory-resolution-checklist.md`
 - `templates/child-usage-prompt.md`
+- `templates/l1-lembranca.md`
+- `templates/l2-memoria.md`
+- `templates/l3-conhecimento-index.md`
+- `templates/layered-memory-checklist.md`
 
 Use os exemplos como referencia de formato:
 
@@ -102,6 +130,7 @@ Use os exemplos como referencia de formato:
 - `examples/resolved-operational-finding.md`
 - `examples/ledger-only-memory.md`
 - `examples/child-to-child-handoff.md`
+- `examples/layered-memory/`
 
 ## Prioridade Entre Fontes
 

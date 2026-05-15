@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const expectedVersion = "0.1.2";
+const expectedVersion = "0.1.3";
 
 const requiredFiles = [
   "LICENSE",
@@ -24,13 +24,24 @@ const requiredFiles = [
   "docs/usage.md",
   "docs/runtime-boundary.md",
   "docs/integration-dex-agent.md",
+  "docs/layered-memory-simulations.md",
   "templates/memory-contract.md",
   "templates/memory-resolution-checklist.md",
   "templates/child-usage-prompt.md",
+  "templates/l1-lembranca.md",
+  "templates/l2-memoria.md",
+  "templates/l3-conhecimento-index.md",
+  "templates/layered-memory-checklist.md",
   "examples/active-operational-memory.md",
   "examples/child-to-child-handoff.md",
   "examples/ledger-only-memory.md",
   "examples/resolved-operational-finding.md",
+  "examples/layered-memory/lembranca.md",
+  "examples/layered-memory/memoria.md",
+  "examples/layered-memory/conhecimento/INDEX.md",
+  "examples/layered-memory/conhecimento/documentacao/INDEX.md",
+  "examples/layered-memory/conhecimento/modelos/INDEX.md",
+  "examples/layered-memory/conhecimento/tutoriais/INDEX.md",
   ".github/ISSUE_TEMPLATE/bug_report.md",
   ".github/ISSUE_TEMPLATE/docs_change.md",
   ".github/ISSUE_TEMPLATE/config.yml",
@@ -86,10 +97,15 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.2`", "dex-agent", "nao carrega o runtime"]);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.2 - 2026-05-09"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.3`", "dex-agent", "nao carrega o runtime"]);
+  requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho"]);
+  requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto"]);
+  requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia"]);
+  requireText(errors, "docs/layered-memory-simulations.md", ["PASS", "FAIL UTIL", "global roteia, tema reutiliza, projeto opera"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
   requireText(errors, "LICENSE", ["MIT License"]);
+  validateLayeredMemoryExample(errors);
 
   if (errors.length > 0) {
     console.error(errors.join("\n"));
@@ -97,6 +113,32 @@ function main() {
   }
 
   console.log("dex-memoria public structure ok");
+}
+
+function validateLayeredMemoryExample(errors) {
+  const lembranca = readText("examples/layered-memory/lembranca.md", errors);
+  const memoria = readText("examples/layered-memory/memoria.md", errors);
+  const anchors = new Set([...memoria.matchAll(/\{#([^}]+)\}/g)].map((match) => match[1]));
+  const links = [...lembranca.matchAll(/\]\(memoria\.md#([^)]+)\)/g)].map((match) => match[1]);
+
+  if (links.length === 0) {
+    errors.push("examples/layered-memory/lembranca.md must link to memoria.md anchors");
+  }
+
+  for (const anchor of links) {
+    if (!anchors.has(anchor)) {
+      errors.push(`Layered memory link points to missing anchor: ${anchor}`);
+    }
+  }
+
+  const usefulLines = lembranca
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#") && !line.startsWith(">"));
+
+  if (usefulLines.length > 30) {
+    errors.push(`examples/layered-memory/lembranca.md should stay short, got ${usefulLines.length} useful lines`);
+  }
 }
 
 function readJson(file, errors) {

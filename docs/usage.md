@@ -81,6 +81,120 @@ Leia nesta ordem:
 
 Use `examples/` como referencia de formato, nao como estado real.
 
+### Usar L1/L2/L3
+
+Use este modo quando o problema principal for recuperacao de conhecimento, nao
+apenas registro de uma memoria viva.
+
+Estrutura recomendada:
+
+```text
+lembranca.md
+memoria.md
+conhecimento/
+  INDEX.md
+  documentacao/
+    INDEX.md
+  modelos/
+    INDEX.md
+  tutoriais/
+    INDEX.md
+```
+
+Camadas:
+
+- `L1 lembranca`: gatilhos curtos. Deve apontar para L2 e evitar conteudo
+  longo.
+- `L2 memoria`: detalhe operacional com ancoras. Deve explicar mecanismo,
+  verificacao, prevencao e links para L3 quando necessario.
+- `L3 conhecimento`: documentacao, tutoriais, modelos e exemplos sob demanda.
+
+Fluxo:
+
+```text
+gatilho -> ancora -> detalhe
+captura -> classificacao -> L1 gatilho -> L2 ancora -> L3 sob demanda
+```
+
+Regra pratica:
+
+- L1 e sempre carregavel ou carregavel pelo dominio ativo.
+- L2 e carregavel por dominio ativo.
+- L3 nao deve ser carregada automaticamente por padrao.
+- Nada entra em L2 sem gatilho L1 ou fonte viva equivalente.
+- Nada entra em L3 sem ancora L2.
+
+### Escolher O Caminho Correto
+
+Escolha o caminho pelo escopo, nao pela vontade de lembrar mais.
+
+```text
+global/
+  lembranca.md
+  memoria.md
+  conhecimento/
+
+temas/<tema>/
+  lembranca.md
+  memoria.md
+  conhecimento/
+
+<repo>/.agents/
+  lembranca.md
+  memoria.md
+  conhecimento/
+```
+
+Regras:
+
+- `global`: use apenas como roteador minimo para gatilhos universais,
+  ponteiros cross-project e criterios que mudam comportamento em qualquer
+  contexto.
+- `temas/<tema>`: use para dominio reutilizavel, como linguagem, plataforma,
+  ferramenta ou familia tecnica.
+- `<repo>/.agents`: use para estado vivo, decisoes, handoff e recuperacao
+  operacional de um projeto especifico.
+
+Criterios de promocao:
+
+- projeto -> tema: quando o aprendizado se repetir ou ficar claramente
+  reutilizavel fora do repo;
+- tema -> global: somente quando valer para varios temas;
+- global -> projeto: nao copie o conteudo grande; aponte para a fonte viva.
+
+Se uma memoria nao tem gatilho L1 claro, nao promova para L2. Se um documento
+L3 nao tem ancora L2 que o acione, ele e arquivo ou documentacao solta, nao
+recuperacao em camadas.
+
+Exemplo de configuracao abstrata de um ambiente consumidor:
+
+```toml
+instructions = [
+  "memory.md",
+  "dominio/lembranca.md",
+  "dominio/memoria.md"
+]
+```
+
+Nao inclua `api_key`, tokens, secrets, logs, screenshots ou estado real em
+exemplos de configuracao. Este pacote apenas documenta o contrato; o carregador
+de `instructions` pertence ao ambiente consumidor.
+
+Templates uteis:
+
+- `templates/l1-lembranca.md`
+- `templates/l2-memoria.md`
+- `templates/l3-conhecimento-index.md`
+- `templates/layered-memory-checklist.md`
+
+Exemplo completo:
+
+- `examples/layered-memory/`
+
+Validacao por simulacao:
+
+- `docs/layered-memory-simulations.md`
+
 ### Copiar Ou Adaptar Como Skill Local
 
 Quando um projeto precisar usar `dex-memoria` como skill local, copie ou referencie estes itens:
@@ -298,7 +412,14 @@ Use `templates/memory-contract.md` quando a captura realmente precisa virar memo
 
 Use `templates/memory-resolution-checklist.md` quando uma memoria ativa foi corrigida, cumprida, substituida ou arquivada.
 
+Use `templates/l1-lembranca.md`, `templates/l2-memoria.md`,
+`templates/l3-conhecimento-index.md` e `templates/layered-memory-checklist.md`
+quando a captura precisar virar recuperacao em camadas.
+
 Use `examples/active-operational-memory.md`, `examples/ledger-only-memory.md`, `examples/resolved-operational-finding.md` e `examples/child-to-child-handoff.md` como exemplos sanitizados.
+
+Use `examples/layered-memory/` como exemplo sanitizado de gatilho, ancora e
+conhecimento sob demanda.
 
 ## O Que Depende Do Dex Agent
 

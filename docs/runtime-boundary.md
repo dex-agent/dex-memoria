@@ -17,6 +17,8 @@
 ## Fica Neste Repo
 
 - contrato de ciclo de vida;
+- contrato de recuperacao em camadas `L1 lembranca`, `L2 memoria` e
+  `L3 conhecimento`;
 - templates;
 - exemplos sanitizados;
 - criterios de criacao, resolucao, arquivamento e supersedencia;
@@ -27,6 +29,40 @@
 Quando a pergunta for sobre como operar uma memoria, use este repo.
 
 Quando a pergunta for sobre como o bot grava, recupera, mostra ou injeta memoria em prompts, consulte o runtime do Dex Agent.
+
+## Carregamento De L1/L2/L3
+
+`dex-memoria` recomenda os nomes canonicos `lembranca.md`, `memoria.md` e
+`conhecimento/`, mas nao carrega esses arquivos sozinho.
+
+Responsabilidade deste repo:
+
+- definir o formato das camadas;
+- explicar quando usar cada camada;
+- fornecer templates e exemplos sanitizados;
+- validar a documentacao publica quando houver script para isso.
+
+Responsabilidade do ambiente consumidor:
+
+- decidir quais arquivos entram em `instructions`, system prompt, recall ou
+  contexto;
+- carregar L1 sempre ou por dominio ativo;
+- carregar L2 por dominio ativo;
+- abrir L3 apenas sob demanda;
+- escolher caminhos globais, por tema ou por projeto sem transformar o global em
+  dump;
+- impedir que configs reais, tokens, logs ou estado privado virem exemplo
+  publico.
+
+Regra de escopo:
+
+- global roteia;
+- tema reutiliza;
+- projeto opera.
+
+Se o conhecimento so vale para um repo, fica no repo. Se vale para uma familia
+tecnica, fica em tema. Se vale para qualquer contexto, pode virar ponteiro
+global curto.
 
 ## Memorias Do Host Codex
 
