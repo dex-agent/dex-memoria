@@ -64,6 +64,41 @@ Se o conhecimento so vale para um repo, fica no repo. Se vale para uma familia
 tecnica, fica em tema. Se vale para qualquer contexto, pode virar ponteiro
 global curto.
 
+## Raiz De Memoria
+
+`DEX_MEMORIA_HOME` e a raiz canonica para memoria cross-project:
+
+```text
+<DEX_MEMORIA_HOME>/global
+<DEX_MEMORIA_HOME>/temas/<tema>
+```
+
+Resolucao padrao:
+
+1. usar `$env:DEX_MEMORIA_HOME`, quando existir;
+2. caso contrario, usar `$HOME/.agents/memories`.
+
+Memoria de projeto nao usa `DEX_MEMORIA_HOME`. Ela fica no workspace:
+
+```text
+<WORKSPACE>/.agents
+```
+
+`DEX_AGENT_HOME` localiza runtime, fallback de skill e estado operacional do Dex
+Agent. Ele nao deve virar raiz de memoria cross-project automaticamente. Se um
+ambiente quiser guardar memoria dentro de `DEX_AGENT_HOME`, deve configurar
+`DEX_MEMORIA_HOME` explicitamente.
+
+`%CODEX_HOME%/memories` ou `$HOME/.codex/memories` pertencem ao host Codex.
+Eles podem existir, mas nao sao destino padrao do `dex-memoria`.
+
+O ambiente consumidor deve bloquear:
+
+- escrita de memoria global em `<WORKSPACE>/global`;
+- escrita de memoria de tema em `<WORKSPACE>/temas`;
+- escrita de memoria viva em `templates/`, `examples/`, logs, screenshots ou
+  pastas de secrets.
+
 ## Memorias Do Host Codex
 
 Este pacote nao deve incentivar escrita direta de conteudo grande em memorias

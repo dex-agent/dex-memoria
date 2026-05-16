@@ -1,6 +1,6 @@
 # Dex Memoria
 
-Versao atual: `0.1.3`
+Versao atual: `0.1.4`
 
 `dex-memoria` e um pacote documental para orientar o ciclo de vida de memoria operacional em projetos Dex Agent.
 
@@ -34,6 +34,23 @@ Escopo recomendado:
 - `projeto`: memoria viva e retomada operacional do repo atual;
 - `area` ou `tema`: conhecimento reutilizavel por dominio.
 
+Raiz canonica para memoria cross-project:
+
+```text
+DEX_MEMORIA_HOME = $env:DEX_MEMORIA_HOME, se definido
+fallback = $HOME/.agents/memories
+```
+
+Assim:
+
+- `global` grava em `<DEX_MEMORIA_HOME>/global`;
+- `tema` grava em `<DEX_MEMORIA_HOME>/temas/<tema>`;
+- `projeto` grava no proprio repo, em `<WORKSPACE>/.agents`.
+
+Nunca crie `global/` ou `temas/` dentro do workspace para memoria global ou de
+tema. `%CODEX_HOME%/.codex/memories` e memoria do host Codex; nao e raiz
+padrao do `dex-memoria`, salvo configuracao explicita em `DEX_MEMORIA_HOME`.
+
 Regra pratica: nada entra em L2 sem gatilho L1, nada entra em L3 sem ancora L2,
 e nada entra no global se so serve para um projeto.
 
@@ -57,6 +74,8 @@ e nada entra no global se so serve para um projeto.
 - `SPEC.md`: contrato atual do ciclo de vida.
 - `docs/usage.md`: instalacao, ativacao e prompts prontos.
 - `docs/runtime-boundary.md`: o que ainda pertence ao Dex Agent.
+- `docs/memory-home.md`: raiz canonica `DEX_MEMORIA_HOME` e bloqueios de
+  caminho.
 - `docs/integration-dex-agent.md`: como integrar este pacote ao Dex Agent.
 - `templates/`: modelos copiaveis para contrato, resolucao e uso por projeto filho.
 - `examples/`: exemplos sanitizados.
@@ -72,6 +91,7 @@ Via npm/npx a partir do GitHub:
 
 ```bash
 npx github:dex-agent/dex-memoria doctor
+npx github:dex-agent/dex-memoria memory-home
 npx github:dex-agent/dex-memoria install
 ```
 
@@ -204,10 +224,10 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo publica a versao documental `0.1.3` com a arquitetura L1/L2/L3 de
-recuperacao em camadas. O proximo passo seguro e integrar referencias a partir
-do `dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2
-inexistentes.
+Este repo publica a versao documental `0.1.4` com a arquitetura L1/L2/L3 de
+recuperacao em camadas e a raiz canonica `DEX_MEMORIA_HOME`. O proximo passo
+seguro e integrar referencias a partir do `dex-agent` sem mover runtime, copiar
+estado real ou prometer comandos V2 inexistentes.
 
 ## Camada Publica
 
@@ -228,6 +248,6 @@ npm run doctor
 npm run pack:check
 ```
 
-O CI executa as mesmas validacoes principais para garantir que a versao `0.1.3`,
+O CI executa as mesmas validacoes principais para garantir que a versao `0.1.4`,
 os metadados do pacote e a relacao documental com `dex-agent` continuem
 alinhados sem incluir segredos ou runtime.

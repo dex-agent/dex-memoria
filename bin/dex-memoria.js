@@ -13,6 +13,8 @@ const COPY_ENTRIES = [
   "CHANGELOG.md",
   "DECISIONS.md",
   "VERSION",
+  "package.json",
+  "bin",
   "contracts",
   "docs",
   "templates",
@@ -38,6 +40,11 @@ function main() {
     return;
   }
 
+  if (command === "memory-home") {
+    printMemoryHome();
+    return;
+  }
+
   if (command === "install") {
     install(args.slice(1));
     return;
@@ -51,11 +58,15 @@ function printHelp() {
 
 Uso:
   dex-memoria doctor
+  dex-memoria memory-home
   dex-memoria install [--target <path>] [--force] [--dry-run]
   dex-memoria version
 
 Padrao de instalacao:
   ${defaultTarget()}
+
+Raiz padrao de memoria cross-project:
+  ${memoryHomeInfo().path}
 
 Observacao:
   Este pacote distribui o contrato documental dex-memoria. Ele nao instala
@@ -72,7 +83,18 @@ function doctor() {
 
   console.log(`dex-memoria ${readVersion()} ok`);
   console.log(`Pacote: ${PACKAGE_ROOT}`);
+  console.log(`Memoria home: ${memoryHomeInfo().path}`);
+  console.log(`Memoria home source: ${memoryHomeInfo().source}`);
   console.log("Modo: contrato documental, sem runtime proprio");
+}
+
+function printMemoryHome() {
+  const info = memoryHomeInfo();
+  console.log(info.path);
+  console.log(`source=${info.source}`);
+  console.log("global=<DEX_MEMORIA_HOME>/global");
+  console.log("temas=<DEX_MEMORIA_HOME>/temas/<tema>");
+  console.log("projeto=<WORKSPACE>/.agents");
 }
 
 function install(args) {
@@ -163,6 +185,30 @@ function copyRecursive(from, to) {
 
 function defaultTarget() {
   return path.join(os.homedir(), ".dex-agent", "skills", "dex-memoria");
+}
+
+function memoryHomeInfo() {
+  if (process.env.DEX_MEMORIA_HOME) {
+    return {
+      path: path.resolve(expandHome(process.env.DEX_MEMORIA_HOME)),
+      source: "DEX_MEMORIA_HOME"
+    };
+  }
+
+  return {
+    path: path.join(os.homedir(), ".agents", "memories"),
+    source: "default:$HOME/.agents/memories"
+  };
+}
+
+function expandHome(value) {
+  if (value === "~") {
+    return os.homedir();
+  }
+  if (value.startsWith(`~${path.sep}`) || value.startsWith("~/")) {
+    return path.join(os.homedir(), value.slice(2));
+  }
+  return value;
 }
 
 function readVersion() {

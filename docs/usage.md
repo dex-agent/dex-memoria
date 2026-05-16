@@ -29,6 +29,7 @@ Use este modo quando quiser instalar ou atualizar a copia local sem depender de
 
 ```bash
 npx github:dex-agent/dex-memoria doctor
+npx github:dex-agent/dex-memoria memory-home
 npx github:dex-agent/dex-memoria install
 ```
 
@@ -36,6 +37,7 @@ Depois de publicar no npm registry, o mesmo fluxo fica:
 
 ```bash
 npx dex-memoria@latest doctor
+npx dex-memoria@latest memory-home
 npx dex-memoria@latest install
 ```
 
@@ -128,18 +130,30 @@ Regra pratica:
 
 Escolha o caminho pelo escopo, nao pela vontade de lembrar mais.
 
+Resolva primeiro a raiz cross-project:
+
 ```text
-global/
+DEX_MEMORIA_HOME = $env:DEX_MEMORIA_HOME, se definido
+fallback = $HOME/.agents/memories
+```
+
+`DEX_AGENT_HOME` localiza o runtime/skill do Dex Agent; ele nao e raiz de dados
+de memoria por padrao. `$HOME/.codex/memories` pertence ao host Codex e tambem
+nao e destino padrao do `dex-memoria`, salvo se o usuario configurar
+`DEX_MEMORIA_HOME` explicitamente para esse caminho.
+
+```text
+<DEX_MEMORIA_HOME>/global/
   lembranca.md
   memoria.md
   conhecimento/
 
-temas/<tema>/
+<DEX_MEMORIA_HOME>/temas/<tema>/
   lembranca.md
   memoria.md
   conhecimento/
 
-<repo>/.agents/
+<WORKSPACE>/.agents/
   lembranca.md
   memoria.md
   conhecimento/
@@ -154,6 +168,17 @@ Regras:
   ferramenta ou familia tecnica.
 - `<repo>/.agents`: use para estado vivo, decisoes, handoff e recuperacao
   operacional de um projeto especifico.
+
+Bloqueios antes de gravar:
+
+- se `escopo=global`, o destino deve estar em `<DEX_MEMORIA_HOME>/global`;
+- se `escopo=tema`, o destino deve estar em
+  `<DEX_MEMORIA_HOME>/temas/<tema>`;
+- se `escopo=projeto`, o destino canonico e `<WORKSPACE>/.agents`;
+- nunca crie `<WORKSPACE>/global` para memoria global;
+- nunca crie `<WORKSPACE>/temas` para memoria de tema;
+- nunca escreva memoria viva em `templates/`, `examples/`, logs,
+  screenshots ou pastas de secrets.
 
 Criterios de promocao:
 

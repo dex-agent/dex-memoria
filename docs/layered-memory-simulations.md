@@ -210,10 +210,10 @@ memoria sem lembranca = entulho
 ### Recuperacao Esperada
 
 ```text
-global/lembranca.md
+<DEX_MEMORIA_HOME>/global/lembranca.md
   -> quando for criar memoria detalhada, exigir gatilho L1 ou fonte viva
 
-global/memoria.md
+<DEX_MEMORIA_HOME>/global/memoria.md
   -> explicar o criterio: L2 sem gatilho tende a nao ser recuperada
 ```
 

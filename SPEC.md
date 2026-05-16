@@ -74,6 +74,39 @@ necessidade.
 - `area` ou `tema`: conhecimento reutilizavel por dominio, como linguagem,
   plataforma, ferramenta ou familia de projetos.
 
+### Raiz Canonica
+
+`DEX_MEMORIA_HOME` e a raiz canonica para memorias cross-project, ou seja,
+memorias `global` e `tema`.
+
+Resolucao:
+
+1. se `$env:DEX_MEMORIA_HOME` estiver definido, use esse caminho;
+2. se nao estiver definido, use `$HOME/.agents/memories`;
+3. nao derive memoria cross-project de `DEX_AGENT_HOME` automaticamente;
+4. nao use `%CODEX_HOME%/memories` ou `$HOME/.codex/memories` como destino
+   padrao, porque esse espaco pertence ao host Codex.
+
+Mapeamento fisico:
+
+- `global`: `<DEX_MEMORIA_HOME>/global/lembranca.md`,
+  `<DEX_MEMORIA_HOME>/global/memoria.md` e
+  `<DEX_MEMORIA_HOME>/global/conhecimento/`;
+- `tema`: `<DEX_MEMORIA_HOME>/temas/<tema>/lembranca.md`,
+  `<DEX_MEMORIA_HOME>/temas/<tema>/memoria.md` e
+  `<DEX_MEMORIA_HOME>/temas/<tema>/conhecimento/`;
+- `projeto`: `<WORKSPACE>/.agents/lembranca.md`,
+  `<WORKSPACE>/.agents/memoria.md` e
+  `<WORKSPACE>/.agents/conhecimento/`.
+
+Bloqueios:
+
+- se `escopo=global`, o destino nao pode estar dentro do workspace;
+- se `escopo=tema`, o destino nao pode estar dentro do workspace;
+- se `escopo=projeto`, o destino canonico e `<WORKSPACE>/.agents`;
+- `templates/`, `examples/`, logs, screenshots e pastas de secrets nunca sao
+  destino de memoria viva.
+
 Regra dura:
 
 - nada entra em L2 sem gatilho L1 ou fonte viva equivalente;

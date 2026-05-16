@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 - 2026-05-16
+
+- Define `DEX_MEMORIA_HOME` como raiz canonica de memoria cross-project.
+- Define o padrao `$HOME/.agents/memories` para memoria global e por tema.
+- Reforca que memoria global/tema nunca deve ser criada dentro do workspace.
+- Adiciona `dex-memoria memory-home` e diagnostico no `doctor`.
+
 ## 0.1.3 - 2026-05-15
 
 - Documenta a arquitetura `L1 lembranca -> L2 memoria -> L3 conhecimento`.

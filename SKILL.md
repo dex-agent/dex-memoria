@@ -65,6 +65,19 @@ Regra de caminho:
 - tema reutiliza conhecimento de dominio;
 - projeto opera estado vivo e retomada.
 
+Raiz canonica:
+
+- `DEX_MEMORIA_HOME` e a raiz de memoria cross-project;
+- se `$env:DEX_MEMORIA_HOME` existir, use esse caminho;
+- se nao existir, use `$HOME/.agents/memories`;
+- `global` grava em `<DEX_MEMORIA_HOME>/global`;
+- `tema` grava em `<DEX_MEMORIA_HOME>/temas/<tema>`;
+- `projeto` grava em `<WORKSPACE>/.agents`;
+- nao crie `<WORKSPACE>/global` nem `<WORKSPACE>/temas` para memoria global ou
+  de tema;
+- nao use `$HOME/.codex/memories` ou `%CODEX_HOME%/memories` como destino
+  padrao, salvo configuracao explicita em `DEX_MEMORIA_HOME`.
+
 Nada entra em L2 sem gatilho L1 ou fonte viva equivalente. Nada entra em L3 sem
 ancora L2. Nada entra no global se so serve para um projeto.
 
@@ -105,6 +118,10 @@ Se o ambiente atual bloquear escrita em uma pasta de memorias, declare o bloquei
 como permissao do ambiente/ferramenta ativa, nao veto de `dex-memoria`, e
 entregue um candidato de memoria ou o patch operacional apropriado. Assim que
 houver caminho autorizado de escrita, grave o ponteiro global conciso.
+
+Antes de escrever qualquer L1/L2/L3, mostre o escopo, o `DEX_MEMORIA_HOME`
+resolvido quando aplicavel, o caminho absoluto de destino e o motivo do escopo.
+Bloqueie a escrita se `global` ou `tema` apontarem para dentro do workspace.
 
 ## Fonte Completa
 

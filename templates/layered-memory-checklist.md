@@ -9,6 +9,10 @@ Use este checklist antes de promover uma captura para L1/L2/L3.
 - [ ] Cada gatilho aponta para `memoria.md#ancora` ou fonte viva equivalente.
 - [ ] L1 nao contem tutorial, historico longo ou dump de contexto.
 - [ ] O escopo esta correto: global, tema ou projeto.
+- [ ] `DEX_MEMORIA_HOME` foi resolvido quando o escopo e global ou tema.
+- [ ] `global` aponta para `<DEX_MEMORIA_HOME>/global`, nao para `<WORKSPACE>/global`.
+- [ ] `tema` aponta para `<DEX_MEMORIA_HOME>/temas/<tema>`, nao para `<WORKSPACE>/temas`.
+- [ ] `projeto` aponta para `<WORKSPACE>/.agents`.
 
 ## L2 - Memoria
 
