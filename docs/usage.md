@@ -169,6 +169,21 @@ Regras:
 - `<repo>/.agents`: use para estado vivo, decisoes, handoff e recuperacao
   operacional de um projeto especifico.
 
+Taxonomia de temas:
+
+- tema e dominio reutilizavel, nao apelido de projeto nem combinacao
+  projeto-ferramenta;
+- prefira temas raiz quando o dominio ja for claro, como `deepseek`,
+  `delphi`, `php` ou `codex`;
+- use `temas/<area>/<tema>` somente quando a area for uma familia real e
+  repetida;
+- na duvida, prefira `temas/delphi` antes de
+  `temas/programacao/delphi`, e `temas/deepseek` antes de
+  `temas/pythia-deepseek`;
+- se o conteudo mistura projeto e ferramenta, divida: estado do projeto em
+  `<WORKSPACE>/.agents`, aprendizado da ferramenta em
+  `<DEX_MEMORIA_HOME>/temas/<ferramenta>`.
+
 Bloqueios antes de gravar:
 
 - se `escopo=global`, o destino deve estar em `<DEX_MEMORIA_HOME>/global`;

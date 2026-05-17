@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const expectedVersion = "0.1.4";
+const expectedVersion = "0.1.5";
 
 const requiredFiles = [
   "LICENSE",
@@ -98,13 +98,13 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.4`", "dex-agent", "nao carrega o runtime", "DEX_MEMORIA_HOME"]);
-  requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica"]);
-  requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.5`", "dex-agent", "nao carrega o runtime", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
+  requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica", "Taxonomia De Temas"]);
+  requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
-  requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents"]);
+  requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents", "projeto-ferramenta"]);
   requireText(errors, "docs/layered-memory-simulations.md", ["PASS", "FAIL UTIL", "global roteia, tema reutiliza, projeto opera"]);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);

@@ -78,6 +78,19 @@ Raiz canonica:
 - nao use `$HOME/.codex/memories` ou `%CODEX_HOME%/memories` como destino
   padrao, salvo configuracao explicita em `DEX_MEMORIA_HOME`.
 
+Taxonomia de temas:
+
+- tema e dominio reutilizavel, nao apelido de projeto, conversa, sprint ou
+  combinacao projeto-ferramenta;
+- prefira tema raiz quando o dominio ja for claro, como `deepseek`, `delphi`,
+  `php` ou `codex`;
+- use `temas/<area>/<tema>` somente quando a area for uma familia real e
+  repetida;
+- se o conteudo mistura projeto e ferramenta, separe estado de projeto em
+  `<WORKSPACE>/.agents` e aprendizado reutilizavel em
+  `<DEX_MEMORIA_HOME>/temas/<dominio>`;
+- revise nomes compostos como `pythia-deepseek` antes de gravar.
+
 Nada entra em L2 sem gatilho L1 ou fonte viva equivalente. Nada entra em L3 sem
 ancora L2. Nada entra no global se so serve para um projeto.
 

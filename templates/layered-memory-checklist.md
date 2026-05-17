@@ -13,6 +13,8 @@ Use este checklist antes de promover uma captura para L1/L2/L3.
 - [ ] `global` aponta para `<DEX_MEMORIA_HOME>/global`, nao para `<WORKSPACE>/global`.
 - [ ] `tema` aponta para `<DEX_MEMORIA_HOME>/temas/<tema>`, nao para `<WORKSPACE>/temas`.
 - [ ] `projeto` aponta para `<WORKSPACE>/.agents`.
+- [ ] Tema representa dominio reutilizavel, nao projeto, conversa ou combinacao projeto-ferramenta.
+- [ ] Nome composto de tema foi revisado e justificado antes de gravar.
 
 ## L2 - Memoria
 

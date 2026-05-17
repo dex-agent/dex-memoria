@@ -107,6 +107,25 @@ Bloqueios:
 - `templates/`, `examples/`, logs, screenshots e pastas de secrets nunca sao
   destino de memoria viva.
 
+### Taxonomia De Temas
+
+Tema e dominio reutilizavel. Ele nao deve representar projeto especifico,
+conversa, sprint, bug isolado, apelido de repo ou combinacao acidental
+projeto-ferramenta.
+
+Regra pratica:
+
+- prefira tema raiz quando o dominio ja for claro: `deepseek`, `delphi`,
+  `php`, `codex`;
+- use `temas/<area>/<tema>` somente quando a area for uma familia real e
+  repetida, nao por vontade de organizar demais;
+- se o conteudo mistura projeto e ferramenta, separe: estado do projeto em
+  `<WORKSPACE>/.agents`, aprendizado da ferramenta em
+  `<DEX_MEMORIA_HOME>/temas/<ferramenta>` e aprendizado de linguagem em
+  `<DEX_MEMORIA_HOME>/temas/<linguagem>`;
+- nomes compostos como `pythia-deepseek` devem ser revisados antes de gravar;
+- na duvida, prefira o nome mais simples que sobreviva fora do projeto atual.
+
 Regra dura:
 
 - nada entra em L2 sem gatilho L1 ou fonte viva equivalente;

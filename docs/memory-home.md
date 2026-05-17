@@ -48,6 +48,23 @@ C:\Users\<usuario>\.agents\memories
 - `$HOME/.codex/memories` pertence ao host Codex e nao e destino padrao do
   `dex-memoria`.
 
+## Taxonomia De Temas
+
+Tema e dominio reutilizavel. Nao use tema como apelido de projeto, conversa,
+sprint, bug isolado ou combinacao projeto-ferramenta.
+
+Exemplos preferidos:
+
+- `temas/deepseek`
+- `temas/delphi`
+- `temas/php`
+- `temas/codex`
+
+Use `temas/<area>/<tema>` apenas quando `<area>` ja for uma familia real e
+repetida. Se uma captura mistura projeto e ferramenta, guarde o estado do
+projeto em `<WORKSPACE>/.agents` e o aprendizado reutilizavel em
+`<DEX_MEMORIA_HOME>/temas/<dominio>`.
+
 Se um ambiente quiser usar outro local, deve configurar `DEX_MEMORIA_HOME`
 explicitamente.
 

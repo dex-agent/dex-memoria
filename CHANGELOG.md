@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5 - 2026-05-17
+
+- Documenta a taxonomia canonica de temas reutilizaveis.
+- Reforca que tema nao deve ser apelido de projeto nem combinacao
+  projeto-ferramenta.
+- Atualiza validacao publica para cobrir a regra de tema como dominio
+  reutilizavel.
+
 ## 0.1.4 - 2026-05-16
 
 - Define `DEX_MEMORIA_HOME` como raiz canonica de memoria cross-project.

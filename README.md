@@ -1,6 +1,6 @@
 # Dex Memoria
 
-Versao atual: `0.1.4`
+Versao atual: `0.1.5`
 
 `dex-memoria` e um pacote documental para orientar o ciclo de vida de memoria operacional em projetos Dex Agent.
 
@@ -50,6 +50,17 @@ Assim:
 Nunca crie `global/` ou `temas/` dentro do workspace para memoria global ou de
 tema. `%CODEX_HOME%/.codex/memories` e memoria do host Codex; nao e raiz
 padrao do `dex-memoria`, salvo configuracao explicita em `DEX_MEMORIA_HOME`.
+
+Taxonomia de temas:
+
+- tema e dominio reutilizavel, nao apelido de projeto nem combinacao
+  projeto-ferramenta;
+- prefira dominios raiz como `deepseek`, `delphi`, `php` ou `codex`;
+- use `temas/<area>/<tema>` somente quando a area ja for uma familia real e
+  repetida;
+- se o conteudo mistura projeto e ferramenta, separe: estado do projeto em
+  `<WORKSPACE>/.agents`, aprendizado da ferramenta em
+  `<DEX_MEMORIA_HOME>/temas/<ferramenta>`.
 
 Regra pratica: nada entra em L2 sem gatilho L1, nada entra em L3 sem ancora L2,
 e nada entra no global se so serve para um projeto.
@@ -224,10 +235,11 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo publica a versao documental `0.1.4` com a arquitetura L1/L2/L3 de
-recuperacao em camadas e a raiz canonica `DEX_MEMORIA_HOME`. O proximo passo
-seguro e integrar referencias a partir do `dex-agent` sem mover runtime, copiar
-estado real ou prometer comandos V2 inexistentes.
+Este repo publica a versao documental `0.1.5` com a arquitetura L1/L2/L3 de
+recuperacao em camadas, a raiz canonica `DEX_MEMORIA_HOME` e a taxonomia de
+temas reutilizaveis. O proximo passo seguro e integrar referencias a partir do
+`dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2
+inexistentes.
 
 ## Camada Publica
 
@@ -248,6 +260,6 @@ npm run doctor
 npm run pack:check
 ```
 
-O CI executa as mesmas validacoes principais para garantir que a versao `0.1.4`,
+O CI executa as mesmas validacoes principais para garantir que a versao `0.1.5`,
 os metadados do pacote e a relacao documental com `dex-agent` continuem
 alinhados sem incluir segredos ou runtime.
