@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Consolida o gate de `L3 robusto` no contrato publico.
+- Documenta `rg de achabilidade`, separacao de fontes e uso de Graphify API
+  apenas como acelerador semantico ate confirmacao direta.
+- Reforca a regra de evitar duplicatas L1/L2 por diferenca de caixa em Windows.
+
 ## 0.1.5 - 2026-05-17
 
 - Documenta a taxonomia canonica de temas reutilizaveis.

@@ -3,7 +3,7 @@
 ## Supported Version
 
 `dex-memoria` is a public documentation and skill contract package. The current
-supported public line is `0.1.x`, with version `0.1.2` as the active release.
+supported public line is `0.1.x`, with version `0.1.5` as the active release.
 
 ## Scope
 

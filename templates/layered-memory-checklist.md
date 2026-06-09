@@ -28,6 +28,12 @@ Use este checklist antes de promover uma captura para L1/L2/L3.
 
 - [ ] `conhecimento/INDEX.md` existe.
 - [ ] L3 foi linkada por uma ancora L2.
+- [ ] L3 declara objetivo, escopo, exemplos, anti-exemplos e modelo operacional.
+- [ ] L3 declara comandos ou scripts de validacao quando aplicavel.
+- [ ] L3 separa fontes `confirmado`, `inferido` e `lacuna`.
+- [ ] L3 registra referencias e riscos de obsolescencia.
+- [ ] Existe `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico.
+- [ ] Hits de Graphify API permanecem como `source: graphify` ate confirmacao direta.
 - [ ] Subpastas longas tem `INDEX.md` proprio quando existirem.
 - [ ] L3 nao e tratada como contexto sempre carregado por padrao.
 

@@ -63,6 +63,33 @@ Camada sob demanda para documentacao, tutoriais, modelos e exemplos longos.
 Deve ter `INDEX.md` e ser acessada a partir de L2 quando o detalhe ultrapassar o
 uso recorrente.
 
+### L3 Robusto
+
+Um L3 e robusto quando deixa de ser apenas arquivo longo e passa a ser
+recuperavel, verificavel e governado por L1/L2.
+
+Use o gate de L3 robusto quando o aprendizado tiver alta chance de reuso,
+resolver falha recorrente, virar referencia de tema ou nascer de Graphify,
+Bibliotecario, pesquisa, diagnostico, bug real ou decisao tecnica repetivel.
+
+Requisitos:
+
+- L1 tem gatilhos curtos apontando para uma ancora L2 estavel;
+- L2 declara contexto operacional, quando usar, quando nao usar, fonte viva e
+  link direto para o L3;
+- L3 declara objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
+  comandos ou scripts de validacao, referencias e riscos de obsolescencia;
+- fontes separam `confirmado`, `inferido` e `lacuna`;
+- existe `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico;
+- escopo e explicito: `projeto`, `tema`, `global dos agentes`,
+  `Codex principal` ou `Codex notas citaveis`;
+- existe regra de revisao para revalidar, superseder, mover, arquivar ou
+  descartar o conteudo.
+
+Graphify API pode acelerar descoberta semantica, mas nao e prova final. Ate a
+fonte citada ser aberta ou cruzada com `rg`, codigo, docs ou testes, o achado
+deve permanecer marcado como `source: graphify`.
+
 ### Escopos De Caminho
 
 A arquitetura L1/L2/L3 pode existir em tres escopos. A regra e evitar que o

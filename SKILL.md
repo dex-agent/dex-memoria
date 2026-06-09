@@ -59,6 +59,18 @@ L1 lembranca -> L2 memoria -> L3 conhecimento
 recomendados. O carregamento automatico e responsabilidade do ambiente
 consumidor.
 
+Em Windows, trate diferenca de caixa como o mesmo destino. Se um projeto ja usa
+`.agents\lembranca.md` e `.agents\memoria.md`, nao crie duplicatas
+`.agents\LEMBRANCA.md` ou `.agents\MEMORIA.md` apenas porque um prompt citou os
+nomes em maiusculas; grave no arquivo canonico existente e informe o caminho
+real.
+
+Ao criar ou revisar memoria em camadas, valide por busca:
+
+- L1: o gatilho curto aparece e aponta para a ancora L2;
+- L2: a ancora existe e aponta para a fonte L3 quando houver;
+- L3: a fonte longa existe apenas sob demanda, sem substituir L1/L2.
+
 Regra de caminho:
 
 - global roteia com gatilhos e ponteiros curtos;
@@ -93,6 +105,59 @@ Taxonomia de temas:
 
 Nada entra em L2 sem gatilho L1 ou fonte viva equivalente. Nada entra em L3 sem
 ancora L2. Nada entra no global se so serve para um projeto.
+
+## Checklist De L3 Robusto
+
+Use este gate quando o aprendizado tiver alta chance de reuso, resolver falha
+recorrente, virar referencia de tema ou nascer de Graphify, Bibliotecario,
+pesquisa, diagnostico, bug real ou decisao tecnica repetivel.
+
+Um L3 robusto so deve ser considerado pronto quando tiver:
+
+- gatilhos curtos no L1 apontando para uma ancora L2 estavel;
+- L2 com contexto operacional, quando usar, quando nao usar, fonte viva e link
+  direto para o L3;
+- L3 com objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
+  comandos ou scripts de validacao, referencias e riscos de obsolescencia;
+- fontes separadas entre `confirmado`, `inferido` e `lacuna`;
+- comando `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico;
+- indicacao clara de escopo: `projeto`, `tema`, `global dos agentes`,
+  `Codex principal` ou `Codex notas citaveis`;
+- regra de revisao: quando o conteudo deve ser revalidado, supersedido,
+  movido, arquivado ou descartado.
+
+Quando o achado vier do Graphify, use Graphify API como acelerador semantico,
+nao como prova final:
+
+```text
+Graphify API -> abrir fonte citada ou cruzar com rg/codigo/docs -> promover
+para L1/L2/L3 somente depois da confirmacao direta.
+```
+
+Enquanto a fonte citada nao for aberta ou cruzada, registre como
+`source: graphify`, nao como confirmado.
+
+Modelo minimo para L3 rico:
+
+```text
+# <titulo>
+
+Localizador: <GATILHO-CURTO>
+Escopo: <projeto|tema|global|codex-principal|codex-notas-citaveis>
+Status: confirmado | parcial | candidato
+
+## Quando Usar
+## Quando Nao Usar
+## Contrato Operacional
+## Exemplos
+## Anti-Exemplos
+## Modelo De Validacao
+## Fontes Confirmadas
+## Inferencias E Lacunas
+## Riscos De Obsolescencia
+## Achabilidade
+rg -n "<gatilho>|<alias>|<termo-tecnico>" <L1> <L2> <L3>
+```
 
 ## Precedencia Local Antes Da Global
 

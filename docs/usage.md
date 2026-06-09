@@ -126,6 +126,26 @@ Regra pratica:
 - Nada entra em L2 sem gatilho L1 ou fonte viva equivalente.
 - Nada entra em L3 sem ancora L2.
 
+Use `L3 robusto` quando o aprendizado for reutilizavel, recorrente, tecnico ou
+derivado de Graphify, Bibliotecario, pesquisa, diagnostico, bug real ou decisao
+repetivel.
+
+Checklist minimo:
+
+- L1 tem gatilho curto para uma ancora L2 estavel.
+- L2 tem contexto operacional, quando usar, quando nao usar, fonte viva e link
+  direto para L3.
+- L3 tem objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
+  comandos ou scripts de validacao, referencias e riscos de obsolescencia.
+- Fontes separam `confirmado`, `inferido` e `lacuna`.
+- Existe `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico.
+- Escopo esta explicito: `projeto`, `tema`, `global dos agentes`,
+  `Codex principal` ou `Codex notas citaveis`.
+
+Graphify API pode acelerar descoberta semantica, mas o resultado so vira
+confirmado depois de abrir a fonte citada ou cruzar com `rg`, codigo, docs ou
+testes. Antes disso, registre como `source: graphify`.
+
 ### Escolher O Caminho Correto
 
 Escolha o caminho pelo escopo, nao pela vontade de lembrar mais.

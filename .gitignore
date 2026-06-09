@@ -6,9 +6,20 @@ node_modules/
 dist/
 cache/
 .cache/
-.codex/config.toml
-.harness/
+
+# Local AI/development system state. Keep out of the public GitHub repo.
+.codex/
 .agents/
+.ppirtv/
+.harness/
+.claude/
+.cursor/
+.continue/
+.windsurf/
+.mcp/
+.graphifyignore
+graphify-out/
+
 *.png
 *.jpg
 *.jpeg

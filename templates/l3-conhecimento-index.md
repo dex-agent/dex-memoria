@@ -8,6 +8,12 @@ necessario.
 
 Regra: nao crie L3 sem ancora L2 que explique quando abrir este detalhe.
 
+Para L3 robusto, este indice deve apontar para conteudos que tenham objetivo,
+escopo, exemplos, anti-exemplos, modelo operacional, validacao, referencias,
+riscos de obsolescencia e achabilidade. Fontes vindas de Graphify API ficam
+como `source: graphify` ate confirmacao direta por fonte aberta ou cruzamento
+com `rg`, codigo, docs ou testes.
+
 ## Documentacao
 
 - [documentacao/INDEX.md](documentacao/INDEX.md)
@@ -24,3 +30,9 @@ Regra: nao crie L3 sem ancora L2 que explique quando abrir este detalhe.
 
 - L1: [../lembranca.md](../lembranca.md)
 - L2: [../memoria.md](../memoria.md)
+
+## Achabilidade
+
+```text
+rg -n "<gatilho>|<alias-humano>|<termo-tecnico>" ../lembranca.md ../memoria.md .
+```

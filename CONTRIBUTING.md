@@ -12,7 +12,7 @@ not the Dex Agent runtime.
 - Do not edit secrets, local state, `.env`, runtime ledgers, private `.agents/`
   data, logs, screenshots, or session artifacts.
 - Keep examples sanitized and free of real personal data.
-- Keep behavior claims aligned with version `0.1.2`: no hooks, no automatic
+- Keep behavior claims aligned with version `0.1.5`: no hooks, no automatic
   memory writes, and no promised V2 scripts unless they actually exist.
 
 ## Development

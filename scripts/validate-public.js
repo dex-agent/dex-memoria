@@ -3,6 +3,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 
 const root = path.resolve(__dirname, "..");
 const expectedVersion = "0.1.5";
@@ -69,6 +70,24 @@ const requiredPackageFiles = [
   "VERSION"
 ];
 
+const forbiddenTrackedPrefixes = [
+  ".agents/",
+  ".claude/",
+  ".codex/",
+  ".continue/",
+  ".cursor/",
+  ".harness/",
+  ".mcp/",
+  ".ppirtv/",
+  ".windsurf/",
+  "graphify-out/"
+];
+
+const forbiddenTrackedFiles = new Set([
+  ".env",
+  ".graphifyignore"
+]);
+
 function main() {
   const errors = [];
 
@@ -108,6 +127,7 @@ function main() {
   requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);
+  validateNoForbiddenTrackedFiles(errors);
 
   if (errors.length > 0) {
     console.error(errors.join("\n"));
@@ -115,6 +135,42 @@ function main() {
   }
 
   console.log("dex-memoria public structure ok");
+}
+
+function validateNoForbiddenTrackedFiles(errors) {
+  let trackedFiles;
+  try {
+    trackedFiles = execFileSync("git", ["ls-files"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    })
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => line.replace(/\\/g, "/"));
+  } catch (error) {
+    return;
+  }
+
+  const forbidden = trackedFiles.filter((file) => {
+    if (forbiddenTrackedFiles.has(file)) {
+      return true;
+    }
+    if (/^\.env\./.test(file)) {
+      return true;
+    }
+    return forbiddenTrackedPrefixes.some((prefix) => file.startsWith(prefix));
+  });
+
+  if (forbidden.length > 0) {
+    errors.push(
+      [
+        "Forbidden local/dev files are tracked by Git:",
+        ...forbidden.map((file) => `- ${file}`)
+      ].join("\n")
+    );
+  }
 }
 
 function validateLayeredMemoryExample(errors) {
