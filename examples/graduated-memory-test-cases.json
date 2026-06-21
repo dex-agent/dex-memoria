@@ -1,0 +1,389 @@
+{
+  "schema": "dex-memoria graduated-memory-test-cases v1",
+  "description": "Bateria documental sanitizada para validar MEMORIA-GRADUADA-COM-ANTI-GATILHO antes de commit ou sync.",
+  "cases": [
+    {
+      "id": "simple-doc-index",
+      "title": "Memoria simples sem anti-exemplo obrigatorio",
+      "capture": "Ao criar uma doc publica, atualizar o indice publico para que o arquivo fique encontravel.",
+      "expectedClassification": "simples",
+      "expectedPromotion": "memory",
+      "riskFactors": [],
+      "requiresAntiTrigger": false,
+      "requiresAntiExample": false,
+      "evidenceStrength": "boa",
+      "evidenceMinimum": "fonte viva aberta e indice revisado",
+      "l1": {
+        "trigger": "DOC-HUB",
+        "target": "memoria.md#doc-hub",
+        "hasAntiTrigger": false
+      },
+      "l2": {
+        "anchor": "doc-hub",
+        "aliases": [],
+        "hasProblem": true,
+        "hasMechanism": false,
+        "hasVerification": true,
+        "hasPrevention": false,
+        "hasWhenRemember": true,
+        "hasWhenNotRemember": true,
+        "hasSource": true,
+        "hasRgAchability": false,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": false,
+        "hasExample": false,
+        "hasAntiExample": false,
+        "hasRoutes": false,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Promover como memoria simples; nao exigir anti-exemplo decorativo."
+    },
+    {
+      "id": "operational-path-routing",
+      "title": "Memoria operacional com exemplo correto",
+      "capture": "Escolher destino de memoria pelo escopo: projeto em .agents, tema em DEX_MEMORIA_HOME/temas, global em DEX_MEMORIA_HOME/global.",
+      "expectedClassification": "operacional",
+      "expectedPromotion": "memory",
+      "riskFactors": [
+        "termo ambiguo",
+        "rota alternativa mais correta"
+      ],
+      "requiresAntiTrigger": true,
+      "requiresAntiExample": false,
+      "evidenceStrength": "boa",
+      "evidenceMinimum": "contrato aberto e comando rg de achabilidade definido",
+      "l1": {
+        "trigger": "DEX-MEMORIA-ESCOPO-CAMINHO",
+        "target": "memoria.md#dex-memoria-escopo-caminho",
+        "hasAntiTrigger": true
+      },
+      "l2": {
+        "anchor": "dex-memoria-escopo-caminho",
+        "aliases": [
+          "memory home",
+          "escopo de memoria"
+        ],
+        "hasProblem": true,
+        "hasMechanism": true,
+        "hasVerification": true,
+        "hasPrevention": true,
+        "hasWhenRemember": true,
+        "hasWhenNotRemember": true,
+        "hasSource": true,
+        "hasRgAchability": true,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": true,
+        "hasExample": true,
+        "hasAntiExample": false,
+        "hasRoutes": true,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Promover como operacional; exemplo correto basta porque nao ha erro real que exija anti-exemplo."
+    },
+    {
+      "id": "robust-false-ready-window-capture",
+      "title": "Memoria robusta com falso pronto",
+      "capture": "PNG criado por CopyFromScreen + HWND pode mostrar a janela sobreposta, nao a janela alvo isolada.",
+      "expectedClassification": "robusta",
+      "expectedPromotion": "memory",
+      "riskFactors": [
+        "falso pronto",
+        "ferramenta pode provar a coisa errada",
+        "erro recorrente"
+      ],
+      "requiresAntiTrigger": true,
+      "requiresAntiExample": true,
+      "evidenceStrength": "forte",
+      "evidenceMinimum": "teste repetivel com sobreposicao real",
+      "l1": {
+        "trigger": "PRINT-HWND-OCULTO",
+        "target": "memoria.md#print-hwnd-oculto",
+        "hasAntiTrigger": true
+      },
+      "l2": {
+        "anchor": "print-hwnd-oculto",
+        "aliases": [
+          "print por handle",
+          "HWND screenshot"
+        ],
+        "hasProblem": true,
+        "hasMechanism": true,
+        "hasVerification": true,
+        "hasPrevention": true,
+        "hasWhenRemember": true,
+        "hasWhenNotRemember": true,
+        "hasSource": true,
+        "hasRgAchability": true,
+        "hasStrongTriggers": true,
+        "hasAntiTriggers": true,
+        "hasExample": true,
+        "hasAntiExample": true,
+        "hasRoutes": true,
+        "knowledgePath": "conhecimento/print-hwnd.md"
+      },
+      "l3": {
+        "exists": true,
+        "backlinkAnchor": "print-hwnd-oculto"
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Promover como robusta porque o falso pronto ja tem mecanismo conhecido, anti-gatilho, anti-exemplo e teste real."
+    },
+    {
+      "id": "graphify-unconfirmed-map-only",
+      "title": "Graphify nao confirmado nao vira prova",
+      "capture": "Graphify encontrou no proximo ao tema, mas a fonte citada nao foi aberta nem cruzada com rg, codigo, doc ou teste.",
+      "expectedClassification": "ledger-only",
+      "expectedPromotion": "ledger-only",
+      "riskFactors": [
+        "Graphify sem fonte aberta",
+        "fonte nao confirmada"
+      ],
+      "requiresAntiTrigger": false,
+      "requiresAntiExample": false,
+      "evidenceStrength": "fraca",
+      "evidenceMinimum": "source: graphify mantido como achado nao confirmado",
+      "l1": {
+        "trigger": "",
+        "target": "",
+        "hasAntiTrigger": false
+      },
+      "l2": {
+        "anchor": "",
+        "aliases": [],
+        "hasProblem": false,
+        "hasMechanism": false,
+        "hasVerification": false,
+        "hasPrevention": false,
+        "hasWhenRemember": false,
+        "hasWhenNotRemember": false,
+        "hasSource": false,
+        "hasRgAchability": false,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": false,
+        "hasExample": false,
+        "hasAntiExample": false,
+        "hasRoutes": false,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": true,
+        "query": "memorias proximas sobre captura por handle",
+        "graph": "graphify-out/graph.json",
+        "confirmedHits": [],
+        "unpromotedHits": [
+          "source: graphify -> memoria-candidata sem fonte aberta"
+        ],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Registrar como ledger-only ou candidato; nao promover memoria ativa sem fonte aberta."
+    },
+    {
+      "id": "blocking-evidence-wrong-target",
+      "title": "Evidencia bloqueante impede promocao",
+      "capture": "O teste criado exercita um caminho artificial e nao o processo real que falhou.",
+      "expectedClassification": "descarte",
+      "expectedPromotion": "discard",
+      "manualUnblock": {
+        "requestedExplicitly": false,
+        "allowed": false,
+        "reason": "",
+        "scope": "",
+        "acceptedBy": "",
+        "expiresWhen": "",
+        "nextValidation": "",
+        "preservesOriginalEvidence": true,
+        "nonOverridableRisks": [],
+        "notGlobalRule": true
+      },
+      "riskFactors": [
+        "teste nao reproduz caminho real",
+        "alvo errado"
+      ],
+      "requiresAntiTrigger": false,
+      "requiresAntiExample": false,
+      "evidenceStrength": "bloqueante",
+      "evidenceMinimum": "evidencia contraria documentada",
+      "l1": {
+        "trigger": "",
+        "target": "",
+        "hasAntiTrigger": false
+      },
+      "l2": {
+        "anchor": "",
+        "aliases": [],
+        "hasProblem": false,
+        "hasMechanism": false,
+        "hasVerification": false,
+        "hasPrevention": false,
+        "hasWhenRemember": false,
+        "hasWhenNotRemember": false,
+        "hasSource": false,
+        "hasRgAchability": false,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": false,
+        "hasExample": false,
+        "hasAntiExample": false,
+        "hasRoutes": false,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Descartar como memoria ativa; a evidencia bloqueante precisa voltar para diagnostico, nao virar regra."
+    },
+    {
+      "id": "manual-unblock-false-positive",
+      "title": "Desbloqueio manual controlado para falso bloqueio",
+      "capture": "Um gate documental bloqueou sync porque exigiu anti-exemplo em memoria simples sem risco real; o usuario pediu desbloqueio explicito para seguir com escopo limitado.",
+      "expectedClassification": "descarte",
+      "expectedPromotion": "manual-unblock",
+      "manualUnblock": {
+        "requestedExplicitly": true,
+        "allowed": true,
+        "reason": "bloqueio automatico foi falso positivo: memoria simples nao exige anti-exemplo decorativo",
+        "scope": "seguir apenas com sync documental desta memoria simples",
+        "acceptedBy": "usuario",
+        "expiresWhen": "ao concluir o sync atual ou ao aparecer nova evidencia contraria",
+        "nextValidation": "rodar rg de achabilidade e npm run check antes de declarar pronto",
+        "preservesOriginalEvidence": true,
+        "nonOverridableRisks": [],
+        "notGlobalRule": true
+      },
+      "riskFactors": [
+        "bloqueio automatico falso positivo"
+      ],
+      "requiresAntiTrigger": false,
+      "requiresAntiExample": false,
+      "evidenceStrength": "bloqueante",
+      "evidenceMinimum": "bloqueio registrado como falso positivo com escopo, quando e proxima validacao",
+      "l1": {
+        "trigger": "",
+        "target": "",
+        "hasAntiTrigger": false
+      },
+      "l2": {
+        "anchor": "",
+        "aliases": [],
+        "hasProblem": false,
+        "hasMechanism": false,
+        "hasVerification": false,
+        "hasPrevention": false,
+        "hasWhenRemember": false,
+        "hasWhenNotRemember": false,
+        "hasSource": false,
+        "hasRgAchability": false,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": false,
+        "hasExample": false,
+        "hasAntiExample": false,
+        "hasRoutes": false,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Permitir continuidade limitada por desbloqueio manual; nao converter a evidencia bloqueante em prova e nao criar regra global."
+    },
+    {
+      "id": "discard-ephemeral-note",
+      "title": "Captura sem reuso deve ser descartada",
+      "capture": "Nota temporaria de conversa: lembrar de revisar isso hoje, sem fonte viva, criterio de retorno ou valor reutilizavel.",
+      "expectedClassification": "descarte",
+      "expectedPromotion": "discard",
+      "riskFactors": [],
+      "requiresAntiTrigger": false,
+      "requiresAntiExample": false,
+      "evidenceStrength": "fraca",
+      "evidenceMinimum": "sem fonte viva e sem gatilho recuperavel",
+      "l1": {
+        "trigger": "",
+        "target": "",
+        "hasAntiTrigger": false
+      },
+      "l2": {
+        "anchor": "",
+        "aliases": [],
+        "hasProblem": false,
+        "hasMechanism": false,
+        "hasVerification": false,
+        "hasPrevention": false,
+        "hasWhenRemember": false,
+        "hasWhenNotRemember": false,
+        "hasSource": false,
+        "hasRgAchability": false,
+        "hasStrongTriggers": false,
+        "hasAntiTriggers": false,
+        "hasExample": false,
+        "hasAntiExample": false,
+        "hasRoutes": false,
+        "knowledgePath": ""
+      },
+      "l3": {
+        "exists": false,
+        "backlinkAnchor": ""
+      },
+      "graphify": {
+        "used": false,
+        "query": "",
+        "graph": "",
+        "confirmedHits": [],
+        "unpromotedHits": [],
+        "promotedFromGraphifyOnly": false
+      },
+      "decision": "Descartar; nao ha memoria operacional, ledger duravel ou ponte reutilizavel."
+    }
+  ]
+}

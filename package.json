@@ -39,7 +39,10 @@
   "scripts": {
     "check": "node scripts/validate-public.js",
     "doctor": "node bin/dex-memoria.js doctor",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "smoke:consciencia": "node scripts/smoke-consciencia-templates.js",
+    "test": "npm run check && node scripts/validate-graduated-memory.js",
+    "test:local": "npm test && npm run smoke:consciencia"
   },
   "keywords": [
     "dex-agent",

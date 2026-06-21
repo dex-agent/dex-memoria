@@ -27,20 +27,27 @@ const requiredFiles = [
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
+  "scripts/validate-graduated-memory.js",
+  "scripts/smoke-consciencia-templates.js",
   "templates/memory-contract.md",
   "templates/memory-resolution-checklist.md",
   "templates/child-usage-prompt.md",
   "templates/l1-lembranca.md",
   "templates/l2-memoria.md",
   "templates/l3-conhecimento-index.md",
+  "templates/l3-conhecimento-file.md",
   "templates/layered-memory-checklist.md",
   "examples/active-operational-memory.md",
   "examples/child-to-child-handoff.md",
   "examples/ledger-only-memory.md",
   "examples/resolved-operational-finding.md",
+  "examples/graduated-memory-simple.md",
+  "examples/graduated-memory-robust-graphify.md",
+  "examples/graduated-memory-test-cases.json",
   "examples/layered-memory/lembranca.md",
   "examples/layered-memory/memoria.md",
   "examples/layered-memory/conhecimento/INDEX.md",
+  "examples/layered-memory/conhecimento/detalhe-sob-demanda.md",
   "examples/layered-memory/conhecimento/documentacao/INDEX.md",
   "examples/layered-memory/conhecimento/modelos/INDEX.md",
   "examples/layered-memory/conhecimento/tutoriais/INDEX.md",
@@ -123,6 +130,12 @@ function main() {
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
   requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents", "projeto-ferramenta"]);
   requireText(errors, "docs/layered-memory-simulations.md", ["PASS", "FAIL UTIL", "global roteia, tema reutiliza, projeto opera"]);
+  requireText(errors, "SKILL.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-gatilho nao e obrigatorio em toda memoria", "Graphify e mapa, nao prova"]);
+  requireText(errors, "SPEC.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Forca da evidencia", "source: graphify"]);
+  requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia"]);
+  requireText(errors, "package.json", ["smoke:consciencia", "test:local", "scripts/smoke-consciencia-templates.js"]);
+  validateConscienciaTemplates(errors);
+  validateGraduatedMemoryBattery(errors);
   requireText(errors, "CHANGELOG.md", ["## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
   requireText(errors, "LICENSE", ["MIT License"]);
@@ -189,14 +202,53 @@ function validateLayeredMemoryExample(errors) {
     }
   }
 
-  const usefulLines = lembranca
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#") && !line.startsWith(">"));
+  requireText(errors, "examples/layered-memory/lembranca.md", ["#dex-memoria/exemplo-camadas", "[[memoria#^include-duplicacao|memoria]]", "^detalhe-sob-demanda"]);
+  requireText(errors, "examples/layered-memory/memoria.md", ["Tags: `#dex-memoria/exemplo-camadas`", "Obsidian: L1", "Obsidian: L3"]);
+  requireText(errors, "examples/layered-memory/conhecimento/detalhe-sob-demanda.md", ["L2 relacionada:", "Obsidian: L2 [[../memoria#^detalhe-sob-demanda|detalhe-sob-demanda]]"]);
+}
 
-  if (usefulLines.length > 30) {
-    errors.push(`examples/layered-memory/lembranca.md should stay short, got ${usefulLines.length} useful lines`);
+function validateGraduatedMemoryBattery(errors) {
+  try {
+    execFileSync(process.execPath, [path.join(root, "scripts", "validate-graduated-memory.js"), "--self-test"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+  } catch (error) {
+    const stdout = error.stdout ? String(error.stdout).trim() : "";
+    const stderr = error.stderr ? String(error.stderr).trim() : "";
+    errors.push(["Graduated memory battery failed:", stdout, stderr].filter(Boolean).join("\n"));
   }
+}
+
+function validateConscienciaTemplates(errors) {
+  requireText(errors, "templates/l1-lembranca.md", [
+    "tagname especifica visivel",
+    "[memoria.md#<ancora-estavel>](memoria.md#<ancora-estavel>)",
+    "[[memoria#^<ancora-estavel>|memoria]]",
+    "^<ancora-estavel>"
+  ]);
+  requireText(errors, "templates/l2-memoria.md", [
+    "Tags: `#<dominio/tag-especifica>`",
+    "Obsidian: L1 [[lembranca#^<ancora-estavel>|<GATILHO-CURTO>]]",
+    "^<ancora-estavel>",
+    "Obsidian: L3"
+  ]);
+  requireText(errors, "templates/l3-conhecimento-index.md", [
+    "conhecimento/INDEX.md",
+    "[[../memoria#^<ancora-estavel>|<ancora-estavel>]]"
+  ]);
+  requireText(errors, "templates/l3-conhecimento-file.md", [
+    "L2 relacionada: [../memoria.md#<ancora-estavel>](../memoria.md#<ancora-estavel>)",
+    "Obsidian: L2 [[../memoria#^<ancora-estavel>|<ancora-estavel>]]",
+    "source: graphify -> confirmado"
+  ]);
+  requireText(errors, "templates/layered-memory-checklist.md", [
+    "tagname especifica visivel",
+    "[[memoria#^ancora|memoria]] ^ancora",
+    "heading com `{#ancora}` e linha de block id `^ancora`",
+    "Obsidian com `#^block-id`"
+  ]);
 }
 
 function readJson(file, errors) {

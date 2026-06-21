@@ -1,11 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.1.6 - 2026-06-19
 
-- Consolida o gate de `L3 robusto` no contrato publico.
-- Documenta `rg de achabilidade`, separacao de fontes e uso de Graphify API
-  apenas como acelerador semantico ate confirmacao direta.
-- Reforca a regra de evitar duplicatas L1/L2 por diferenca de caixa em Windows.
+- Documenta a participacao do `dex-memoria` na rota canonica
+  `memory-write-route-v1`.
+- Define que Finder/`rg` fazem preflight read-only, `dex-memoria`
+  decide/escreve/classifica e `consciencia-memorias` valida antes do
+  fechamento.
+- Reforca que busca e escrita continuam separadas: `obsidian-memory-finder`
+  nunca escreve memoria.
 
 ## 0.1.5 - 2026-05-17
 

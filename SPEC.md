@@ -63,32 +63,33 @@ Camada sob demanda para documentacao, tutoriais, modelos e exemplos longos.
 Deve ter `INDEX.md` e ser acessada a partir de L2 quando o detalhe ultrapassar o
 uso recorrente.
 
-### L3 Robusto
+### L3 Robusto E Memoria Graduada
 
-Um L3 e robusto quando deixa de ser apenas arquivo longo e passa a ser
-recuperavel, verificavel e governado por L1/L2.
+`MEMORIA-GRADUADA-COM-ANTI-GATILHO` classifica uma captura como memoria simples,
+operacional ou robusta. A memoria simples nao deve virar L3 robusto por reflexo:
+ela so sobe de nivel quando ha reuso recorrente, falso pronto, ambiguidade real,
+erro repetido, Graphify confirmado, diagnostico tecnico ou decisao governada.
 
-Use o gate de L3 robusto quando o aprendizado tiver alta chance de reuso,
-resolver falha recorrente, virar referencia de tema ou nascer de Graphify,
-Bibliotecario, pesquisa, diagnostico, bug real ou decisao tecnica repetivel.
+Anti-gatilho nao e obrigatorio em toda memoria. Ele se torna obrigatorio quando
+existe memoria parecida, termo ambiguo, falso pronto, clones/projetos parecidos,
+ferramenta que prova a coisa errada ou rota alternativa mais correta.
 
-Requisitos:
+`DESBLOQUEIO-MANUAL-CONTROLADO` permite continuar trabalho sob ressalva quando o
+usuario pedir explicitamente, com escopo, motivo, validade e proxima validacao.
+Ele nao promove memoria ativa, nao apaga evidencia bloqueante e nao vira regra
+global sem nova validacao.
 
-- L1 tem gatilhos curtos apontando para uma ancora L2 estavel;
-- L2 declara contexto operacional, quando usar, quando nao usar, fonte viva e
-  link direto para o L3;
-- L3 declara objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
-  comandos ou scripts de validacao, referencias e riscos de obsolescencia;
-- fontes separam `confirmado`, `inferido` e `lacuna`;
-- existe `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico;
-- escopo e explicito: `projeto`, `tema`, `global dos agentes`,
-  `Codex principal` ou `Codex notas citaveis`;
-- existe regra de revisao para revalidar, superseder, mover, arquivar ou
-  descartar o conteudo.
+Forca da evidencia:
 
-Graphify API pode acelerar descoberta semantica, mas nao e prova final. Ate a
-fonte citada ser aberta ou cruzada com `rg`, codigo, docs ou testes, o achado
-deve permanecer marcado como `source: graphify`.
+- `fraca`: arquivo existe, imagem existe, `rg` isolado ou `source: graphify`
+  sem fonte aberta;
+- `boa`: fonte aberta, comando executado ou imagem inspecionada;
+- `forte`: teste no processo real, build correto ou resultado repetivel;
+- `bloqueante`: evidencia contraria, alvo errado, fonte nao aberta ou teste que
+  nao cobre o caminho real.
+
+Graphify e mapa, nao prova. Ate a fonte citada ser aberta ou cruzada com `rg`,
+codigo, docs ou testes, o achado deve permanecer marcado como `source: graphify`.
 
 ### Escopos De Caminho
 

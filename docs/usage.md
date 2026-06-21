@@ -146,6 +146,78 @@ Graphify API pode acelerar descoberta semantica, mas o resultado so vira
 confirmado depois de abrir a fonte citada ou cruzar com `rg`, codigo, docs ou
 testes. Antes disso, registre como `source: graphify`.
 
+### Usar Memoria Graduada Com Anti-Gatilho
+
+Nem toda memoria precisa virar L3 robusto. Use a escala
+`MEMORIA-GRADUADA-COM-ANTI-GATILHO` para ajustar o peso ao risco.
+
+Frase-guia:
+
+```text
+Memoria boa nao so lembra quando usar; ela impede usar no caso errado.
+```
+
+- `Nivel 1 - simples`: nota pequena, baixa confusao e baixo risco. Use L1,
+  ancora L2, fonte viva e quando lembrar. Adicione quando nao lembrar so se for
+  obvio.
+- `Nivel 2 - operacional`: procedimento recorrente, skill, validacao, erro
+  plausivel ou decisao reutilizavel. Adicione aliases, problema, mecanismo,
+  verificacao, prevencao, evidencia minima e `rg de achabilidade`.
+- `Nivel 3 - robusta`: erro recorrente, falso pronto, incidente caro, skill
+  nova, contrato de validacao, seguranca, automacao, MCP, Graphify, PPIRTV,
+  Delphi/WebView2/build/encoding ou retrabalho ja observado.
+
+Anti-gatilho nao e obrigatorio em toda memoria. Ele e obrigatorio quando existe
+memoria parecida, termo ambiguo, falso pronto, clones/projetos parecidos,
+aplicacao cedo demais, ferramenta que prova a coisa errada ou rota alternativa
+mais correta.
+
+Anti-exemplo entra quando evita erro real. Nao escreva anti-exemplo decorativo.
+
+Forca da evidencia:
+
+- `fraca`: arquivo existe, PNG existe, status textual, `rg` isolado ou Graphify
+  sem fonte aberta;
+- `boa`: fonte aberta, metadado confirmado, comando executado ou imagem
+  inspecionada;
+- `forte`: teste no processo real, DOM/console/handle corretos, build certo ou
+  resultado repetivel;
+- `bloqueante`: evidencia contraria, alvo errado, payload privado, processo
+  errado, fonte nao aberta ou teste que nao reproduz o caminho real.
+
+Graphify e mapa, nao prova. Registre a query, o graph usado, arquivos
+confirmados, hits descartados e motivo dos hits nao promovidos. Nao promova
+memoria a partir de `source: graphify` sem abrir ou cruzar a fonte.
+
+#### Desbloqueio manual
+
+Se um gate travar indevidamente, o usuario pode pedir desbloqueio explicito.
+Use `DESBLOQUEIO-MANUAL-CONTROLADO` para continuar sem falsificar a evidencia.
+
+Registre:
+
+- qual bloqueio disparou;
+- por que ele parece falso positivo ou aceitavel para continuar;
+- escopo limitado do desbloqueio;
+- quem aceitou o risco;
+- quando expira ou quando deve ser revalidado;
+- proxima validacao minima;
+- evidencia original preservada;
+- confirmacao de que nao vira regra global.
+
+Nao use desbloqueio manual para segredo, token, `.env`, `config.toml`, payload
+privado, permissao ausente, acao destrutiva sem autorizacao, Graphify sem fonte
+aberta como prova final ou evidencia contraria que torne o resultado falso.
+
+Pontes esperadas:
+
+```text
+L1 -> L2: [GATILHO-CURTO] frase curta -> [memoria.md#ancora-l2]
+L2 -> L3: Conhecimento sob demanda: conhecimento/<slug>.md
+L3 -> L2: L2 relacionada: memoria.md#ancora-l2
+Graphify -> fonte: source: graphify -> confirmado em <arquivo>:<linha ou secao>
+```
+
 ### Escolher O Caminho Correto
 
 Escolha o caminho pelo escopo, nao pela vontade de lembrar mais.
@@ -473,13 +545,27 @@ Use `templates/memory-contract.md` quando a captura realmente precisa virar memo
 Use `templates/memory-resolution-checklist.md` quando uma memoria ativa foi corrigida, cumprida, substituida ou arquivada.
 
 Use `templates/l1-lembranca.md`, `templates/l2-memoria.md`,
-`templates/l3-conhecimento-index.md` e `templates/layered-memory-checklist.md`
-quando a captura precisar virar recuperacao em camadas.
+`templates/l3-conhecimento-index.md`, `templates/l3-conhecimento-file.md` e
+`templates/layered-memory-checklist.md` quando a captura precisar virar
+recuperacao em camadas.
 
 Use `examples/active-operational-memory.md`, `examples/ledger-only-memory.md`, `examples/resolved-operational-finding.md` e `examples/child-to-child-handoff.md` como exemplos sanitizados.
 
 Use `examples/layered-memory/` como exemplo sanitizado de gatilho, ancora e
 conhecimento sob demanda.
+
+Use `examples/graduated-memory-test-cases.json` e
+`scripts/validate-graduated-memory.js` como bateria curta e reprodutivel antes
+de commit ou sync do padrao `MEMORIA-GRADUADA-COM-ANTI-GATILHO`.
+
+Use `npm run smoke:consciencia` para gerar uma memoria temporaria no padrao
+forte L1/L2/L3 e executar os validadores reais da `consciencia-memorias`:
+`validate-memory-tags.ps1` e `validate-memory-links.ps1 -RequireObsidian`.
+Esse smoke exige `DEX_MEMORIA_HOME` ou o padrao local
+`%USERPROFILE%/.agents/memories` com os validadores instalados.
+
+Use `npm run test:local` quando quiser rodar a bateria portavel e o smoke local
+da consciencia no mesmo comando.
 
 ## O Que Depende Do Dex Agent
 

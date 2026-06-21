@@ -65,18 +65,6 @@ Taxonomia de temas:
 Regra pratica: nada entra em L2 sem gatilho L1, nada entra em L3 sem ancora L2,
 e nada entra no global se so serve para um projeto.
 
-Para conhecimento reutilizavel com alta chance de reuso, aplique o gate de
-`L3 robusto`: L1 deve ter gatilhos curtos para uma ancora L2 estavel, L2 deve
-explicar contexto operacional, quando usar, quando nao usar, fonte viva e link
-para L3, e L3 deve trazer objetivo, escopo, exemplos, anti-exemplos, modelo
-operacional, validacao, referencias e riscos de obsolescencia.
-
-As fontes precisam separar `confirmado`, `inferido` e `lacuna`. Tambem deve
-existir um `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico.
-Graphify API pode acelerar descoberta semantica, mas hit Graphify continua
-`source: graphify` ate ser confirmado abrindo a fonte citada ou cruzando com
-`rg`, codigo, docs ou testes.
-
 ## O Que E
 
 - Um contrato pratico para decidir quando uma memoria deve entrar, ficar viva, virar ledger, ser arquivada, ser supersedida ou ser descartada.

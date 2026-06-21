@@ -1,3 +1,13 @@
+---
+tags:
+  - dex-memoria/exemplo-camadas
+aliases:
+  - exemplo l1 l2 l3
+status: ativa
+layer: l2
+theme: memoria
+---
+
 # Example - L2 Memoria
 
 > Exemplo sanitizado. Esta camada detalha as ancoras apontadas por L1.
@@ -5,6 +15,14 @@
 Escopo: `tema`.
 
 ## Include E Duplicacao {#include-duplicacao}
+^include-duplicacao
+
+Localizador: `INCLUDE-DUPLICACAO`
+Tags: `#dex-memoria/exemplo-camadas`
+Aliases: `Cannot redeclare function; include duplicado; require duplicado`
+Anti-aliases/confusoes: `autoload; namespace; pacote externo`
+Obsidian: L1 [[lembranca#^include-duplicacao|INCLUDE-DUPLICACAO]]
+Obsidian: L3 [[conhecimento/INDEX|INDEX]]
 
 ### Problema
 
@@ -45,6 +63,13 @@ confirmar qual arquivo deve ser a fonte canonica
 - [conhecimento/INDEX.md](conhecimento/INDEX.md)
 
 ## Whitespace Invisivel {#whitespace-invisivel}
+^whitespace-invisivel
+
+Localizador: `WHITESPACE-INVISIVEL`
+Tags: `#dex-memoria/exemplo-camadas`
+Aliases: `Search string not found; whitespace invisivel; match exato`
+Anti-aliases/confusoes: `parser estruturado; formatacao conhecida`
+Obsidian: L1 [[lembranca#^whitespace-invisivel|WHITESPACE-INVISIVEL]]
 
 ### Problema
 
@@ -75,6 +100,14 @@ comparar bytes ou usar uma substituicao mais estreita
 - arquivo recem-formatado com whitespace conhecido.
 
 ## Detalhe Sob Demanda {#detalhe-sob-demanda}
+^detalhe-sob-demanda
+
+Localizador: `DETALHE-SOB-DEMANDA`
+Tags: `#dex-memoria/exemplo-camadas`
+Aliases: `contexto carregado demais; L3 sob demanda; memoria longa`
+Anti-aliases/confusoes: `gatilho curto suficiente; ledger resolvido`
+Obsidian: L1 [[lembranca#^detalhe-sob-demanda|DETALHE-SOB-DEMANDA]]
+Obsidian: L3 [[conhecimento/detalhe-sob-demanda|detalhe-sob-demanda]]
 
 ### Problema
 
@@ -100,4 +133,4 @@ se a secao L2 virou tutorial, mover o tutorial para conhecimento/
 
 ### Conhecimento Sob Demanda
 
-- [conhecimento/INDEX.md](conhecimento/INDEX.md)
+- [conhecimento/detalhe-sob-demanda.md](conhecimento/detalhe-sob-demanda.md)

@@ -1,4 +1,4 @@
-# L3 - Conhecimento
+# L3 - Conhecimento - INDEX
 
 Use este template como `conhecimento/INDEX.md`.
 
@@ -8,31 +8,33 @@ necessario.
 
 Regra: nao crie L3 sem ancora L2 que explique quando abrir este detalhe.
 
-Para L3 robusto, este indice deve apontar para conteudos que tenham objetivo,
-escopo, exemplos, anti-exemplos, modelo operacional, validacao, referencias,
-riscos de obsolescencia e achabilidade. Fontes vindas de Graphify API ficam
-como `source: graphify` ate confirmacao direta por fonte aberta ou cruzamento
-com `rg`, codigo, docs ou testes.
+## Propriedades Obsidian
 
-## Documentacao
+Use quando o indice for memoria governada.
 
+```yaml
+---
+tags:
+  - <dominio/tag-especifica>
+aliases:
+  - <alias-humano>
+status: ativa
+layer: l3-index
+theme: <tema-ou-global>
+---
+```
+
+## Indice
+
+Cada L3 vivo precisa estar listado aqui e voltar para a L2 que o consome.
+
+- [<arquivo>.md](<arquivo>.md) -> [../memoria.md#<ancora-estavel>](../memoria.md#<ancora-estavel>) | [[../memoria#^<ancora-estavel>|<ancora-estavel>]]
 - [documentacao/INDEX.md](documentacao/INDEX.md)
-
-## Modelos
-
 - [modelos/INDEX.md](modelos/INDEX.md)
-
-## Tutoriais
-
 - [tutoriais/INDEX.md](tutoriais/INDEX.md)
-
-## Ligacoes Superiores
-
-- L1: [../lembranca.md](../lembranca.md)
-- L2: [../memoria.md](../memoria.md)
 
 ## Achabilidade
 
 ```text
-rg -n "<gatilho>|<alias-humano>|<termo-tecnico>" ../lembranca.md ../memoria.md .
+rg -n "<gatilho>|<alias-humano>|<termo-tecnico>|<ancora-estavel>|#<dominio/tag-especifica>" ../lembranca.md ../memoria.md .
 ```
