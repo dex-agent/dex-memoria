@@ -41,16 +41,29 @@ npx dex-memoria@latest memory-home
 npx dex-memoria@latest install
 ```
 
-Por padrao, o comando instala em:
+Por padrao, o comando instala o contrato completo em:
 
 ```text
 ~/.dex-agent/skills/dex-memoria
 ```
 
-No Windows PowerShell:
+E instala o redirecionador global em:
+
+```text
+~/.agents/skills/dex-memoria/SKILL.md
+```
+
+No Windows PowerShell, para atualizar os dois destinos padrao:
 
 ```powershell
 npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
+```
+
+Use `--registry-target` quando o registry global de skills ficar em outro
+caminho:
+
+```powershell
+npx github:dex-agent/dex-memoria install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
 ```
 
 Para ver antes de copiar:
@@ -59,8 +72,9 @@ Para ver antes de copiar:
 npx github:dex-agent/dex-memoria install --dry-run
 ```
 
-O CLI incluido nesta V1 e apenas distribuidor documental. Ele nao cria runtime,
-hooks, inbox, ledger, tokens ou automacao do Dex Agent.
+O CLI incluido nesta V1 e distribuidor documental e instalador do redirecionador
+global de skill. Ele nao cria runtime, hooks, inbox, ledger, tokens ou
+automacao do Dex Agent.
 
 ### Clonar O Repo
 

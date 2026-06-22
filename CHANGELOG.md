@@ -2,6 +2,13 @@
 
 ## 0.1.6 - 2026-06-19
 
+- Publica `SKILL.md` como contrato operacional completo, nao como
+  redirecionador curto.
+- Adiciona `registry/agents-skills/dex-memoria/SKILL.md` como fonte versionada
+  do redirecionador global `.agents/skills`.
+- Atualiza `dex-memoria install` para copiar o contrato completo para
+  `.dex-agent/skills/dex-memoria` e o redirecionador para
+  `.agents/skills/dex-memoria/SKILL.md`.
 - Documenta a participacao do `dex-memoria` na rota canonica
   `memory-write-route-v1`.
 - Define que Finder/`rg` fazem preflight read-only, `dex-memoria`

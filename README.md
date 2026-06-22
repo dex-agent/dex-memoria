@@ -1,6 +1,6 @@
 # Dex Memoria
 
-Versao atual: `0.1.5`
+Versao atual: `0.1.6`
 
 `dex-memoria` e um pacote documental para orientar o ciclo de vida de memoria operacional em projetos Dex Agent.
 
@@ -77,7 +77,8 @@ e nada entra no global se so serve para um projeto.
 - Nao substitui `/inbox`, `/memory`, recall, ledger ou proposals do bot.
 - Nao contem `.agents/` reais, inbox, ledger, screenshots, logs, tokens ou secrets.
 - Nao promete scripts V2 como capacidade existente.
-- Nao altera skills globais por conta propria.
+- Instala o redirecionador global `dex-memoria` em `.agents/skills` quando o
+  comando `install` for executado.
 
 ## Estrutura
 
@@ -88,6 +89,8 @@ e nada entra no global se so serve para um projeto.
 - `docs/memory-home.md`: raiz canonica `DEX_MEMORIA_HOME` e bloqueios de
   caminho.
 - `docs/integration-dex-agent.md`: como integrar este pacote ao Dex Agent.
+- `registry/agents-skills/dex-memoria/SKILL.md`: fonte versionada do
+  redirecionador global instalado em `.agents/skills`.
 - `templates/`: modelos copiaveis para contrato, resolucao e uso por projeto filho.
 - `examples/`: exemplos sanitizados.
 - `templates/l1-lembranca.md`, `templates/l2-memoria.md` e
@@ -106,10 +109,21 @@ npx github:dex-agent/dex-memoria memory-home
 npx github:dex-agent/dex-memoria install
 ```
 
-No Windows, para atualizar a skill local padrao do Dex Agent:
+Por padrao, `install` copia:
+
+- o contrato completo para `~/.dex-agent/skills/dex-memoria`;
+- o redirecionador global para `~/.agents/skills/dex-memoria/SKILL.md`.
+
+No Windows, para atualizar os dois destinos padrao:
 
 ```powershell
 npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
+```
+
+Para instalar o redirecionador em outro registry de skills:
+
+```powershell
+npx github:dex-agent/dex-memoria install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
 ```
 
 Depois de publicar no npm registry, use `npx dex-memoria@latest ...`.
@@ -235,7 +249,7 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo publica a versao documental `0.1.5` com a arquitetura L1/L2/L3 de
+Este repo publica a versao documental `0.1.6` com a arquitetura L1/L2/L3 de
 recuperacao em camadas, a raiz canonica `DEX_MEMORIA_HOME` e a taxonomia de
 temas reutilizaveis. O proximo passo seguro e integrar referencias a partir do
 `dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2
@@ -260,6 +274,6 @@ npm run doctor
 npm run pack:check
 ```
 
-O CI executa as mesmas validacoes principais para garantir que a versao `0.1.5`,
+O CI executa as mesmas validacoes principais para garantir que a versao `0.1.6`,
 os metadados do pacote e a relacao documental com `dex-agent` continuem
 alinhados sem incluir segredos ou runtime.

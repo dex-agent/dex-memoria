@@ -50,12 +50,16 @@ Current public package line: `0.1.x`.
 Canonical development source:
 
 - this repository, `C:\CodexProjetos\dex-memoria`, is the development source
-  for the public `dex-memoria` contract package;
+  for the public `dex-memoria` contract package, including the complete
+  operational `SKILL.md` installed from GitHub/npm;
 - `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md` is a short
   global redirector/registry bridge, not a full canonical copy of the contract;
-- when no workspace-local `dex-memoria` exists, the operational fallback is
-  `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`; use this
-  repository's `SKILL.md` only if local and `.dex-agent` fallbacks fail;
+  its versioned source in this repo is
+  `registry/agents-skills/dex-memoria/SKILL.md`;
+- when no workspace-local `dex-memoria` exists, the redirector should load this
+  repository's complete `SKILL.md` first; if this repository is not available on
+  the machine, use the installed operational fallback
+  `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`;
 - local copies in child repos are project-local until a backup, diff and
   explicit sync decision exists;
 - incompatible local copies should be marked `conflict-review`, not overwritten.
@@ -71,6 +75,8 @@ Primary public sources:
 - `docs/memory-home.md` - `DEX_MEMORIA_HOME` and path blocking rules.
 - `docs/integration-dex-agent.md` - integration notes for Dex Agent.
 - `docs/layered-memory-simulations.md` - L1/L2/L3 recovery simulations.
+- `registry/agents-skills/dex-memoria/SKILL.md` - source of the global
+  `.agents/skills` redirector installed by the CLI.
 - `contracts/` - supporting operational contracts.
 - `templates/` - reusable sanitized templates.
 - `examples/` - sanitized examples only.
@@ -268,6 +274,7 @@ When changing package contents or public file lists, inspect:
 - `package.json`
 - `scripts/validate-public.js`
 - `npm run pack:check`
+- `registry/agents-skills/dex-memoria/SKILL.md`
 
 Do not stage ignored local files or generated artifacts unless the user
 explicitly asks and the public safety rules still pass.

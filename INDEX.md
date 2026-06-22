@@ -24,6 +24,8 @@ depender do historico da conversa.
 - `docs/memory-home.md` - raiz canonica `DEX_MEMORIA_HOME`.
 - `docs/integration-dex-agent.md` - integracao com Dex Agent.
 - `docs/layered-memory-simulations.md` - simulacoes L1/L2/L3.
+- `registry/agents-skills/dex-memoria/SKILL.md` - fonte versionada do
+  redirecionador global instalado em `.agents/skills`.
 - `contracts/` - contratos operacionais complementares.
 - `templates/` - modelos copiaveis e sanitizados.
 - `examples/` - exemplos sanitizados; nunca estado real.
@@ -33,10 +35,13 @@ depender do historico da conversa.
 - Fonte canonica de desenvolvimento: `C:\CodexProjetos\dex-memoria`.
 - Redirecionador no registry global:
   `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md`.
+  A fonte versionada dele fica em
+  `registry/agents-skills/dex-memoria/SKILL.md`.
   Ele deve ceder para copia local do workspace, depois usar
+  `C:\CodexProjetos\dex-memoria\SKILL.md` como fonte completa de
+  desenvolvimento/publicacao, e usar
   `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md` como fallback
-  operacional, e usar `C:\CodexProjetos\dex-memoria\SKILL.md` somente se os
-  caminhos anteriores falharem.
+  operacional instalado somente se o repo de desenvolvimento nao existir.
 - Copias em repos filhos exigem inventario, diff, backup e decisao explicita
   antes de sincronizar.
 - Divergencia sem criterio claro deve ser marcada como `conflict-review`.
@@ -47,6 +52,8 @@ depender do historico da conversa.
 
 - `package.json` - metadados, binario e scripts npm.
 - `bin/dex-memoria.js` - CLI documental da V1.
+- `registry/agents-skills/dex-memoria/SKILL.md` - conteudo que o `install`
+  copia para o registry global `.agents/skills`.
 - `scripts/validate-public.js` - validacao da estrutura publica.
 
 Checks preferidos:

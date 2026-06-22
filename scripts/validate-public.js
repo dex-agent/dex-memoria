@@ -6,7 +6,7 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 const root = path.resolve(__dirname, "..");
-const expectedVersion = "0.1.5";
+const expectedVersion = "0.1.6";
 
 const requiredFiles = [
   "LICENSE",
@@ -21,6 +21,7 @@ const requiredFiles = [
   "VERSION",
   "package.json",
   "bin/dex-memoria.js",
+  "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
   "docs/usage.md",
   "docs/runtime-boundary.md",
@@ -67,6 +68,7 @@ const requiredPackageFiles = [
   "contracts/",
   "docs/",
   "examples/",
+  "registry/",
   "scripts/",
   "templates/",
   "CHANGELOG.md",
@@ -124,19 +126,40 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.5`", "dex-agent", "nao carrega o runtime", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.6`", "dex-agent", "nao carrega o runtime", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
   requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica", "Taxonomia De Temas"]);
   requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
   requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents", "projeto-ferramenta"]);
   requireText(errors, "docs/layered-memory-simulations.md", ["PASS", "FAIL UTIL", "global roteia, tema reutiliza, projeto opera"]);
-  requireText(errors, "SKILL.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-gatilho nao e obrigatorio em toda memoria", "Graphify e mapa, nao prova"]);
+  requireText(errors, "SKILL.md", [
+    "Fonte Publicavel Completa",
+    "Regra Central",
+    "MEMORIA-GRADUADA-COM-ANTI-GATILHO",
+    "Memoria Graduada Com Anti-Gatilho",
+    "DESBLOQUEIO-MANUAL-CONTROLADO",
+    "Anti-gatilho nao e obrigatorio em toda memoria",
+    "Checklist De L3 Robusto",
+    "Precedencia Local E Fallbacks",
+    "Fronteira De Escrita",
+    "Fonte Completa",
+    "Graphify e mapa, nao prova"
+  ]);
   requireText(errors, "SPEC.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Forca da evidencia", "source: graphify"]);
   requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia"]);
   requireText(errors, "package.json", ["smoke:consciencia", "test:local", "scripts/smoke-consciencia-templates.js"]);
+  requireText(errors, "bin/dex-memoria.js", ["REDIRECTOR_ENTRY", "defaultRegistryTarget", "--registry-target", "redirecionador global"]);
+  requireText(errors, "registry/agents-skills/dex-memoria/SKILL.md", [
+    "Redirecionador Global",
+    "<WORKSPACE>\\skills\\dex-memoria\\SKILL.md",
+    "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
+    "C:\\Users\\Administrator\\.dex-agent\\skills\\dex-memoria\\SKILL.md",
+    "C:\\Users\\Administrator\\.agents\\skills\\dex-memoria\\SKILL.md",
+    "Se nenhum destino completo existir, declare bloqueio explicito"
+  ]);
   validateConscienciaTemplates(errors);
   validateGraduatedMemoryBattery(errors);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);
