@@ -34,13 +34,13 @@ depender do historico da conversa.
 
 - Fonte canonica de desenvolvimento: `C:\CodexProjetos\dex-memoria`.
 - Redirecionador no registry global:
-  `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md`.
+  `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md`.
   A fonte versionada dele fica em
   `registry/agents-skills/dex-memoria/SKILL.md`.
   Ele deve ceder para copia local do workspace, depois usar
   `C:\CodexProjetos\dex-memoria\SKILL.md` como fonte completa de
   desenvolvimento/publicacao, e usar
-  `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md` como fallback
+  `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md` como fallback
   operacional instalado somente se o repo de desenvolvimento nao existir.
 - Copias em repos filhos exigem inventario, diff, backup e decisao explicita
   antes de sincronizar.

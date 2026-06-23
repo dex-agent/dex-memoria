@@ -13,14 +13,14 @@ Before non-trivial diagnosis, implementation, review, automation, or local file
 operations, read the global principles source:
 
 ```text
-C:\Users\Administrator\.agents\memories\principles\PRINCIPLES.md
+$env:USERPROFILE\.agents\memories\principles\PRINCIPLES.md
 ```
 
 When the principles become checklist, validation, operating rules, or a done
 gate, also read:
 
 ```text
-C:\Users\Administrator\.agents\memories\principles\operational-contract.json
+$env:USERPROFILE\.agents\memories\principles\operational-contract.json
 ```
 
 Authority order:
@@ -52,14 +52,14 @@ Canonical development source:
 - this repository, `C:\CodexProjetos\dex-memoria`, is the development source
   for the public `dex-memoria` contract package, including the complete
   operational `SKILL.md` installed from GitHub/npm;
-- `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md` is a short
+- `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md` is a short
   global redirector/registry bridge, not a full canonical copy of the contract;
   its versioned source in this repo is
   `registry/agents-skills/dex-memoria/SKILL.md`;
 - when no workspace-local `dex-memoria` exists, the redirector should load this
   repository's complete `SKILL.md` first; if this repository is not available on
   the machine, use the installed operational fallback
-  `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`;
+  `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`;
 - local copies in child repos are project-local until a backup, diff and
   explicit sync decision exists;
 - incompatible local copies should be marked `conflict-review`, not overwritten.
@@ -183,7 +183,7 @@ fallback = $HOME/.agents/memories
 On this machine the observed fallback is:
 
 ```text
-C:\Users\Administrator\.agents\memories
+$env:USERPROFILE\.agents\memories
 ```
 
 Scope routing:
@@ -323,9 +323,9 @@ Update:
 <WORKSPACE>\.agents\PLAN-TASKS\ACTIVE.md
 ```
 
-Existing public files such as `SPEC.md`, `SPEC-PLAN.md`, `SPRINTS.md`, and
-`TASKS.md` are package/product sources. They do not replace the local Trilho
-convention for new executable decisions.
+`SPEC.md` is the current public contract source. Historical planning files
+archived under `archive/` are audit trail, not active sprint or backlog. They do
+not replace the local Trilho convention for new executable decisions.
 
 ## Known Current Local State
 

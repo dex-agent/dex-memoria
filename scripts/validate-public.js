@@ -153,8 +153,8 @@ function main() {
     "Redirecionador Global",
     "<WORKSPACE>\\skills\\dex-memoria\\SKILL.md",
     "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
-    "C:\\Users\\Administrator\\.dex-agent\\skills\\dex-memoria\\SKILL.md",
-    "C:\\Users\\Administrator\\.agents\\skills\\dex-memoria\\SKILL.md",
+    "$env:USERPROFILE\\.dex-agent\\skills\\dex-memoria\\SKILL.md",
+    "$env:USERPROFILE\\.agents\\skills\\dex-memoria\\SKILL.md",
     "Se nenhum destino completo existir, declare bloqueio explicito"
   ]);
   validateConscienciaTemplates(errors);
@@ -164,6 +164,7 @@ function main() {
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);
   validateNoForbiddenTrackedFiles(errors);
+  validateNoHardcodedWindowsUserProfilePath(errors);
 
   if (errors.length > 0) {
     console.error(errors.join("\n"));
@@ -171,6 +172,61 @@ function main() {
   }
 
   console.log("dex-memoria public structure ok");
+}
+
+function validateNoHardcodedWindowsUserProfilePath(errors) {
+  let trackedFiles;
+  try {
+    trackedFiles = execFileSync("git", ["ls-files"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    })
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  } catch (error) {
+    return;
+  }
+
+  const offenders = [];
+
+  for (const file of trackedFiles) {
+    const fullPath = path.join(root, file);
+    let text;
+    try {
+      text = fs.readFileSync(fullPath, "utf8");
+    } catch (error) {
+      continue;
+    }
+
+    const drive = "C:";
+    const userSegment = "Users";
+    const tail = String.raw`[^\s` + "`" + String.raw`'"<>)]*`;
+    const patterns = [
+      new RegExp(escapeRegex(drive) + String.raw`\\` + userSegment + String.raw`\\` + tail, "g"),
+      new RegExp(escapeRegex(drive) + String.raw`\\\\` + userSegment + String.raw`\\\\` + tail, "g"),
+      new RegExp(escapeRegex(drive) + "/" + userSegment + "/" + tail, "g")
+    ];
+    for (const pattern of patterns) {
+      for (const match of text.matchAll(pattern)) {
+        offenders.push(`${file}: ${match[0]}`);
+      }
+    }
+  }
+
+  if (offenders.length > 0) {
+    errors.push(
+      [
+        "Hardcoded Windows user profile paths are forbidden; use $env:USERPROFILE or os.homedir():",
+        ...offenders.map((offender) => `- ${offender}`)
+      ].join("\n")
+    );
+  }
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function validateNoForbiddenTrackedFiles(errors) {

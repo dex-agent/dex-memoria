@@ -30,7 +30,7 @@ Ele deve ser o arquivo publicado pelo repositorio de desenvolvimento
 O redirecionador do registry global fica em:
 
 ```text
-C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md
+$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md
 ```
 
 A fonte versionada desse redirecionador fica neste repositorio:
@@ -44,7 +44,7 @@ Esse redirecionador deve procurar, nesta ordem:
 1. uma `dex-memoria` local no workspace atual;
 2. esta fonte completa do repositorio de desenvolvimento;
 3. a copia operacional instalada em
-   `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`.
+   `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`.
 
 A copia `.dex-agent` e fallback operacional instalado e deve ser sincronizada a
 partir desta fonte completa. O redirecionador `.agents` nao deve substituir este
@@ -157,6 +157,25 @@ Ao criar ou revisar memoria em camadas, valide por busca:
 - L1: o gatilho curto aparece e aponta para a ancora L2;
 - L2: a ancora existe e aponta para a fonte L3 quando houver;
 - L3: a fonte longa existe apenas sob demanda, sem substituir L1/L2.
+
+Gate anti L2 solta e backup vivo:
+
+- conteudo vindo de `parking_lot`, flow PPIRTV, racional/veredito automatico,
+  achado de reuniao ou classificador automatico nao entra direto em L2 vivo;
+  ele precisa virar L1 + L2 completos ou ficar estacionado com `quando`;
+- L2 completo exige heading com `{#ancora}`, linha `^block-id`,
+  `Localizador`, `Tags`, `Aliases`, `Obsidian: L1`, fonte viva ou origem
+  verificavel, quando usar e quando nao usar quando houver risco de falso
+  gatilho;
+- L1 vivo exige bullet recuperavel, tag especifica, link para a ancora L2 e
+  block id estavel; linha solta sem `- ` nao conta como gatilho;
+- tags devem estar normalizadas antes da escrita: lowercase, kebab-case,
+  nested quando fizer sentido, sem acentos, underscore ou casing misto;
+- `.backup-*`, `.bak`, `.truncated`, logs e saidas longas nao ficam em
+  `global/` nem `temas/`; backup governado fica fora do vault vivo em
+  `$env:USERPROFILE\.agents\memories-backups`;
+- se qualquer item acima falhar, o estado correto e `nao pronto`, mesmo que o
+  texto pareca util.
 
 Regra de caminho:
 
@@ -394,9 +413,9 @@ Regra de conflito:
 
 - a `dex-memoria` local do projeto vence a global;
 - `C:\CodexProjetos\dex-memoria\SKILL.md` e a fonte completa publicavel;
-- `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md` e fallback
+- `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md` e fallback
   operacional instalado quando o repo de desenvolvimento nao existir;
-- `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md` e apenas
+- `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md` e apenas
   redirecionador do registry global;
 - para proximo passo operacional, `HANDOFF.md` vence `.agents/MEMORY.ndjson`;
 - `.agents/MEMORY.ndjson` e ledger, nao fila viva.

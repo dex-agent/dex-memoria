@@ -12,10 +12,10 @@ entre projetos.
 1. Se `$env:DEX_MEMORIA_HOME` existir, use esse caminho.
 2. Se nao existir, use `$HOME/.agents/memories`.
 
-No Windows, o fallback normalmente resolve para:
+No Windows, escreva o fallback como variavel de perfil, nao como caminho fixo:
 
 ```text
-C:\Users\<usuario>\.agents\memories
+$env:USERPROFILE\.agents\memories
 ```
 
 ## Mapeamento

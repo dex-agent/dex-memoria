@@ -1,6 +1,6 @@
 ---
 name: dex-memoria
-description: Redirecionador global para dex-memoria. Use a skill local do workspace primeiro; se nao existir, carregue a versao completa do repositorio de desenvolvimento C:\CodexProjetos\dex-memoria\SKILL.md; se o repo nao existir, carregue C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md.
+description: Redirecionador global para dex-memoria. Use a skill local do workspace primeiro; se nao existir, carregue a versao completa do repositorio de desenvolvimento C:\CodexProjetos\dex-memoria\SKILL.md; se o repo nao existir, carregue $env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md.
 ---
 
 # Dex Memoria - Redirecionador Global
@@ -17,7 +17,7 @@ Antes de aplicar esta ponte global como contrato principal, procure nesta ordem:
 4. outro caminho local indicado por `AGENTS.md`, `INDEX.md`,
    `.agents\ACTIVE.md` ou `.agents\HANDOFF.md`
 5. `C:\CodexProjetos\dex-memoria\SKILL.md`
-6. `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`
+6. `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`
 
 Se existir uma versao local no workspace, use a versao local e pare de aplicar
 esta ponte global como contrato principal.
@@ -35,12 +35,12 @@ Declare:
 Estou usando o redirecionador global dex-memoria para carregar C:\CodexProjetos\dex-memoria\SKILL.md.
 ```
 
-Use `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md` somente se
+Use `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md` somente se
 a copia local e o repositorio de desenvolvimento nao existirem ou nao puderem
 ser lidos. Nesse caso, declare a degradacao:
 
 ```text
-Repositorio de desenvolvimento dex-memoria indisponivel; usando C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md como fallback instalado.
+Repositorio de desenvolvimento dex-memoria indisponivel; usando $env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md como fallback instalado.
 ```
 
 Se nenhum destino completo existir, declare bloqueio explicito. Nao trate este
@@ -51,10 +51,10 @@ redirecionador curto como contrato completo.
 - `C:\CodexProjetos\dex-memoria\SKILL.md`: fonte completa de
   desenvolvimento/publicacao do pacote e primeiro fallback apos a copia local
   do workspace.
-- `C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md`: fallback
+- `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`: fallback
   operacional instalado quando o workspace nao tem `dex-memoria` local e o repo
   de desenvolvimento nao esta disponivel.
-- `C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md`: este
+- `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md`: este
   redirecionador curto do registry global.
 
 ## Quando Usar
@@ -159,14 +159,14 @@ Depois sincronize a copia instalada do registry global, sempre com backup, diff
 e validacao:
 
 ```text
-C:\Users\Administrator\.agents\skills\dex-memoria\SKILL.md
+$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md
 ```
 
 Atualize o contrato completo separadamente em:
 
 ```text
 C:\CodexProjetos\dex-memoria\SKILL.md
-C:\Users\Administrator\.dex-agent\skills\dex-memoria\SKILL.md
+$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md
 ```
 
 Ignore arquivos relativos ao lado deste redirecionador, exceto quando a tarefa
