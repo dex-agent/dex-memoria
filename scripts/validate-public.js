@@ -28,6 +28,11 @@ const requiredFiles = [
   "bin/create-journal.js",
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
+  "contracts/layouts/governed-theme-v2.json",
+  "contracts/schemas/dex.memory.layout.v1.schema.json",
+  "contracts/schemas/dex.memory.create.theme-v2.request.v0.schema.json",
+  "contracts/schemas/dex.memory.create.theme-v2.plan.v0.schema.json",
+  "contracts/schemas/dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
   "contracts/schemas/dex.memory.create.request.v0.schema.json",
   "contracts/schemas/dex.memory.create.recover.v0.schema.json",
   "contracts/schemas/dex.memory.create.plan.v0.schema.json",
@@ -39,6 +44,7 @@ const requiredFiles = [
   "docs/usage.md",
   "docs/runtime-boundary.md",
   "docs/cli-create-fixture-v0.md",
+  "docs/cli-create-theme-v2-plan-v0.md",
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
@@ -167,6 +173,24 @@ function main() {
     "FP_AFTER_L1_CHECKPOINT_BEFORE_L2",
     "1 MiB",
     "Riscos nao cobertos"
+  ]);
+  requireText(errors, "docs/cli-create-theme-v2-plan-v0.md", [
+    "governed-theme-v2",
+    "approved_not_active",
+    "L1 -> L2 OU L1 -> L3",
+    "create plan",
+    "fixture-only",
+    "serialization_order_only",
+    "não implementa apply, journal ou recover V2",
+    "não aceita o vault vivo"
+  ]);
+  requireText(errors, "contracts/layouts/governed-theme-v2.json", [
+    '"contract": "dex.memory.layout.v1"',
+    '"profile": "governed-theme-v2"',
+    '"status": "approved_not_active"',
+    '"active_write_profile": "legacy-v1"',
+    '"L1->L2"',
+    '"L1->L3"'
   ]);
   requireText(errors, "CHANGELOG.md", ["## Unreleased", "CLI JSON fixture-only"]);
   requireText(errors, "CONTRIBUTING.md", ["version `0.1.6`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);

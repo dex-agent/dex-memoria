@@ -194,15 +194,23 @@ test("fixture control and internal checkpoint schemas match persisted objects", 
   assert.equal(manifest.properties.operation.const, "create");
   assert.equal(manifest.properties.disposable_runs_only.const, true);
 
-  for (const control of [marker, manifest]) {
-    assert.equal(control.properties.targets.minItems, 2);
-    assert.equal(control.properties.targets.maxItems, 2);
-    assert.equal(control.properties.targets.items, false);
-    assert.deepEqual(control.properties.targets.prefixItems.map((item) => item.const), [
+  const legacyMarkerTargets = marker.properties.targets.oneOf[0];
+  const themeV2MarkerTargets = marker.properties.targets.oneOf[1];
+  for (const control of [legacyMarkerTargets, manifest.properties.targets]) {
+    assert.equal(control.minItems, 2);
+    assert.equal(control.maxItems, 2);
+    assert.equal(control.items, false);
+    assert.deepEqual(control.prefixItems.map((item) => item.const), [
       "work/LEMBRANCA.md",
       "work/MEMORIA.md"
     ]);
   }
+  assert.equal(themeV2MarkerTargets.minItems, 1);
+  assert.equal(themeV2MarkerTargets.maxItems, 1);
+  assert.deepEqual(themeV2MarkerTargets.items, {
+    type: "string",
+    pattern: "^work/[a-z0-9]+(?:-[a-z0-9]+)*$"
+  });
 
   assert.equal(checkpoint.oneOf.length, 4);
   const byState = Object.fromEntries(checkpoint.oneOf.map((variant) => [variant.properties.state.const, variant]));
@@ -307,9 +315,14 @@ test("shared public validator rejects incompatible mutations inside every contra
       mutate: (schema) => { schema.properties.code.enum[0] = "UNKNOWN"; }
     },
     {
-      name: "disposable marker target",
+      name: "disposable marker legacy target",
       file: "dex.memory.disposable-run.v1.schema.json",
-      mutate: (schema) => { schema.properties.targets.prefixItems[0].const = "work/OTHER.md"; }
+      mutate: (schema) => { schema.properties.targets.oneOf[0].prefixItems[0].const = "work/OTHER.md"; }
+    },
+    {
+      name: "disposable marker V2 theme root",
+      file: "dex.memory.disposable-run.v1.schema.json",
+      mutate: (schema) => { schema.properties.targets.oneOf[1].items.pattern = ".*"; }
     },
     {
       name: "fixture manifest closed object",

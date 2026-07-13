@@ -1,0 +1,8 @@
+{
+  "contract": "dex.memory.fixture.governed-theme-v2-plan.v0",
+  "operation": "create",
+  "profile": "governed-theme-v2",
+  "disposable_runs_only": true,
+  "theme": "tema-exemplo",
+  "target_layer": "L2"
+}

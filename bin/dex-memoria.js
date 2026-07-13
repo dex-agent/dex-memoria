@@ -4,7 +4,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { planCreate } = require("./create-plan");
+const { planCreate, planThemeV2 } = require("./create-plan");
 const { ApplyError, applyCreate } = require("./create-apply");
 const { RecoverError, recoverCreate } = require("./create-recover");
 
@@ -90,7 +90,7 @@ async function main() {
 
 async function createApply(args) {
   const fixtureRoot = parseFixtureArg(args, "apply");
-  const { targetPaths } = validateFixture(fixtureRoot);
+  const fixture = validateFixture(fixtureRoot);
   const input = await readStdin();
   let plan;
   try {
@@ -98,7 +98,10 @@ async function createApply(args) {
   } catch (error) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
-  const receipt = await applyCreate(plan, fixtureRoot, targetPaths, {
+  if (fixture.profile === "governed-theme-v2") {
+    invalidSchema("governed-theme-v2 apply is not supported");
+  }
+  const receipt = await applyCreate(plan, fixtureRoot, fixture.targetPaths, {
     name: process.env.DEX_MEMORIA_INTERNAL_TEST_FAILPOINT,
     send: typeof process.send === "function" ? process.send.bind(process) : undefined
   });
@@ -107,7 +110,7 @@ async function createApply(args) {
 
 async function createRecover(args) {
   const fixtureRoot = parseFixtureArg(args, "recover");
-  const { targetPaths } = validateFixture(fixtureRoot);
+  const fixture = validateFixture(fixtureRoot);
   const input = await readStdin();
   let request;
   try {
@@ -115,13 +118,16 @@ async function createRecover(args) {
   } catch (error) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
-  const receipt = await recoverCreate(request, fixtureRoot, targetPaths);
+  if (fixture.profile === "governed-theme-v2") {
+    invalidSchema("governed-theme-v2 recover is not supported");
+  }
+  const receipt = await recoverCreate(request, fixtureRoot, fixture.targetPaths);
   process.stdout.write(`${JSON.stringify(receipt)}\n`);
 }
 
 async function createPlan(args) {
   const fixtureRoot = parseFixtureArg(args, "plan");
-  const { marker, targetPaths } = validateFixture(fixtureRoot);
+  const fixture = validateFixture(fixtureRoot);
   const input = await readStdin();
   let request;
   try {
@@ -129,11 +135,26 @@ async function createPlan(args) {
   } catch (error) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
-  validateCreateRequest(request);
-  const targets = marker.targets;
+  validateCreateRequest(request, fixture);
+  if (fixture.profile === "governed-theme-v2") {
+    const themeState = inspectThemeV2(fixture, request);
+    const targetPaths = resolveThemeV2Targets(fixture, request);
+    const snapshot = {
+      l1: snapshotTarget(targetPaths[0]),
+      index: snapshotTarget(targetPaths[1]),
+      destination: snapshotTarget(targetPaths[2]),
+      index_entries: themeState.filter((entry) => entry.layer === request.target_layer)
+    };
+    const plan = planThemeV2(request, snapshot, targetPaths.map((targetPath) => relativeFixturePath(fixtureRoot, targetPath)));
+    const output = JSON.stringify(plan);
+    if (Buffer.byteLength(output, "utf8") > MAX_STDIN_BYTES) invalidSchema("plan exceeds 1 MiB");
+    process.stdout.write(`${output}\n`);
+    return;
+  }
+  const targets = fixture.marker.targets;
   const snapshot = {
-    l1: snapshotTarget(targetPaths[0]),
-    l2: snapshotTarget(targetPaths[1])
+    l1: snapshotTarget(fixture.targetPaths[0]),
+    l2: snapshotTarget(fixture.targetPaths[1])
   };
   process.stdout.write(`${JSON.stringify(planCreate(request, snapshot, targets))}\n`);
 }
@@ -165,21 +186,20 @@ function validateFixture(fixtureRoot) {
     const marker = readFixtureJson(markerPath, "marker");
     const manifest = readFixtureJson(manifestPath, "manifest");
     requireExactFixtureKeys(marker, ["contract", "operation", "disposable", "targets"]);
+    if (marker.contract !== "dex.memory.disposable-run.v1" || marker.operation !== "create" || marker.disposable !== true) {
+      safetyBlocked("fixture marker or manifest contract is invalid");
+    }
+    if (manifest.contract === "dex.memory.fixture.governed-theme-v2-plan.v0") {
+      return validateThemeV2Fixture(fixtureRoot, realRoot, marker, manifest);
+    }
     requireExactFixtureKeys(manifest, ["contract", "operation", "disposable_runs_only", "targets"]);
-    requireExactFixtureArray(marker.targets);
-    requireExactFixtureArray(manifest.targets);
-    if (
-      marker.contract !== "dex.memory.disposable-run.v1" ||
-      marker.operation !== "create" ||
-      marker.disposable !== true ||
-      manifest.contract !== "dex.memory.fixture.legacy-create-l1-l2.v1" ||
-      manifest.operation !== "create" ||
-      manifest.disposable_runs_only !== true
-    ) {
+    requireExactFixtureArray(marker.targets, FIXTURE_TARGETS);
+    requireExactFixtureArray(manifest.targets, FIXTURE_TARGETS);
+    if (manifest.contract !== "dex.memory.fixture.legacy-create-l1-l2.v1" || manifest.operation !== "create" || manifest.disposable_runs_only !== true) {
       safetyBlocked("fixture marker or manifest contract is invalid");
     }
     const targetPaths = FIXTURE_TARGETS.map((relativePath) => validateTargetPath(fixtureRoot, realRoot, relativePath));
-    return { marker, manifest, targetPaths };
+    return { profile: "legacy-v1", fixtureRoot, realRoot, marker, manifest, targetPaths };
   } catch (error) {
     if (error instanceof CliError) {
       throw error;
@@ -196,8 +216,43 @@ function readFixtureJson(filePath, label) {
   }
 }
 
-function requireExactFixtureArray(value) {
-  if (!Array.isArray(value) || value.length !== FIXTURE_TARGETS.length || value.some((entry, index) => entry !== FIXTURE_TARGETS[index])) {
+function validateThemeV2Fixture(fixtureRoot, realRoot, marker, manifest) {
+  requireExactFixtureKeys(manifest, ["contract", "disposable_runs_only", "operation", "profile", "target_layer", "theme"]);
+  if (
+    manifest.operation !== "create" ||
+    manifest.profile !== "governed-theme-v2" ||
+    manifest.disposable_runs_only !== true ||
+    !isKebabCase(manifest.theme, 63) ||
+    isReservedName(manifest.theme) ||
+    !["L2", "L3"].includes(manifest.target_layer)
+  ) {
+    safetyBlocked("fixture marker or manifest contract is invalid");
+  }
+  const themeRelativeRoot = `work/${manifest.theme}`;
+  requireExactFixtureArray(marker.targets, [themeRelativeRoot]);
+  const themeRoot = validateTargetPath(fixtureRoot, realRoot, themeRelativeRoot);
+  requirePlainDirectory(themeRoot);
+  for (const relativePath of [
+    `${themeRelativeRoot}/lembranca.md`,
+    `${themeRelativeRoot}/memorias/INDEX.md`,
+    `${themeRelativeRoot}/conhecimento/INDEX.md`
+  ]) {
+    requirePlainFile(validateTargetPath(fixtureRoot, realRoot, relativePath));
+  }
+  return {
+    profile: "governed-theme-v2",
+    fixtureRoot,
+    realRoot,
+    marker,
+    manifest,
+    themeRoot,
+    themeRelativeRoot,
+    targetPaths: []
+  };
+}
+
+function requireExactFixtureArray(value, expected) {
+  if (!Array.isArray(value) || value.length !== expected.length || value.some((entry, index) => entry !== expected[index])) {
     safetyBlocked("fixture targets are invalid");
   }
 }
@@ -263,7 +318,11 @@ function safetyBlocked(message) {
   throw new CliError(3, "SAFETY_BLOCKED", message);
 }
 
-function validateCreateRequest(request) {
+function validateCreateRequest(request, fixture) {
+  if (fixture.profile === "governed-theme-v2") {
+    validateThemeV2Request(request, fixture.manifest);
+    return;
+  }
   requireExactKeys(request, ["candidate", "contract", "idempotency_key", "operation"], "request");
   if (request.contract !== "dex.memory.create.request.v0" || request.operation !== "create") {
     invalidSchema("unsupported request contract or operation");
@@ -277,12 +336,135 @@ function validateCreateRequest(request) {
   requireString(request.candidate.body, "candidate.body", 65536);
 }
 
+function validateThemeV2Request(request, manifest) {
+  if (!request || typeof request !== "object" || Array.isArray(request)) invalidSchema("request must be an object");
+  const targetLayer = request.target_layer;
+  const expectedKeys = [
+    "body", "contract", "created_at", "idempotency_key", "identity", "operation", "profile",
+    "route_decision", "slug", "target_layer", "title", "trigger"
+  ];
+  if (targetLayer === "L3") expectedKeys.push("owner_skill");
+  requireExactKeys(request, expectedKeys, "request");
+  if (
+    request.contract !== "dex.memory.create.theme-v2.request.v0" ||
+    request.profile !== "governed-theme-v2" ||
+    request.operation !== "create" ||
+    targetLayer !== manifest.target_layer
+  ) {
+    invalidSchema("unsupported request contract, profile, operation or target layer");
+  }
+  requireString(request.idempotency_key, "idempotency_key", 256);
+  requireString(request.identity, "identity", 36, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  requireString(request.slug, "slug", 80, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  if (isReservedName(request.slug)) invalidSchema("slug is reserved");
+  requireSingleLineString(request.trigger, "trigger", 512);
+  requireSingleLineString(request.title, "title", 256);
+  requireString(request.body, "body", 65536);
+  requireString(request.created_at, "created_at", 24, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  if (new Date(request.created_at).toISOString() !== request.created_at) invalidSchema("created_at is invalid");
+  const expectedDecision = targetLayer === "L2" ? "explicit-l2-memory" : "explicit-l3-knowledge";
+  if (request.route_decision !== expectedDecision) invalidSchema("route_decision does not match target_layer");
+  if (targetLayer === "L3") {
+    requireString(request.owner_skill, "owner_skill", 128, /^[a-z0-9]+(?:(?:-|:)[a-z0-9]+)*$/);
+  }
+}
+
+function requireSingleLineString(value, label, maximum) {
+  requireString(value, label, maximum);
+  if (/[\r\n\0]/.test(value)) invalidSchema(`${label} must be a single line`);
+}
+
+function inspectThemeV2(fixture, request) {
+  const entries = [
+    ...readThemeV2Layer(fixture, "L2"),
+    ...readThemeV2Layer(fixture, "L3")
+  ];
+  const slugKey = request.slug.toLowerCase();
+  if (entries.some((entry) => entry.slug.toLowerCase() === slugKey || entry.identity === request.identity)) {
+    throw new CliError(4, "PLAN_CONFLICT", "fixture already contains the requested identity or slug");
+  }
+  return entries;
+}
+
+function readThemeV2Layer(fixture, layer) {
+  const directory = path.join(fixture.themeRoot, layer === "L2" ? "memorias" : "conhecimento");
+  const entries = [];
+  for (const name of fs.readdirSync(directory).sort()) {
+    if (name.toLowerCase() === "index.md") continue;
+    const candidatePath = path.join(directory, name);
+    const stat = fs.lstatSync(candidatePath);
+    if (stat.isSymbolicLink()) safetyBlocked("fixture destination contains a symlink or reparse point");
+    let documentPath;
+    let slugFromPath;
+    let link;
+    if (layer === "L2") {
+      if (!stat.isFile() || path.extname(name).toLowerCase() !== ".md") safetyBlocked("fixture L2 destination is invalid");
+      slugFromPath = path.basename(name, path.extname(name));
+      documentPath = candidatePath;
+      link = `${slugFromPath}.md`;
+    } else {
+      if (!stat.isDirectory()) safetyBlocked("fixture L3 destination is invalid");
+      slugFromPath = name;
+      documentPath = path.join(candidatePath, "README.md");
+      requirePlainFile(documentPath);
+      link = `${slugFromPath}/README.md`;
+    }
+    const parsed = parseThemeV2Document(fs.readFileSync(documentPath, "utf8"));
+    if (!parsed || parsed.layer !== layer || parsed.slug.toLowerCase() !== slugFromPath.toLowerCase()) {
+      throw new CliError(4, "PLAN_CONFLICT", "fixture contains an unparseable V2 destination");
+    }
+    entries.push({ ...parsed, link });
+  }
+  return entries;
+}
+
+function parseThemeV2Document(text) {
+  const normalized = text.replace(/\r\n?/g, "\n");
+  const match = normalized.match(/^---\n([\s\S]*?)\n---\n[\s\S]*?^# (.+)$/m);
+  if (!match) return null;
+  const fields = {};
+  for (const line of match[1].split("\n")) {
+    const separator = line.indexOf(":");
+    if (separator <= 0) return null;
+    fields[line.slice(0, separator)] = line.slice(separator + 1).trim();
+  }
+  if (!/^[a-f0-9-]{36}$/.test(fields.identity || "") || !["L2", "L3"].includes(fields.layer) || !isKebabCase(fields.slug, 80)) return null;
+  return { identity: fields.identity, layer: fields.layer, slug: fields.slug, title: match[2].trim() };
+}
+
+function resolveThemeV2Targets(fixture, request) {
+  const targetDirectory = request.target_layer === "L2" ? "memorias" : "conhecimento";
+  const relativePaths = [
+    `${fixture.themeRelativeRoot}/lembranca.md`,
+    `${fixture.themeRelativeRoot}/${targetDirectory}/INDEX.md`,
+    request.target_layer === "L2"
+      ? `${fixture.themeRelativeRoot}/${targetDirectory}/${request.slug}.md`
+      : `${fixture.themeRelativeRoot}/${targetDirectory}/${request.slug}/README.md`
+  ];
+  return relativePaths.map((relativePath) => validateTargetPath(fixture.fixtureRoot, fixture.realRoot, relativePath));
+}
+
+function relativeFixturePath(fixtureRoot, targetPath) {
+  return path.relative(fixtureRoot, targetPath).split(path.sep).join("/");
+}
+
+function isKebabCase(value, maximum) {
+  return typeof value === "string" && [...value].length <= maximum && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+}
+
+function isReservedName(value) {
+  const reserved = new Set(["lembranca", "memoria", "memorias", "conhecimento", "index", "readme", "referencias", "artefatos"]);
+  if (reserved.has(value.toLowerCase())) return true;
+  return /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(value);
+}
+
 function requireExactKeys(value, expected, label) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     invalidSchema(`${label} must be an object`);
   }
   const actual = Object.keys(value).sort();
-  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
+  const wanted = [...expected].sort();
+  if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) {
     invalidSchema(`${label} contains missing or unknown fields`);
   }
 }

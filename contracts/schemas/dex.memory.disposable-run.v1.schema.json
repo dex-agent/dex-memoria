@@ -21,14 +21,27 @@
       "const": true
     },
     "targets": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 2,
-      "prefixItems": [
-        { "const": "work/LEMBRANCA.md" },
-        { "const": "work/MEMORIA.md" }
-      ],
-      "items": false
+      "oneOf": [
+        {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            { "const": "work/LEMBRANCA.md" },
+            { "const": "work/MEMORIA.md" }
+          ],
+          "items": false
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^work/[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        }
+      ]
     }
   },
   "examples": [
@@ -39,6 +52,14 @@
       "targets": [
         "work/LEMBRANCA.md",
         "work/MEMORIA.md"
+      ]
+    },
+    {
+      "contract": "dex.memory.disposable-run.v1",
+      "operation": "create",
+      "disposable": true,
+      "targets": [
+        "work/tema-exemplo"
       ]
     }
   ]

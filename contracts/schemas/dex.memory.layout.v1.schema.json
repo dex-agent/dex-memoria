@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.layout.v1.schema.json",
+  "title": "dex.memory.layout.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "profile",
+    "status",
+    "owner",
+    "active_write_profile",
+    "theme_layout"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.layout.v1" },
+    "profile": { "const": "governed-theme-v2" },
+    "status": { "const": "approved_not_active" },
+    "owner": { "const": "dex-memoria" },
+    "active_write_profile": { "const": "legacy-v1" },
+    "theme_layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "l1",
+        "l2_index",
+        "l2_destination",
+        "l3_index",
+        "l3_destination",
+        "l3_references",
+        "l3_artifacts",
+        "routes",
+        "serialization_order_only"
+      ],
+      "properties": {
+        "l1": { "const": "lembranca.md" },
+        "l2_index": { "const": "memorias/INDEX.md" },
+        "l2_destination": { "const": "memorias/<slug>.md" },
+        "l3_index": { "const": "conhecimento/INDEX.md" },
+        "l3_destination": { "const": "conhecimento/<slug>/README.md" },
+        "l3_references": { "const": "conhecimento/<slug>/referencias/" },
+        "l3_artifacts": { "const": "conhecimento/<slug>/artefatos/" },
+        "routes": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "L1->L2" },
+            { "const": "L1->L3" }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "serialization_order_only": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "l1" },
+            { "const": "index" },
+            { "const": "destination" }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    }
+  }
+}

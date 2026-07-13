@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.theme-v2.request.v0.schema.json",
+  "title": "dex.memory.create.theme-v2.request.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "profile",
+    "operation",
+    "idempotency_key",
+    "identity",
+    "target_layer",
+    "route_decision",
+    "slug",
+    "trigger",
+    "title",
+    "body",
+    "created_at"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.create.theme-v2.request.v0" },
+    "profile": { "const": "governed-theme-v2" },
+    "operation": { "const": "create" },
+    "idempotency_key": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S" },
+    "identity": { "type": "string", "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$" },
+    "target_layer": { "enum": ["L2", "L3"] },
+    "route_decision": { "enum": ["explicit-l2-memory", "explicit-l3-knowledge"] },
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "not": {
+        "enum": [
+          "lembranca", "memoria", "memorias", "conhecimento", "index", "readme", "referencias", "artefatos",
+          "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
+          "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+        ]
+      }
+    },
+    "trigger": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "^[^\\r\\n\\u0000]*\\S[^\\r\\n\\u0000]*$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[^\\r\\n\\u0000]*\\S[^\\r\\n\\u0000]*$" },
+    "body": { "type": "string", "minLength": 1, "maxLength": 65536, "pattern": "\\S" },
+    "created_at": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$" },
+    "owner_skill": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-z0-9]+(?:(?:-|:)[a-z0-9]+)*$" }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "target_layer": { "const": "L2" },
+        "route_decision": { "const": "explicit-l2-memory" }
+      },
+      "not": { "required": ["owner_skill"] }
+    },
+    {
+      "required": ["owner_skill"],
+      "properties": {
+        "target_layer": { "const": "L3" },
+        "route_decision": { "const": "explicit-l3-knowledge" }
+      }
+    }
+  ]
+}

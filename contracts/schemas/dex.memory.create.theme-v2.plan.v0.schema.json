@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.theme-v2.plan.v0.schema.json",
+  "title": "dex.memory.create.theme-v2.plan.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "profile",
+    "operation",
+    "idempotency_key",
+    "request",
+    "request_fingerprint",
+    "serialization_order_only",
+    "targets",
+    "plan_hash"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.create.theme-v2.plan.v0" },
+    "profile": { "const": "governed-theme-v2" },
+    "operation": { "const": "create" },
+    "idempotency_key": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S" },
+    "request": { "$ref": "dex.memory.create.theme-v2.request.v0.schema.json" },
+    "request_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "serialization_order_only": { "const": true },
+    "targets": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "$ref": "#/$defs/l1Target" },
+        { "$ref": "#/$defs/indexTarget" },
+        { "$ref": "#/$defs/destinationTarget" }
+      ],
+      "items": false
+    },
+    "plan_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "relative_path",
+        "before_exists",
+        "before_sha256",
+        "before_base64",
+        "after_sha256",
+        "after_base64",
+        "changed"
+      ],
+      "properties": {
+        "slot": { "enum": ["l1", "index", "destination"] },
+        "relative_path": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^work/[a-z0-9/-]+(?:README|INDEX|lembranca|[a-z0-9-]+)\\.md$" },
+        "before_exists": { "type": "boolean" },
+        "before_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "before_base64": { "type": "string", "contentEncoding": "base64" },
+        "after_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "after_base64": { "type": "string", "contentEncoding": "base64" },
+        "changed": { "type": "boolean" }
+      }
+    },
+    "l1Target": { "$ref": "#/$defs/target", "properties": { "slot": { "const": "l1" } } },
+    "indexTarget": { "$ref": "#/$defs/target", "properties": { "slot": { "const": "index" } } },
+    "destinationTarget": { "$ref": "#/$defs/target", "properties": { "slot": { "const": "destination" } } }
+  }
+}

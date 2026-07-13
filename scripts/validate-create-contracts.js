@@ -9,6 +9,10 @@ const BASE64 = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
 const TARGET_PATHS = ["work/LEMBRANCA.md", "work/MEMORIA.md"];
 
 const SCHEMA_FILES = [
+  "dex.memory.layout.v1.schema.json",
+  "dex.memory.create.theme-v2.request.v0.schema.json",
+  "dex.memory.create.theme-v2.plan.v0.schema.json",
+  "dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
   "dex.memory.create.request.v0.schema.json",
   "dex.memory.create.recover.v0.schema.json",
   "dex.memory.create.plan.v0.schema.json",
@@ -45,6 +49,38 @@ const receiptWriteFields = {
 };
 
 const EXPECTED = {
+  "dex.memory.layout.v1.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: {
+      title: "dex.memory.layout.v1",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.create.theme-v2.request.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "oneOf"],
+    structure: {
+      title: "dex.memory.create.theme-v2.request.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.create.theme-v2.plan.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "$defs"],
+    structure: {
+      title: "dex.memory.create.theme-v2.plan.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.fixture.governed-theme-v2-plan.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: {
+      title: "dex.memory.fixture.governed-theme-v2-plan.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
   "dex.memory.create.request.v0.schema.json": {
     allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "examples"],
     structure: closedObject({
@@ -133,7 +169,7 @@ const EXPECTED = {
   },
   "dex.memory.disposable-run.v1.schema.json": {
     allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "examples"],
-    structure: controlSchema("dex.memory.disposable-run.v1", "disposable")
+    structure: disposableControlSchema()
   },
   "dex.memory.fixture.legacy-create-l1-l2.v1.schema.json": {
     allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "examples"],
@@ -197,6 +233,28 @@ function controlSchema(contract, disposableField) {
     operation: { const: "create" },
     [disposableField]: { const: true },
     targets: fixedTuple(TARGET_PATHS.map((target) => ({ const: target })))
+  });
+}
+
+function disposableControlSchema() {
+  return closedObject({
+    contract: { const: "dex.memory.disposable-run.v1" },
+    operation: { const: "create" },
+    disposable: { const: true },
+    targets: {
+      oneOf: [
+        fixedTuple(TARGET_PATHS.map((target) => ({ const: target }))),
+        {
+          type: "array",
+          minItems: 1,
+          maxItems: 1,
+          items: {
+            type: "string",
+            pattern: "^work/[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        }
+      ]
+    }
   });
 }
 

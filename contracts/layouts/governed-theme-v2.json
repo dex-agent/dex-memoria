@@ -1,0 +1,25 @@
+{
+  "contract": "dex.memory.layout.v1",
+  "profile": "governed-theme-v2",
+  "status": "approved_not_active",
+  "owner": "dex-memoria",
+  "active_write_profile": "legacy-v1",
+  "theme_layout": {
+    "l1": "lembranca.md",
+    "l2_index": "memorias/INDEX.md",
+    "l2_destination": "memorias/<slug>.md",
+    "l3_index": "conhecimento/INDEX.md",
+    "l3_destination": "conhecimento/<slug>/README.md",
+    "l3_references": "conhecimento/<slug>/referencias/",
+    "l3_artifacts": "conhecimento/<slug>/artefatos/",
+    "routes": [
+      "L1->L2",
+      "L1->L3"
+    ],
+    "serialization_order_only": [
+      "l1",
+      "index",
+      "destination"
+    ]
+  }
+}
