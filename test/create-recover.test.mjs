@@ -11,8 +11,16 @@ const repoRoot = resolve(testRoot, "..");
 const cliPath = join(repoRoot, "bin", "dex-memoria.js");
 const fixtureSourceRoot = join(testRoot, "fixtures", "legacy-create-l1-l2-v1");
 const failpoints = [
-  { name: "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT", latest: "PREPARED" },
-  { name: "FP_AFTER_L1_CHECKPOINT_BEFORE_L2", latest: "L1_PUBLISHED" }
+  {
+    name: "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT",
+    latest: "PREPARED",
+    checkpoints: ["0001-PREPARED.json"]
+  },
+  {
+    name: "FP_AFTER_L1_CHECKPOINT_BEFORE_L2",
+    latest: "L1_PUBLISHED",
+    checkpoints: ["0001-PREPARED.json", "0002-L1_PUBLISHED.json"]
+  }
 ];
 
 const createRequest = {
@@ -109,7 +117,7 @@ function assertCliError(result, exitCode, code) {
 }
 
 async function transactionFiles(fixtureRoot, transactionId) {
-  return readdir(join(fixtureRoot, "journal", transactionId));
+  return (await readdir(join(fixtureRoot, "journal", transactionId))).sort();
 }
 
 async function latestState(fixtureRoot, transactionId) {
@@ -201,6 +209,7 @@ for (const failpoint of failpoints) {
     assert.notEqual(killed.exitCode, 0);
     assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), Buffer.from(createPlan.targets[0].after_base64, "base64"));
     assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+    assert.deepEqual(await transactionFiles(fixtureRoot, createPlan.transaction_id), failpoint.checkpoints);
     assert.equal(await latestState(fixtureRoot, createPlan.transaction_id), failpoint.latest);
 
     const recovered = await recover(fixtureRoot);
