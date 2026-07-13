@@ -1,0 +1,9 @@
+{
+  "contract": "dex.memory.fixture.legacy-create-l1-l2.v1",
+  "operation": "create",
+  "disposable_runs_only": true,
+  "targets": [
+    "work/LEMBRANCA.md",
+    "work/MEMORIA.md"
+  ]
+}

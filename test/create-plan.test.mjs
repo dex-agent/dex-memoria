@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { homedir, tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import test from "node:test";
-const repoRoot = resolve(import.meta.dirname, "..");
+import { fileURLToPath } from "node:url";
+
+const testRoot = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(testRoot, "..");
 const cliPath = join(repoRoot, "bin", "dex-memoria.js");
-const oracleRoot = join(homedir(), ".agents", "laboratorio-memories", "fixtures", "legacy-create-l1-l2-v1");
+const fixtureSourceRoot = join(testRoot, "fixtures", "legacy-create-l1-l2-v1");
 
 const request = {
   contract: "dex.memory.create.request.v0",
@@ -53,10 +56,10 @@ async function createFixture(t) {
   );
   await writeFile(
     join(fixtureRoot, "manifest.json"),
-    await readFile(join(oracleRoot, "manifest.json"))
+    await readFile(join(fixtureSourceRoot, "manifest.json"))
   );
-  await writeFile(join(fixtureRoot, "work", "LEMBRANCA.md"), await readFile(join(oracleRoot, "baseline", "LEMBRANCA.md")));
-  await writeFile(join(fixtureRoot, "work", "MEMORIA.md"), await readFile(join(oracleRoot, "baseline", "MEMORIA.md")));
+  await writeFile(join(fixtureRoot, "work", "LEMBRANCA.md"), await readFile(join(fixtureSourceRoot, "baseline", "LEMBRANCA.md")));
+  await writeFile(join(fixtureRoot, "work", "MEMORIA.md"), await readFile(join(fixtureSourceRoot, "baseline", "MEMORIA.md")));
   return fixtureRoot;
 }
 
@@ -76,11 +79,15 @@ test("preserves exact V1 version output", async () => {
   assert.deepEqual(result, { stdout: "0.1.6\n", stderr: "", exitCode: 0 });
 });
 
-test("preserves exact V1 doctor output shape", async () => {
-  const result = await runCli(["doctor"]);
-  assert.equal(result.exitCode, 0);
-  assert.equal(result.stderr, "");
-  assert.match(result.stdout, /^dex-memoria 0\.1\.6 ok\nPacote: .+\nMemoria home: .+\nMemoria home source: .+\nModo: contrato documental, sem runtime proprio\n$/);
+test("preserves exact V1 doctor output under a controlled environment", async (t) => {
+  const memoryRoot = await mkdtemp(join(tmpdir(), "dex-memoria-doctor-"));
+  t.after(() => rm(memoryRoot, { recursive: true, force: true }));
+  const result = await runCli(["doctor"], "", { ...process.env, DEX_MEMORIA_HOME: memoryRoot });
+  assert.deepEqual(result, {
+    stdout: `dex-memoria 0.1.6 ok\nPacote: ${repoRoot}\nMemoria home: ${resolve(memoryRoot)}\nMemoria home source: DEX_MEMORIA_HOME\nModo: contrato documental, sem runtime proprio\n`,
+    stderr: "",
+    exitCode: 0
+  });
 });
 
 test("preserves exact V1 memory-home output", async (t) => {
@@ -124,6 +131,14 @@ test("npm test runs the node:test contract suite", async () => {
   assert.match(packageJson.scripts.test, /node --test/);
 });
 
+test("the test suite is Node 18 portable and self-contained", async () => {
+  const source = await readFile(new URL("create-plan.test.mjs", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /import\.meta\.dirname/);
+  assert.match(source, /fileURLToPath\(import\.meta\.url\)/);
+  assert.doesNotMatch(source, new RegExp(["laboratorio", "memories"].join("-")));
+  assert.doesNotMatch(source, /import \{ homedir,/);
+});
+
 test("create plan emits a deterministic read-only plan matching legacy goldens", async (t) => {
   const fixtureRoot = await createFixture(t);
   const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
@@ -160,8 +175,8 @@ test("create plan emits a deterministic read-only plan matching legacy goldens",
     "after_sha256", "after_base64", "changed"
   ]);
   assert.doesNotMatch(first.stdout, new RegExp(fixtureRoot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
-  assert.deepEqual(Buffer.from(plan.targets[0].after_base64, "base64"), await readFile(join(oracleRoot, "expected", "LEMBRANCA.md")));
-  assert.deepEqual(Buffer.from(plan.targets[1].after_base64, "base64"), await readFile(join(oracleRoot, "expected", "MEMORIA.md")));
+  assert.deepEqual(Buffer.from(plan.targets[0].after_base64, "base64"), await readFile(join(fixtureSourceRoot, "expected", "LEMBRANCA.md")));
+  assert.deepEqual(Buffer.from(plan.targets[1].after_base64, "base64"), await readFile(join(fixtureSourceRoot, "expected", "MEMORIA.md")));
   assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
   assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
 });
