@@ -605,6 +605,12 @@ forte L1/L2/L3 e executar os validadores reais da `consciencia-memorias`:
 Esse smoke exige `DEX_MEMORIA_HOME` ou o padrao local
 `%USERPROFILE%/.agents/memories` com os validadores instalados.
 
+Esse comando e uma **integracao local**, nao um teste publico autocontido. Ele
+exige a instalacao canonica de `memory-policy.ps1`, `memory-policy.json` e
+`memory-policy.compat.json` na mesma raiz dos validadores e falha antes de
+executa-los quando uma dessas dependencias estiver ausente. `npm test` continua
+autocontido e nao executa esse smoke.
+
 Use `npm run test:local` quando quiser rodar a bateria portavel e o smoke local
 da consciencia no mesmo comando.
 

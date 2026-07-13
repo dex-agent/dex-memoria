@@ -82,6 +82,30 @@ Use esta skill quando uma captura, achado ou decisao precisar ser classificada a
 
 ## Regra Central
 
+### Trio Operacional Com Garimpeiro E Estacionamento
+
+`garimpeiro`, `dex-memoria` e `estacionamento` operam juntos:
+
+- `garimpeiro` qualifica o achado e aplica o limiar de evidencia/reuso;
+- `dex-memoria` decide e governa a gravacao automatica no padrao canonico de
+  todo achado forte, memoravel, seguro, nao duplicado e com destino L1/L2 claro;
+  a escrita fisica e executada somente por mecanismo fisico ja autorizado do
+  ambiente, sem pedir permissao adicional quando autorizacao, escopo e destino
+  resolvido ja existirem;
+- `estacionamento` segura apenas residuo vivo, imaturo, lateral ou pendente,
+  sempre com garimpo vinculado e `quando`;
+- `consciencia-memorias` valida as conexoes bidirecionais L1↔L2↔L3,
+  tagnames, anchors, block ids, backlinks e achabilidade depois da escrita.
+
+Itens fracos, ambiguos, sensiveis, duplicados, stale ou sem destino L1/L2 nao
+entram automaticamente em memoria viva. Eles ficam como candidato,
+estacionamento ou descarte justificado.
+
+A prestacao de contas nao interrompe cada achado. Somente no fim do bloco atual,
+informar brevemente quantos memoraveis fortes foram gravados, quantos tropecos
+novos foram catalogados, apenas os gatilhos L1 quentes usados e perguntar se o
+usuario deseja editar alguma memoria.
+
 Memoria operacional nao e apenas anotacao. Ela precisa responder:
 
 - como entra;

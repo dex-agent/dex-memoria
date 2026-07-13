@@ -29,8 +29,6 @@ function main() {
       "-AsJson",
       "-MaxElapsedSeconds",
       "10",
-      "-MaxFileBytes",
-      "200000",
       "-MaxLines",
       "5000",
       "-MaxRefs",
@@ -67,12 +65,22 @@ function resolveTools() {
 
   const tools = {
     tags: path.join(memoryHome, ".agents", "tools", "validate-memory-tags.ps1"),
-    links: path.join(memoryHome, ".agents", "tools", "validate-memory-links.ps1")
+    links: path.join(memoryHome, ".agents", "tools", "validate-memory-links.ps1"),
+    policyResolver: path.join(memoryHome, ".agents", "tools", "memory-policy.ps1"),
+    policy: path.join(memoryHome, ".agents", "policies", "memory-policy.json"),
+    compatibilityPolicy: path.join(memoryHome, ".agents", "policies", "memory-policy.compat.json")
+  };
+  const dependencyLabels = {
+    tags: "tags validator",
+    links: "links validator",
+    policyResolver: "policy resolver",
+    policy: "canonical policy",
+    compatibilityPolicy: "compatibility policy"
   };
 
   for (const [name, file] of Object.entries(tools)) {
     if (!fs.existsSync(file)) {
-      fail(`Missing ${name} validator: ${file}`);
+      fail(`Missing ${dependencyLabels[name]}: ${file}`);
     }
   }
 

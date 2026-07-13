@@ -184,6 +184,7 @@ function main() {
     "Checklist De L3 Robusto",
     "Precedencia Local E Fallbacks",
     "Fronteira De Escrita",
+    "mecanismo fisico ja autorizado",
     "Fonte Completa",
     "Graphify e mapa, nao prova",
     "Excecao Executavel V0 Fixture-Only",
@@ -192,7 +193,7 @@ function main() {
     "[docs/cli-create-fixture-v0.md](docs/cli-create-fixture-v0.md)"
   ]);
   requireText(errors, "SPEC.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Forca da evidencia", "source: graphify"]);
-  requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia"]);
+  requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia", "integracao local", "memory-policy.ps1", "memory-policy.json", "memory-policy.compat.json"]);
   requireText(errors, "package.json", ["smoke:consciencia", "test:local", "scripts/smoke-consciencia-templates.js"]);
   requireText(errors, "bin/dex-memoria.js", ["REDIRECTOR_ENTRY", "defaultRegistryTarget", "--registry-target", "redirecionador global"]);
   requireText(errors, "registry/agents-skills/dex-memoria/SKILL.md", [
