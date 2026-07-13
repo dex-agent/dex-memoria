@@ -5,6 +5,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { planCreate } = require("./create-plan");
+const { ApplyError, applyCreate } = require("./create-apply");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
@@ -64,21 +65,38 @@ async function main() {
   }
 
   if (command === "create") {
-    if (args[1] !== "plan") {
-      throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan --fixture <fixture-root>");
-    }
     try {
-      await createPlan(args.slice(2));
+      if (args[1] === "plan") {
+        await createPlan(args.slice(2));
+      } else if (args[1] === "apply") {
+        await createApply(args.slice(2));
+      } else {
+        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan|apply --fixture <fixture-root>");
+      }
     } catch (error) {
-      if (error instanceof CliError) {
+      if (error instanceof CliError || error instanceof ApplyError) {
         throw error;
       }
-      throw new CliError(6, "IO_FAILURE", "create plan failed");
+      throw new CliError(6, "IO_FAILURE", `create ${args[1] || "command"} failed`);
     }
     return;
   }
 
   fail(`Comando desconhecido: ${command}`);
+}
+
+async function createApply(args) {
+  const fixtureRoot = parseFixtureArg(args);
+  const { targetPaths } = validateFixture(fixtureRoot);
+  const input = await readStdin();
+  let plan;
+  try {
+    plan = JSON.parse(input);
+  } catch (error) {
+    throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
+  }
+  const receipt = await applyCreate(plan, fixtureRoot, targetPaths);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
 }
 
 async function createPlan(args) {
@@ -292,6 +310,8 @@ Uso:
   dex-memoria doctor
   dex-memoria memory-home
   dex-memoria install [--target <path>] [--registry-target <path>] [--force] [--dry-run]
+  dex-memoria create plan --fixture <fixture-root>
+  dex-memoria create apply --fixture <fixture-root>
   dex-memoria version
 
 Padrao de instalacao do contrato completo:
@@ -488,7 +508,7 @@ function fail(message) {
 }
 
 main().catch((error) => {
-  if (error instanceof CliError) {
+  if (error instanceof CliError || error instanceof ApplyError) {
     process.stderr.write(`${JSON.stringify({
       contract: "dex.memory.error.v0",
       code: error.code,
