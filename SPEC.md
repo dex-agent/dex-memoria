@@ -37,6 +37,23 @@ Fora do escopo da V1:
 - alteracao automatica de skills globais;
 - push para repos remotos.
 
+### Fronteira Executavel V0 Fixture-Only
+
+A V1 documental permanece vigente. Como excecao estreita e executavel, o
+binario top-level oferece `create plan|apply|recover` somente para L1+L2
+`legacy-v1` em fixture descartavel marcada. O contrato completo fica em
+[`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md).
+
+- `plan` recebe `dex.memory.create.request.v0` e emite
+  `dex.memory.create.plan.v0` deterministico sem mutacao;
+- `apply` recebe o plan completo e emite `dex.memory.create.receipt.v0`;
+- `recover` recebe `dex.memory.create.recover.v0` e emite o mesmo receipt;
+- falhas dos comandos `create` emitem `dex.memory.error.v0` no `stderr`;
+- marker, manifest, targets e checkpoints possuem schemas Draft 2020-12 em
+  `contracts/schemas/`;
+- nenhum request recebe paths internos e nenhum comando aceita o vault vivo;
+- L3, layout V2, writer geral, release e integracao de producao ficam fora.
+
 ## 3. Conceitos
 
 ### L1 - Lembranca
@@ -256,4 +273,6 @@ Ha regressao se:
 
 ## 10. Proximo Passo
 
-Integrar referencias a partir do `dex-agent` e das skills globais somente depois de revisar a fronteira de responsabilidade com este pacote.
+Integracao de producao, SemVer e eventual remocao de writer/fallback so podem
+ser reconsiderados depois de decisao humana especifica e evidencia de shadow;
+na ausencia desses gatilhos, permanecem fora do escopo.

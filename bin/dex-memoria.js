@@ -164,6 +164,8 @@ function validateFixture(fixtureRoot) {
     requirePlainFile(manifestPath);
     const marker = readFixtureJson(markerPath, "marker");
     const manifest = readFixtureJson(manifestPath, "manifest");
+    requireExactFixtureKeys(marker, ["contract", "operation", "disposable", "targets"]);
+    requireExactFixtureKeys(manifest, ["contract", "operation", "disposable_runs_only", "targets"]);
     requireExactFixtureArray(marker.targets);
     requireExactFixtureArray(manifest.targets);
     if (
@@ -197,6 +199,17 @@ function readFixtureJson(filePath, label) {
 function requireExactFixtureArray(value) {
   if (!Array.isArray(value) || value.length !== FIXTURE_TARGETS.length || value.some((entry, index) => entry !== FIXTURE_TARGETS[index])) {
     safetyBlocked("fixture targets are invalid");
+  }
+}
+
+function requireExactFixtureKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    safetyBlocked("fixture control document must be an object");
+  }
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) {
+    safetyBlocked("fixture control document contains missing or unknown fields");
   }
 }
 

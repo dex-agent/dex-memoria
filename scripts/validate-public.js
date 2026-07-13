@@ -23,8 +23,17 @@ const requiredFiles = [
   "bin/dex-memoria.js",
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
+  "contracts/schemas/dex.memory.create.request.v0.schema.json",
+  "contracts/schemas/dex.memory.create.recover.v0.schema.json",
+  "contracts/schemas/dex.memory.create.plan.v0.schema.json",
+  "contracts/schemas/dex.memory.create.receipt.v0.schema.json",
+  "contracts/schemas/dex.memory.error.v0.schema.json",
+  "contracts/schemas/dex.memory.disposable-run.v1.schema.json",
+  "contracts/schemas/dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
+  "contracts/schemas/dex.memory.create.checkpoint.internal.v0.schema.json",
   "docs/usage.md",
   "docs/runtime-boundary.md",
+  "docs/cli-create-fixture-v0.md",
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
@@ -126,10 +135,37 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.6`", "dex-agent", "nao carrega o runtime", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.6`", "dex-agent", "nao e um writer geral", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
   requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica", "Taxonomia De Temas"]);
   requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
+  requireText(errors, "README.md", ["CLI V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
+  requireText(errors, "SPEC.md", ["Fronteira Executavel V0 Fixture-Only", "dex.memory.create.plan.v0", "dex.memory.create.receipt.v0"]);
+  requireText(errors, "docs/usage.md", ["Usar A CLI V0 Fixture-Only", "create plan", "create apply", "create recover"]);
+  requireText(errors, "docs/runtime-boundary.md", ["Excecao V0 Fixture-Only", "nao aceita o vault vivo"]);
+  requireText(errors, "docs/cli-create-fixture-v0.md", [
+    "dex-memoria create plan",
+    "dex-memoria create apply",
+    "dex-memoria create recover",
+    "dex.memory.create.request.v0",
+    "dex.memory.create.recover.v0",
+    "dex.memory.create.plan.v0",
+    "dex.memory.create.receipt.v0",
+    "dex.memory.error.v0",
+    "dex.memory.disposable-run.v1",
+    "dex.memory.fixture.legacy-create-l1-l2.v1",
+    "PREPARED",
+    "L1_PUBLISHED",
+    "COMMITTED",
+    "ROLLED_BACK",
+    "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT",
+    "FP_AFTER_L1_CHECKPOINT_BEFORE_L2",
+    "1 MiB",
+    "Riscos nao cobertos"
+  ]);
+  requireText(errors, "CHANGELOG.md", ["## Unreleased", "CLI JSON fixture-only"]);
+  requireText(errors, "AGENTS.md", ["V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
+  validateCreateContractSchemas(errors);
   requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents", "projeto-ferramenta"]);
   requireText(errors, "docs/layered-memory-simulations.md", ["PASS", "FAIL UTIL", "global roteia, tema reutiliza, projeto opera"]);
   requireText(errors, "SKILL.md", [
@@ -284,6 +320,85 @@ function validateLayeredMemoryExample(errors) {
   requireText(errors, "examples/layered-memory/lembranca.md", ["#dex-memoria/exemplo-camadas", "[[memoria#^include-duplicacao|memoria]]", "^detalhe-sob-demanda"]);
   requireText(errors, "examples/layered-memory/memoria.md", ["Tags: `#dex-memoria/exemplo-camadas`", "Obsidian: L1", "Obsidian: L3"]);
   requireText(errors, "examples/layered-memory/conhecimento/detalhe-sob-demanda.md", ["L2 relacionada:", "Obsidian: L2 [[../memoria#^detalhe-sob-demanda|detalhe-sob-demanda]]"]);
+}
+
+function validateCreateContractSchemas(errors) {
+  const draft = "https://json-schema.org/draft/2020-12/schema";
+  const files = [
+    "dex.memory.create.request.v0.schema.json",
+    "dex.memory.create.recover.v0.schema.json",
+    "dex.memory.create.plan.v0.schema.json",
+    "dex.memory.create.receipt.v0.schema.json",
+    "dex.memory.error.v0.schema.json",
+    "dex.memory.disposable-run.v1.schema.json",
+    "dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
+    "dex.memory.create.checkpoint.internal.v0.schema.json"
+  ];
+  const schemas = new Map();
+  for (const file of files) {
+    const schema = readJson(path.join("contracts", "schemas", file), errors);
+    if (!schema) continue;
+    schemas.set(file, schema);
+    assertEqual(errors, `${file} draft`, schema.$schema, draft);
+  }
+
+  const request = schemas.get("dex.memory.create.request.v0.schema.json");
+  if (request) {
+    assertEqual(errors, "request additionalProperties", request.additionalProperties, false);
+    assertEqual(errors, "request contract", request.properties && request.properties.contract && request.properties.contract.const, "dex.memory.create.request.v0");
+    assertEqual(errors, "request idempotency maxLength", request.properties && request.properties.idempotency_key && request.properties.idempotency_key.maxLength, 256);
+    assertEqual(errors, "request localizer maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.localizer.maxLength, 128);
+    assertEqual(errors, "request trigger maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.trigger.maxLength, 512);
+    assertEqual(errors, "request title maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.title.maxLength, 256);
+    assertEqual(errors, "request anchor maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.anchor.maxLength, 128);
+    assertEqual(errors, "request body maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.body.maxLength, 65536);
+  }
+
+  const plan = schemas.get("dex.memory.create.plan.v0.schema.json");
+  if (plan) {
+    assertEqual(errors, "plan additionalProperties", plan.additionalProperties, false);
+    assertEqual(errors, "plan contract", plan.properties && plan.properties.contract && plan.properties.contract.const, "dex.memory.create.plan.v0");
+    assertEqual(errors, "plan target count minimum", plan.properties && plan.properties.targets && plan.properties.targets.minItems, 2);
+    assertEqual(errors, "plan target count maximum", plan.properties && plan.properties.targets && plan.properties.targets.maxItems, 2);
+    assertEqual(errors, "plan target tail closed", plan.properties && plan.properties.targets && plan.properties.targets.items, false);
+  }
+
+  const receipt = schemas.get("dex.memory.create.receipt.v0.schema.json");
+  if (receipt) {
+    assertEqual(errors, "receipt additionalProperties", receipt.additionalProperties, false);
+    assertEqual(errors, "receipt contract", receipt.properties && receipt.properties.contract && receipt.properties.contract.const, "dex.memory.create.receipt.v0");
+    assertEqual(errors, "receipt recovery_required", receipt.properties && receipt.properties.recovery_required && receipt.properties.recovery_required.const, false);
+    assertEqual(errors, "receipt variants", Array.isArray(receipt.oneOf) ? receipt.oneOf.length : undefined, 5);
+  }
+
+  const errorSchema = schemas.get("dex.memory.error.v0.schema.json");
+  if (errorSchema) {
+    assertEqual(errors, "error additionalProperties", errorSchema.additionalProperties, false);
+    assertEqual(errors, "error contract", errorSchema.properties && errorSchema.properties.contract && errorSchema.properties.contract.const, "dex.memory.error.v0");
+    assertEqual(errors, "error code count", errorSchema.properties && Array.isArray(errorSchema.properties.code.enum) ? errorSchema.properties.code.enum.length : undefined, 10);
+  }
+
+  for (const [file, contract] of [
+    ["dex.memory.disposable-run.v1.schema.json", "dex.memory.disposable-run.v1"],
+    ["dex.memory.fixture.legacy-create-l1-l2.v1.schema.json", "dex.memory.fixture.legacy-create-l1-l2.v1"]
+  ]) {
+    const schema = schemas.get(file);
+    if (!schema) continue;
+    assertEqual(errors, `${file} additionalProperties`, schema.additionalProperties, false);
+    assertEqual(errors, `${file} contract`, schema.properties && schema.properties.contract && schema.properties.contract.const, contract);
+    assertEqual(errors, `${file} target count`, schema.properties && schema.properties.targets && schema.properties.targets.maxItems, 2);
+  }
+
+  const checkpoint = schemas.get("dex.memory.create.checkpoint.internal.v0.schema.json");
+  if (checkpoint) {
+    const states = Array.isArray(checkpoint.oneOf)
+      ? checkpoint.oneOf.map((variant) => variant.properties && variant.properties.state && variant.properties.state.const).sort()
+      : [];
+    assertEqual(errors, "checkpoint states", JSON.stringify(states), JSON.stringify(["COMMITTED", "L1_PUBLISHED", "PREPARED", "ROLLED_BACK"]));
+    if (Array.isArray(checkpoint.oneOf) && checkpoint.oneOf.some((variant) => variant.additionalProperties !== false)) {
+      errors.push("checkpoint variants must set additionalProperties to false");
+    }
+  }
 }
 
 function validateGraduatedMemoryBattery(errors) {

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
+  "title": "dex.memory.fixture.legacy-create-l1-l2.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "operation",
+    "disposable_runs_only",
+    "targets"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.fixture.legacy-create-l1-l2.v1"
+    },
+    "operation": {
+      "const": "create"
+    },
+    "disposable_runs_only": {
+      "const": true
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        { "const": "work/LEMBRANCA.md" },
+        { "const": "work/MEMORIA.md" }
+      ],
+      "items": false
+    }
+  },
+  "examples": [
+    {
+      "contract": "dex.memory.fixture.legacy-create-l1-l2.v1",
+      "operation": "create",
+      "disposable_runs_only": true,
+      "targets": [
+        "work/LEMBRANCA.md",
+        "work/MEMORIA.md"
+      ]
+    }
+  ]
+}

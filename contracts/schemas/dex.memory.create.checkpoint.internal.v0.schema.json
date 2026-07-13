@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.checkpoint.internal.v0.schema.json",
+  "title": "dex.memory.create.checkpoint.internal.v0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "transaction_id",
+        "idempotency_key",
+        "request_fingerprint",
+        "plan_hash",
+        "plan"
+      ],
+      "properties": {
+        "state": {
+          "const": "PREPARED"
+        },
+        "transaction_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{24}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S"
+        },
+        "request_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "plan_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "plan": {
+          "$ref": "dex.memory.create.plan.v0.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "transaction_id"
+      ],
+      "properties": {
+        "state": {
+          "const": "L1_PUBLISHED"
+        },
+        "transaction_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{24}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "transaction_id",
+        "plan_hash"
+      ],
+      "properties": {
+        "state": {
+          "const": "COMMITTED"
+        },
+        "transaction_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{24}$"
+        },
+        "plan_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "transaction_id"
+      ],
+      "properties": {
+        "state": {
+          "const": "ROLLED_BACK"
+        },
+        "transaction_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{24}$"
+        }
+      }
+    }
+  ]
+}

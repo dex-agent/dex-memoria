@@ -43,6 +43,8 @@ this file or a higher authority explicitly says otherwise.
 - distributing templates and sanitized examples;
 - documenting runtime boundaries;
 - shipping a lightweight CLI for documentary install/doctor flows;
+- shipping a V0 fixture-only `create plan|apply|recover` boundary for marked,
+  disposable L1+L2 fixtures;
 - validating the public package structure.
 
 Current public package line: `0.1.x`.
@@ -72,6 +74,8 @@ Primary public sources:
 - `SPEC.md` - canonical memory lifecycle contract.
 - `docs/usage.md` - installation, usage, activation, and path guidance.
 - `docs/runtime-boundary.md` - what belongs here vs Dex Agent runtime.
+- `docs/cli-create-fixture-v0.md` - canonical V0 fixture-only commands,
+  streams, schemas, journal, failpoints, exit codes, and uncovered risks.
 - `docs/memory-home.md` - `DEX_MEMORIA_HOME` and path blocking rules.
 - `docs/integration-dex-agent.md` - integration notes for Dex Agent.
 - `docs/layered-memory-simulations.md` - L1/L2/L3 recovery simulations.
@@ -88,7 +92,8 @@ changes the package boundary:
 
 - Dex Agent runtime;
 - Telegram bot runtime;
-- automatic memory writer;
+- general or production automatic memory writer; the V0 fixture-only exception
+  is limited to the disposable boundary in `docs/cli-create-fixture-v0.md`;
 - hook runner;
 - `/inbox` or `/memory` command implementation;
 - production ledger, inbox, session store, or recall engine;

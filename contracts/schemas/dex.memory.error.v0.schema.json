@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.error.v0.schema.json",
+  "title": "dex.memory.error.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "code",
+    "message"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.error.v0"
+    },
+    "code": {
+      "enum": [
+        "INVALID_USAGE",
+        "INVALID_JSON",
+        "INVALID_SCHEMA",
+        "SAFETY_BLOCKED",
+        "PLAN_CONFLICT",
+        "IDEMPOTENCY_CONFLICT",
+        "RECOVERY_REQUIRED",
+        "FAILPOINT_UNAVAILABLE",
+        "RECOVERY_CONFLICT",
+        "IO_FAILURE"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    }
+  },
+  "examples": [
+    {
+      "contract": "dex.memory.error.v0",
+      "code": "INVALID_SCHEMA",
+      "message": "candidate.anchor is invalid"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 # Runtime Boundary
 
-`dex-memoria` e contrato documental. O runtime de memoria continua no Dex Agent ate decisao posterior.
+`dex-memoria` preserva o contrato documental V1. O runtime de memoria real
+continua no Dex Agent ate decisao posterior; a unica excecao local e a CLI V0
+fixture-only descrita abaixo.
 
 ## Fica No Dex Agent
 
@@ -23,6 +25,21 @@
 - exemplos sanitizados;
 - criterios de criacao, resolucao, arquivamento e supersedencia;
 - documentacao de fronteira.
+
+## Excecao V0 Fixture-Only
+
+Este repo tambem possui `create plan|apply|recover` para caracterizacao e
+equivalencia L1+L2 `legacy-v1` em fixture temporaria. Essa fronteira:
+
+- exige marker `dex.memory.disposable-run.v1` e manifest
+  `dex.memory.fixture.legacy-create-l1-l2.v1` fechados;
+- deriva os dois targets allowlisted do controle da fixture;
+- usa JSON por stream, plan deterministico e journal recuperavel;
+- nao aceita o vault vivo, workspace de consumidor, L3 ou layout V2;
+- nao substitui writer, ledger, recall, bot, hook ou integracao de producao.
+
+O contrato canônico de comandos, schemas e riscos fica em
+[`cli-create-fixture-v0.md`](cli-create-fixture-v0.md).
 
 ## Regra De Uso
 

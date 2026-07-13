@@ -1,8 +1,12 @@
 # Usage
 
-Este guia explica como instalar, usar e ativar `dex-memoria` como pacote documental.
+Este guia explica como instalar, usar e ativar a V1 documental de `dex-memoria`
+e sua excecao executavel V0 fixture-only.
 
-`dex-memoria` nao e runtime. Ele nao grava memoria sozinho, nao executa hooks, nao cria inbox, nao escreve ledger por conta propria e nao instala comandos automaticamente.
+`dex-memoria` nao e runtime do Dex Agent nem writer geral. Ele nao executa
+hooks, nao cria inbox e nao escreve ledger ou vault vivo. O binario inclui
+somente `create plan|apply|recover` para uma fixture descartavel marcada,
+conforme a referencia canonica abaixo.
 
 Essa fronteira nao significa "memorias sao somente leitura" e nunca pode virar
 veto contra escrita global. Memoria global e indice gravavel: quando houver valor
@@ -74,7 +78,26 @@ npx github:dex-agent/dex-memoria install --dry-run
 
 O CLI incluido nesta V1 e distribuidor documental e instalador do redirecionador
 global de skill. Ele nao cria runtime, hooks, inbox, ledger, tokens ou
-automacao do Dex Agent.
+automacao do Dex Agent. A excecao V0 fixture-only nao altera essa fronteira.
+
+### Usar A CLI V0 Fixture-Only
+
+Prepare uma copia temporaria da fixture publica e use um JSON UTF-8 por stdin:
+
+```text
+dex-memoria create plan    --fixture <fixture-root>
+dex-memoria create apply   --fixture <fixture-root>
+dex-memoria create recover --fixture <fixture-root>
+```
+
+`create plan` recebe a intencao sem paths e devolve um plan deterministico;
+`create apply` recebe esse plan e publica L1+L2 com journal; `create recover`
+recebe a idempotency key e restaura o baseline de uma transacao nao terminal.
+Nunca passe um vault ou workspace vivo em `--fixture`.
+
+Comandos, streams, limites, JSON Schemas, marker/manifest, checkpoints,
+failpoints, exit codes e riscos estao em
+[`cli-create-fixture-v0.md`](cli-create-fixture-v0.md).
 
 ### Clonar O Repo
 
@@ -383,7 +406,8 @@ Antes de salvar, lembrar, arquivar ou encaminhar qualquer captura operacional, a
 
 Nao trate MEMORY.ndjson como fila viva.
 Nao deixe memoria resolvida orientar o proximo passo.
-Nao prometa scripts, hooks ou automacao que nao existem nesta V1.
+Nao prometa scripts gerais, hooks ou automacao que nao existem nesta V1
+documental e na excecao V0 fixture-only.
 ```
 
 ### Classificar Uma Captura
@@ -601,8 +625,8 @@ Este pacote nao:
 
 - instala skill global;
 - altera `dex-agent`;
-- cria comandos;
-- executa scripts;
+- cria comandos no Dex Agent ou em consumidores;
+- executa hooks, scripts externos ou automacao fora da CLI V0 fixture-only;
 - grava ledger;
 - move arquivos;
 - publica releases;
@@ -611,4 +635,7 @@ Este pacote nao:
 
 ## Limites Da V1
 
-A V1 e contrato, template, exemplo e guia de uso. Scripts, hooks e integracoes automaticas so entram depois de uso real repetido, com baixa ambiguidade e revisao humana.
+A V1 e contrato, template, exemplo e guia de uso. A excecao V0 executa apenas
+`create plan|apply|recover` em fixture descartavel. Scripts gerais, hooks,
+writer real e integracoes automaticas continuam fora ate decisao humana
+especifica apoiada por uso real repetido e evidencia.

@@ -281,6 +281,28 @@ test("create plan blocks invalid marker and manifest before planning", async (t)
   assertCliError(await runCli(["create", "plan", "--fixture", fixtureRoot], JSON.stringify(request)), 3, "SAFETY_BLOCKED");
 });
 
+test("create plan enforces closed marker and manifest schemas", async (t) => {
+  const markerRoot = await createFixture(t);
+  await writeFile(join(markerRoot, ".dex-memory-fixture.json"), `${JSON.stringify({
+    contract: "dex.memory.disposable-run.v1",
+    operation: "create",
+    disposable: true,
+    targets: ["work/LEMBRANCA.md", "work/MEMORIA.md"],
+    extra: true
+  })}\n`);
+  assertCliError(await runCli(["create", "plan", "--fixture", markerRoot], JSON.stringify(request)), 3, "SAFETY_BLOCKED");
+
+  const manifestRoot = await createFixture(t);
+  await writeFile(join(manifestRoot, "manifest.json"), `${JSON.stringify({
+    contract: "dex.memory.fixture.legacy-create-l1-l2.v1",
+    operation: "create",
+    disposable_runs_only: true,
+    targets: ["work/LEMBRANCA.md", "work/MEMORIA.md"],
+    extra: true
+  })}\n`);
+  assertCliError(await runCli(["create", "plan", "--fixture", manifestRoot], JSON.stringify(request)), 3, "SAFETY_BLOCKED");
+});
+
 test("create plan blocks a symlink target", async (t) => {
   const fixtureRoot = await createFixture(t);
   const external = join(fixtureRoot, "external.md");

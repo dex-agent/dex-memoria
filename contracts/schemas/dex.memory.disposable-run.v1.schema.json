@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.disposable-run.v1.schema.json",
+  "title": "dex.memory.disposable-run.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "operation",
+    "disposable",
+    "targets"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.disposable-run.v1"
+    },
+    "operation": {
+      "const": "create"
+    },
+    "disposable": {
+      "const": true
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        { "const": "work/LEMBRANCA.md" },
+        { "const": "work/MEMORIA.md" }
+      ],
+      "items": false
+    }
+  },
+  "examples": [
+    {
+      "contract": "dex.memory.disposable-run.v1",
+      "operation": "create",
+      "disposable": true,
+      "targets": [
+        "work/LEMBRANCA.md",
+        "work/MEMORIA.md"
+      ]
+    }
+  ]
+}

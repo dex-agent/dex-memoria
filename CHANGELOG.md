@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Publica JSON Schemas Draft 2020-12 para request, recover, plan, receipt,
+  error, marker, manifest e checkpoints do create L1+L2.
+- Documenta a CLI JSON fixture-only `create plan|apply|recover`, seus streams,
+  limites, journal, failpoints, exit codes e riscos nao cobertos.
+- Preserva a V1 documental e restringe a capacidade executavel V0 a fixtures
+  descartaveis, sem anunciar release, vault real ou writer geral.
+
 ## 0.1.6 - 2026-06-19
 
 - Publica `SKILL.md` como contrato operacional completo, nao como

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.request.v0.schema.json",
+  "title": "dex.memory.create.request.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "operation",
+    "idempotency_key",
+    "candidate"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.create.request.v0"
+    },
+    "operation": {
+      "const": "create"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localizer",
+        "trigger",
+        "title",
+        "anchor",
+        "body"
+      ],
+      "properties": {
+        "localizer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+        },
+        "trigger": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "\\S"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S"
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "pattern": "\\S"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "contract": "dex.memory.create.request.v0",
+      "operation": "create",
+      "idempotency_key": "fixture:example:001",
+      "candidate": {
+        "localizer": "EXAMPLE-CREATE-L1-L2",
+        "trigger": "open the example memory",
+        "title": "Example create L1 and L2",
+        "anchor": "example-create-l1-l2",
+        "body": "Sanitized fixture-only example."
+      }
+    }
+  ]
+}

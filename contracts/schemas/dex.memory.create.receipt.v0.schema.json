@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.receipt.v0.schema.json",
+  "title": "dex.memory.create.receipt.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "command",
+    "status",
+    "transaction_id",
+    "idempotency_key",
+    "request_fingerprint",
+    "plan_hash",
+    "writes",
+    "journal_state",
+    "recovery_required"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.create.receipt.v0"
+    },
+    "command": {
+      "enum": [
+        "apply",
+        "recover"
+      ]
+    },
+    "status": {
+      "enum": [
+        "COMMITTED",
+        "ALREADY_COMMITTED",
+        "ROLLED_BACK",
+        "ALREADY_ROLLED_BACK"
+      ]
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "request_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "plan_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "writes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "slot",
+            "relative_path",
+            "before_sha256",
+            "after_sha256",
+            "changed"
+          ],
+          "properties": {
+            "slot": {
+              "const": "l1"
+            },
+            "relative_path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "\\S"
+            },
+            "before_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "after_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "changed": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "slot",
+            "relative_path",
+            "before_sha256",
+            "after_sha256",
+            "changed"
+          ],
+          "properties": {
+            "slot": {
+              "const": "l2"
+            },
+            "relative_path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "\\S"
+            },
+            "before_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "after_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "changed": {
+              "type": "boolean"
+            }
+          }
+        }
+      ],
+      "items": false
+    },
+    "journal_state": {
+      "enum": [
+        "COMMITTED",
+        "ROLLED_BACK"
+      ]
+    },
+    "recovery_required": {
+      "const": false
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "command": { "const": "apply" },
+        "status": { "const": "COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      }
+    },
+    {
+      "properties": {
+        "command": { "const": "apply" },
+        "status": { "const": "ALREADY_COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      }
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ROLLED_BACK" },
+        "journal_state": { "const": "ROLLED_BACK" }
+      }
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ALREADY_ROLLED_BACK" },
+        "journal_state": { "const": "ROLLED_BACK" }
+      }
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ALREADY_COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      }
+    }
+  ]
+}

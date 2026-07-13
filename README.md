@@ -2,9 +2,17 @@
 
 Versao atual: `0.1.6`
 
-`dex-memoria` e um pacote documental para orientar o ciclo de vida de memoria operacional em projetos Dex Agent.
+`dex-memoria` preserva a V1 documental do ciclo de vida de memoria operacional
+e oferece uma CLI V0 fixture-only para planejar, aplicar e recuperar um par
+L1+L2 somente em fixtures descartaveis marcadas.
 
-Ele nasceu a partir da skill `skills/dex-memoria` do repo `dex-agent`, mas este pacote nao carrega o runtime do bot, nao executa hooks e nao grava memoria sozinho. Esse limite nao transforma memorias em somente leitura; ele apenas separa contrato documental de mecanismo autorizado de escrita.
+Ele nasceu a partir da skill `skills/dex-memoria` do repo `dex-agent`, mas nao
+carrega o runtime do bot, nao executa hooks e nao e um writer geral. A unica
+excecao executavel deste corte e a fixture temporaria descrita em
+[`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md); ela bloqueia o
+vault vivo. Esse limite nao transforma memorias em somente leitura; ele apenas
+separa contrato documental, bancada fixture-only e mecanismo autorizado de
+escrita real.
 
 Dentro deste pacote, `memorizador` e o contrato de memorizacao: o formato que
 define como, quando, quanto, por que, por quanto tempo e quando nao lembrar.
@@ -77,8 +85,27 @@ e nada entra no global se so serve para um projeto.
 - Nao substitui `/inbox`, `/memory`, recall, ledger ou proposals do bot.
 - Nao contem `.agents/` reais, inbox, ledger, screenshots, logs, tokens ou secrets.
 - Nao promete scripts V2 como capacidade existente.
+- Nao e writer automatico geral e nao aceita vault ou workspace vivo como
+  destino dos comandos `create`.
 - Instala o redirecionador global `dex-memoria` em `.agents/skills` quando o
   comando `install` for executado.
+
+## CLI V0 fixture-only
+
+O binario top-level preserva `doctor`, `memory-home`, `install` e `version` e
+adiciona somente:
+
+```text
+dex-memoria create plan    --fixture <fixture-root>
+dex-memoria create apply   --fixture <fixture-root>
+dex-memoria create recover --fixture <fixture-root>
+```
+
+Os comandos novos usam um JSON UTF-8 por stream, marker/manifest fechados,
+targets allowlisted e journal recuperavel. Consulte a
+[referencia canonica da CLI V0](docs/cli-create-fixture-v0.md) e os JSON Schemas
+Draft 2020-12 em `contracts/schemas/`. Esta fronteira nao anuncia release nova,
+nao integra consumidor em producao e nao remove writers existentes.
 
 ## Estrutura
 
@@ -86,6 +113,8 @@ e nada entra no global se so serve para um projeto.
 - `SPEC.md`: contrato atual do ciclo de vida.
 - `docs/usage.md`: instalacao, ativacao e prompts prontos.
 - `docs/runtime-boundary.md`: o que ainda pertence ao Dex Agent.
+- `docs/cli-create-fixture-v0.md`: comandos, streams, schemas, fixture, journal,
+  failpoints, exit codes e riscos da excecao executavel V0.
 - `docs/memory-home.md`: raiz canonica `DEX_MEMORIA_HOME` e bloqueios de
   caminho.
 - `docs/integration-dex-agent.md`: como integrar este pacote ao Dex Agent.
@@ -192,7 +221,8 @@ aplique o contrato de ciclo de vida de memoria de:
 <caminho-ou-url-do-dex-memoria>
 
 Nao trate este pacote como runtime.
-Nao prometa hooks, comandos ou automacao que nao existem nesta V1.
+Nao prometa hooks, comandos gerais ou automacao que nao existem nesta V1
+documental e na excecao V0 fixture-only.
 Quando houver memoria reutilizavel, grave apenas ponteiro curto para a fonte viva.
 ```
 
@@ -203,7 +233,8 @@ Instale dex-memoria neste projeto.
 
 Contexto:
 - dex-memoria e um pacote documental/skill de contrato de memoria.
-- Ele nao e runtime, nao executa hooks, nao grava memoria sozinho e nao cria comandos automaticamente.
+- Ele nao e runtime do Dex Agent, nao executa hooks e nao grava vault ou ledger
+  vivo. A CLI V0 fixture-only e a unica excecao executavel deste corte.
 - Repo oficial: https://github.com/dex-agent/dex-memoria
 
 Tarefa:
@@ -249,11 +280,11 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo publica a versao documental `0.1.6` com a arquitetura L1/L2/L3 de
-recuperacao em camadas, a raiz canonica `DEX_MEMORIA_HOME` e a taxonomia de
-temas reutilizaveis. O proximo passo seguro e integrar referencias a partir do
-`dex-agent` sem mover runtime, copiar estado real ou prometer comandos V2
-inexistentes.
+Este repo preserva a linha documental `0.1.6`, a arquitetura L1/L2/L3, a raiz
+canonica `DEX_MEMORIA_HOME` e a taxonomia de temas reutilizaveis. O V0
+executavel fica restrito a fixture descartavel; versionamento/release,
+integracao de producao e remocao de fallback ou writer existente continuam
+fora deste corte.
 
 ## Camada Publica
 

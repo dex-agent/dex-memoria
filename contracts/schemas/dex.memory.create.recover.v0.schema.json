@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.recover.v0.schema.json",
+  "title": "dex.memory.create.recover.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "idempotency_key"
+  ],
+  "properties": {
+    "contract": {
+      "const": "dex.memory.create.recover.v0"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    }
+  },
+  "examples": [
+    {
+      "contract": "dex.memory.create.recover.v0",
+      "idempotency_key": "fixture:example:001"
+    }
+  ]
+}
