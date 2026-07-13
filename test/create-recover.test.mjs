@@ -272,7 +272,15 @@ test("recover safety-blocks a valid journal reached through a transaction symlin
     plan: createPlan
   })}\n`);
   await mkdir(join(fixtureRoot, "journal"));
-  await symlink(linkedTransactionRoot, join(fixtureRoot, "journal", createPlan.transaction_id), "junction");
+  try {
+    await symlink(linkedTransactionRoot, join(fixtureRoot, "journal", createPlan.transaction_id), "junction");
+  } catch (error) {
+    if (["EPERM", "EACCES", "ENOTSUP"].includes(error.code)) {
+      t.skip(`junction creation is unavailable (${error.code})`);
+      return;
+    }
+    throw error;
+  }
   const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
   const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
   const beforeCheckpoints = await readdir(linkedTransactionRoot);
