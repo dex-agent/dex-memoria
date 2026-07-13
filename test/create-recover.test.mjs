@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { fork, spawn } from "node:child_process";
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
@@ -256,6 +256,33 @@ test("recover rolls back a valid PREPARED transaction", async (t) => {
   assert.equal(result.stderr, "");
   assert.deepEqual(JSON.parse(result.stdout), expectedReceipt(createPlan, "ROLLED_BACK"));
   assert.deepEqual(await transactionFiles(fixtureRoot, createPlan.transaction_id), ["0001-PREPARED.json", "0002-ROLLED_BACK.json"]);
+});
+
+test("recover safety-blocks a valid journal reached through a transaction symlink without mutation", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const createPlan = await plan(fixtureRoot);
+  const linkedTransactionRoot = join(fixtureRoot, "linked-transaction");
+  await mkdir(linkedTransactionRoot);
+  await writeFile(join(linkedTransactionRoot, "0001-PREPARED.json"), `${JSON.stringify({
+    state: "PREPARED",
+    transaction_id: createPlan.transaction_id,
+    idempotency_key: createPlan.idempotency_key,
+    request_fingerprint: createPlan.request_fingerprint,
+    plan_hash: createPlan.plan_hash,
+    plan: createPlan
+  })}\n`);
+  await mkdir(join(fixtureRoot, "journal"));
+  await symlink(linkedTransactionRoot, join(fixtureRoot, "journal", createPlan.transaction_id), "junction");
+  const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+  const beforeCheckpoints = await readdir(linkedTransactionRoot);
+
+  const result = await recover(fixtureRoot);
+
+  assertCliError(result, 3, "SAFETY_BLOCKED");
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+  assert.deepEqual(await readdir(linkedTransactionRoot), beforeCheckpoints);
 });
 
 for (const { slot, file } of [{ slot: "l1", file: "LEMBRANCA.md" }, { slot: "l2", file: "MEMORIA.md" }]) {

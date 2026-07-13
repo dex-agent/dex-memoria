@@ -69,6 +69,7 @@ function findRecoveryJournal(fixtureRoot, idempotencyKey, expectedPaths) {
   assertJournalPathSafe(fixtureRoot);
   return findValidatedJournal(fixtureRoot, idempotencyKey, {
     conflict: recoveryConflict,
+    invalidEntry: safetyBlocked,
     requireMatch: true,
     validatePlan: (plan) => {
       validatePlanSchema(plan);
@@ -142,6 +143,10 @@ function invalidSchema(message) {
 
 function recoveryConflict(message) {
   throw new RecoverError(4, "RECOVERY_CONFLICT", message);
+}
+
+function safetyBlocked(message) {
+  throw new RecoverError(3, "SAFETY_BLOCKED", message);
 }
 
 module.exports = { RecoverError, recoverCreate };
