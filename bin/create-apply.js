@@ -12,9 +12,15 @@ class ApplyError extends Error {
   }
 }
 
-async function applyCreate(plan, fixtureRoot, targetPaths) {
+const TEST_FAILPOINTS = new Set([
+  "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT",
+  "FP_AFTER_L1_CHECKPOINT_BEFORE_L2"
+]);
+
+async function applyCreate(plan, fixtureRoot, targetPaths, failpointControl = {}) {
   validatePlanSchema(plan);
   validatePlanIntegrity(plan);
+  validateFailpointControl(failpointControl);
   assertJournalPathSafe(fixtureRoot);
   const expectedPaths = targetPaths.map((targetPath) => path.relative(fixtureRoot, targetPath).split(path.sep).join("/"));
   if (plan.targets.some((target, index) => target.relative_path !== expectedPaths[index])) {
@@ -53,10 +59,12 @@ async function applyCreate(plan, fixtureRoot, targetPaths) {
   });
 
   await publishTarget(targetPaths[0], plan.targets[0], plan.transaction_id);
+  await stopAtFailpoint(failpointControl, "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT", plan.transaction_id);
   writeCheckpoint(transactionRoot, "0002-L1_PUBLISHED.json", {
     state: "L1_PUBLISHED",
     transaction_id: plan.transaction_id
   });
+  await stopAtFailpoint(failpointControl, "FP_AFTER_L1_CHECKPOINT_BEFORE_L2", plan.transaction_id);
   await publishTarget(targetPaths[1], plan.targets[1], plan.transaction_id);
   await verifyPublishedPair(targetPaths, plan.targets);
   writeCheckpoint(transactionRoot, "0003-COMMITTED.json", {
@@ -66,6 +74,26 @@ async function applyCreate(plan, fixtureRoot, targetPaths) {
   });
 
   return createReceipt(plan, "COMMITTED");
+}
+
+function validateFailpointControl(control) {
+  if (!TEST_FAILPOINTS.has(control.name)) return;
+  if (typeof control.send !== "function") {
+    throw new ApplyError(6, "FAILPOINT_UNAVAILABLE", "requested test failpoint requires an IPC controller");
+  }
+}
+
+async function stopAtFailpoint(control, expectedName, transactionId) {
+  if (control.name !== expectedName) return;
+  await new Promise((resolve, reject) => {
+    control.send({
+      contract: "dex.memory.test.failpoint.v0",
+      failpoint: expectedName,
+      pid: process.pid,
+      transaction_id: transactionId
+    }, (error) => error ? reject(error) : resolve());
+  });
+  await new Promise(() => {});
 }
 
 async function verifyPublishedPair(targetPaths, targets) {
@@ -250,4 +278,13 @@ function writeCheckpoint(transactionRoot, name, payload) {
   fs.writeFileSync(path.join(transactionRoot, name), `${JSON.stringify(payload)}\n`, { flag: "wx" });
 }
 
-module.exports = { ApplyError, applyCreate, createReceipt };
+module.exports = {
+  ApplyError,
+  applyCreate,
+  assertJournalPathSafe,
+  createReceipt,
+  publishTarget,
+  validatePlanIntegrity,
+  validatePlanSchema,
+  writeCheckpoint
+};

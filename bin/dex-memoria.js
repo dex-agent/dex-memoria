@@ -6,6 +6,7 @@ const os = require("os");
 const path = require("path");
 const { planCreate } = require("./create-plan");
 const { ApplyError, applyCreate } = require("./create-apply");
+const { RecoverError, recoverCreate } = require("./create-recover");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
@@ -70,11 +71,13 @@ async function main() {
         await createPlan(args.slice(2));
       } else if (args[1] === "apply") {
         await createApply(args.slice(2));
+      } else if (args[1] === "recover") {
+        await createRecover(args.slice(2));
       } else {
-        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan|apply --fixture <fixture-root>");
+        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan|apply|recover --fixture <fixture-root>");
       }
     } catch (error) {
-      if (error instanceof CliError || error instanceof ApplyError) {
+      if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError) {
         throw error;
       }
       throw new CliError(6, "IO_FAILURE", `create ${args[1] || "command"} failed`);
@@ -86,7 +89,7 @@ async function main() {
 }
 
 async function createApply(args) {
-  const fixtureRoot = parseFixtureArg(args);
+  const fixtureRoot = parseFixtureArg(args, "apply");
   const { targetPaths } = validateFixture(fixtureRoot);
   const input = await readStdin();
   let plan;
@@ -95,12 +98,29 @@ async function createApply(args) {
   } catch (error) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
-  const receipt = await applyCreate(plan, fixtureRoot, targetPaths);
+  const receipt = await applyCreate(plan, fixtureRoot, targetPaths, {
+    name: process.env.DEX_MEMORIA_INTERNAL_TEST_FAILPOINT,
+    send: typeof process.send === "function" ? process.send.bind(process) : undefined
+  });
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+}
+
+async function createRecover(args) {
+  const fixtureRoot = parseFixtureArg(args, "recover");
+  const { targetPaths } = validateFixture(fixtureRoot);
+  const input = await readStdin();
+  let request;
+  try {
+    request = JSON.parse(input);
+  } catch (error) {
+    throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
+  }
+  const receipt = await recoverCreate(request, fixtureRoot, targetPaths);
   process.stdout.write(`${JSON.stringify(receipt)}\n`);
 }
 
 async function createPlan(args) {
-  const fixtureRoot = parseFixtureArg(args);
+  const fixtureRoot = parseFixtureArg(args, "plan");
   const { marker, targetPaths } = validateFixture(fixtureRoot);
   const input = await readStdin();
   let request;
@@ -118,7 +138,7 @@ async function createPlan(args) {
   process.stdout.write(`${JSON.stringify(planCreate(request, snapshot, targets))}\n`);
 }
 
-function parseFixtureArg(args) {
+function parseFixtureArg(args, subcommand) {
   let value;
   if (args.length === 2 && args[0] === "--fixture") {
     value = args[1];
@@ -126,7 +146,7 @@ function parseFixtureArg(args) {
     value = args[0].slice("--fixture=".length);
   }
   if (!value) {
-    throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan --fixture <fixture-root>");
+    throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria create ${subcommand} --fixture <fixture-root>`);
   }
   return path.resolve(value);
 }
@@ -312,6 +332,7 @@ Uso:
   dex-memoria install [--target <path>] [--registry-target <path>] [--force] [--dry-run]
   dex-memoria create plan --fixture <fixture-root>
   dex-memoria create apply --fixture <fixture-root>
+  dex-memoria create recover --fixture <fixture-root>
   dex-memoria version
 
 Padrao de instalacao do contrato completo:
@@ -508,7 +529,7 @@ function fail(message) {
 }
 
 main().catch((error) => {
-  if (error instanceof CliError || error instanceof ApplyError) {
+  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError) {
     process.stderr.write(`${JSON.stringify({
       contract: "dex.memory.error.v0",
       code: error.code,
