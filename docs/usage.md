@@ -93,6 +93,9 @@ dex-memoria create recover --fixture <fixture-root>
 `create plan` recebe a intencao sem paths e devolve um plan deterministico;
 `create apply` recebe esse plan e publica L1+L2 com journal; `create recover`
 recebe a idempotency key e restaura o baseline de uma transacao nao terminal.
+O plan embute o request fechado; apply recompõe o resultado owner-side. A
+identidade e key + fingerprint: commit repetido devolve o receipt original,
+enquanto `ROLLED_BACK` exige uma nova key.
 Nunca passe um vault ou workspace vivo em `--fixture`.
 
 Comandos, streams, limites, JSON Schemas, marker/manifest, checkpoints,

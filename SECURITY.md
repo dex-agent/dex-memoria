@@ -3,7 +3,7 @@
 ## Supported Version
 
 `dex-memoria` is a public documentation and skill contract package. The current
-supported public line is `0.1.x`, with version `0.1.5` as the active release.
+supported public line is `0.1.x`, with version `0.1.6` as the active release.
 
 ## Scope
 
@@ -12,8 +12,11 @@ private `.agents/` data, inboxes, ledgers, screenshots, logs, local sessions, or
 Dex Agent production configuration.
 
 The package documents the memory lifecycle contract used around Dex Agent. It
-does not provide the Dex Agent runtime, does not install hooks, and does not
-write operational memory by itself.
+also carries a fixture-only CLI for marked disposable L1+L2 fixtures. That
+exception must never target a live vault, carry secrets, or be treated as a
+general-purpose runtime. The package does not provide the Dex Agent runtime,
+does not install hooks, and does not write operational memory outside that
+closed fixture boundary.
 
 ## Reporting A Vulnerability
 
@@ -34,5 +37,6 @@ sanitized fix or advisory when appropriate.
 - Never commit `.env`, tokens, real chat IDs, local ledgers, inboxes, screenshots,
   logs, or generated runtime state.
 - Keep examples sanitized and fictional.
-- Keep runtime changes in `dex-agent`; this package only carries public
-  documentation, templates, examples, and lightweight validation.
+- Keep general runtime changes in `dex-agent`; this package carries public
+  documentation, templates, examples, lightweight validation, and only the
+  closed fixture-only CLI described above.

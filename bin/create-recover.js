@@ -6,9 +6,11 @@ const {
   assertJournalPathSafe,
   publishTarget,
   validatePlanIntegrity,
+  validateOwnerPlannedContents,
   validatePlanSchema,
   writeCheckpoint
 } = require("./create-apply");
+const { findValidatedJournal } = require("./create-journal");
 
 class RecoverError extends Error {
   constructor(exitCode, code, message) {
@@ -20,9 +22,9 @@ class RecoverError extends Error {
 
 async function recoverCreate(request, fixtureRoot, targetPaths) {
   validateRecoverRequest(request);
-  const journal = findRecoveryJournal(fixtureRoot, request.idempotency_key);
-  const plan = journal.prepared.plan;
   const expectedPaths = targetPaths.map((targetPath) => path.relative(fixtureRoot, targetPath).split(path.sep).join("/"));
+  const journal = findRecoveryJournal(fixtureRoot, request.idempotency_key, expectedPaths);
+  const plan = journal.prepared.plan;
   if (plan.targets.some((target, index) => target.relative_path !== expectedPaths[index])) {
     recoveryConflict("journal plan targets do not match fixture targets");
   }
@@ -63,90 +65,17 @@ function validateRecoverRequest(request) {
   }
 }
 
-function findRecoveryJournal(fixtureRoot, idempotencyKey) {
+function findRecoveryJournal(fixtureRoot, idempotencyKey, expectedPaths) {
   assertJournalPathSafe(fixtureRoot);
-  const journalRoot = path.join(fixtureRoot, "journal");
-  if (!fs.existsSync(journalRoot)) recoveryConflict("recovery journal was not found");
-  const entries = fs.readdirSync(journalRoot, { withFileTypes: true });
-  const matches = [];
-  for (const entry of entries) {
-    if (!/^[a-f0-9]{24}$/.test(entry.name) || !entry.isDirectory() || entry.isSymbolicLink()) {
-      recoveryConflict("fixture journal contains an invalid transaction entry");
+  return findValidatedJournal(fixtureRoot, idempotencyKey, {
+    conflict: recoveryConflict,
+    requireMatch: true,
+    validatePlan: (plan) => {
+      validatePlanSchema(plan);
+      validatePlanIntegrity(plan);
+      validateOwnerPlannedContents(plan, expectedPaths);
     }
-    const journal = readAndValidateJournal(path.join(journalRoot, entry.name), entry.name);
-    if (journal.prepared.idempotency_key === idempotencyKey) matches.push(journal);
-  }
-  if (matches.length !== 1) recoveryConflict(matches.length === 0 ? "recovery journal was not found" : "recovery journal is ambiguous");
-  return matches[0];
-}
-
-function readAndValidateJournal(transactionRoot, directoryTransactionId) {
-  const entries = fs.readdirSync(transactionRoot, { withFileTypes: true });
-  if (entries.length === 0) recoveryConflict("transaction journal is empty");
-  const checkpointNames = entries.map((entry) => {
-    if (!entry.isFile() || entry.isSymbolicLink() || !/^\d{4}-(?:PREPARED|L1_PUBLISHED|COMMITTED|ROLLED_BACK)\.json$/.test(entry.name)) {
-      recoveryConflict("transaction journal contains an invalid checkpoint");
-    }
-    return entry.name;
-  }).sort();
-  const checkpoints = checkpointNames.map((name) => readCheckpoint(path.join(transactionRoot, name)));
-  validateCheckpointSequence(checkpointNames, checkpoints);
-  const prepared = checkpoints[0];
-  try {
-    requireJournalExactKeys(prepared, ["idempotency_key", "plan", "plan_hash", "request_fingerprint", "state", "transaction_id"], "PREPARED checkpoint");
-    validatePlanSchema(prepared.plan);
-    validatePlanIntegrity(prepared.plan);
-  } catch (error) {
-    recoveryConflict("PREPARED checkpoint or plan is invalid");
-  }
-  if (
-    prepared.state !== "PREPARED" ||
-    prepared.transaction_id !== directoryTransactionId ||
-    prepared.plan.transaction_id !== directoryTransactionId ||
-    prepared.idempotency_key !== prepared.plan.idempotency_key ||
-    prepared.request_fingerprint !== prepared.plan.request_fingerprint ||
-    prepared.plan_hash !== prepared.plan.plan_hash
-  ) {
-    recoveryConflict("PREPARED checkpoint identifiers do not match");
-  }
-  for (let index = 1; index < checkpoints.length; index += 1) {
-    const checkpoint = checkpoints[index];
-    const state = checkpoint.state;
-    requireJournalExactKeys(checkpoint, state === "COMMITTED" ? ["plan_hash", "state", "transaction_id"] : ["state", "transaction_id"], `${state} checkpoint`);
-    if (checkpoint.transaction_id !== directoryTransactionId) recoveryConflict("checkpoint transaction identifier does not match");
-    if (state === "COMMITTED" && checkpoint.plan_hash !== prepared.plan_hash) recoveryConflict("COMMITTED plan hash does not match");
-  }
-  return {
-    transactionRoot,
-    checkpointNames,
-    prepared,
-    latest: checkpoints.at(-1)
-  };
-}
-
-function readCheckpoint(checkpointPath) {
-  const text = fs.readFileSync(checkpointPath, "utf8");
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    recoveryConflict("transaction journal contains corrupt JSON");
-  }
-}
-
-function validateCheckpointSequence(names, checkpoints) {
-  const states = checkpoints.map((checkpoint) => checkpoint && checkpoint.state);
-  const validStates = [
-    ["PREPARED"],
-    ["PREPARED", "L1_PUBLISHED"],
-    ["PREPARED", "ROLLED_BACK"],
-    ["PREPARED", "L1_PUBLISHED", "COMMITTED"],
-    ["PREPARED", "L1_PUBLISHED", "ROLLED_BACK"]
-  ];
-  const numbersAreContiguous = names.every((name, index) => name.startsWith(`${String(index + 1).padStart(4, "0")}-`));
-  if (!numbersAreContiguous || !validStates.some((candidate) => candidate.length === states.length && candidate.every((state, index) => state === states[index]))) {
-    recoveryConflict("transaction checkpoint sequence is invalid");
-  }
-  if (names.some((name, index) => !name.endsWith(`-${states[index]}.json`))) recoveryConflict("checkpoint filename and state do not match");
+  });
 }
 
 function snapshotCurrent(targetPath) {
@@ -205,13 +134,6 @@ function requireExactKeys(value, expected, label) {
   const actual = Object.keys(value).sort();
   const wanted = [...expected].sort();
   if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) invalidSchema(`${label} contains missing or unknown fields`);
-}
-
-function requireJournalExactKeys(value, expected, label) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) recoveryConflict(`${label} must be an object`);
-  const actual = Object.keys(value).sort();
-  const wanted = [...expected].sort();
-  if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) recoveryConflict(`${label} contains missing or unknown fields`);
 }
 
 function invalidSchema(message) {

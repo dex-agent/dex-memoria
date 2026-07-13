@@ -97,6 +97,7 @@ test("public create output schemas close every emitted plan, receipt and error f
     "contract",
     "operation",
     "idempotency_key",
+    "request",
     "request_fingerprint",
     "transaction_id",
     "targets",
@@ -104,6 +105,7 @@ test("public create output schemas close every emitted plan, receipt and error f
   ]);
   assert.equal(plan.properties.contract.const, "dex.memory.create.plan.v0");
   assert.equal(plan.properties.operation.const, "create");
+  assert.deepEqual(plan.properties.request, { $ref: "dex.memory.create.request.v0.schema.json" });
   assert.equal(plan.properties.request_fingerprint.pattern, "^[a-f0-9]{64}$");
   assert.equal(plan.properties.transaction_id.pattern, "^[a-f0-9]{24}$");
   assert.equal(plan.properties.plan_hash.pattern, "^[a-f0-9]{64}$");
@@ -163,6 +165,8 @@ test("public create output schemas close every emitted plan, receipt and error f
     "SAFETY_BLOCKED",
     "PLAN_CONFLICT",
     "IDEMPOTENCY_CONFLICT",
+    "JOURNAL_CONFLICT",
+    "TRANSACTION_ROLLED_BACK",
     "RECOVERY_REQUIRED",
     "FAILPOINT_UNAVAILABLE",
     "RECOVERY_CONFLICT",
@@ -231,6 +235,11 @@ test("shared public validator rejects incompatible mutations inside every contra
       name: "recover idempotency limit",
       file: "dex.memory.create.recover.v0.schema.json",
       mutate: (schema) => { schema.properties.idempotency_key.maxLength = 257; }
+    },
+    {
+      name: "plan embedded request reference",
+      file: "dex.memory.create.plan.v0.schema.json",
+      mutate: (schema) => { schema.properties.request.$ref = "other.schema.json"; }
     },
     {
       name: "plan target closed object",

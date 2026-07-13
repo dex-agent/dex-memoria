@@ -12,8 +12,9 @@ not the Dex Agent runtime.
 - Do not edit secrets, local state, `.env`, runtime ledgers, private `.agents/`
   data, logs, screenshots, or session artifacts.
 - Keep examples sanitized and free of real personal data.
-- Keep behavior claims aligned with version `0.1.5`: no hooks, no automatic
-  memory writes, and no promised V2 scripts unless they actually exist.
+- Keep behavior claims aligned with version `0.1.6`: no hooks or general
+  automatic memory writes; the only executable create boundary is the marked,
+  disposable fixture-only V0 documented in `docs/cli-create-fixture-v0.md`.
 
 ## Development
 

@@ -25,6 +25,7 @@ const requiredFiles = [
   "VERSION",
   "package.json",
   "bin/dex-memoria.js",
+  "bin/create-journal.js",
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
   "contracts/schemas/dex.memory.create.request.v0.schema.json",
@@ -168,6 +169,7 @@ function main() {
     "Riscos nao cobertos"
   ]);
   requireText(errors, "CHANGELOG.md", ["## Unreleased", "CLI JSON fixture-only"]);
+  requireText(errors, "CONTRIBUTING.md", ["version `0.1.6`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);
   requireText(errors, "AGENTS.md", ["V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
   validateCreateContractSchemas(errors);
   requireText(errors, "docs/memory-home.md", ["DEX_MEMORIA_HOME", "$HOME/.agents/memories", "<WORKSPACE>/.agents", "projeto-ferramenta"]);
@@ -183,7 +185,11 @@ function main() {
     "Precedencia Local E Fallbacks",
     "Fronteira De Escrita",
     "Fonte Completa",
-    "Graphify e mapa, nao prova"
+    "Graphify e mapa, nao prova",
+    "Excecao Executavel V0 Fixture-Only",
+    "V1 documental preservada",
+    "`create plan|apply|recover`",
+    "[docs/cli-create-fixture-v0.md](docs/cli-create-fixture-v0.md)"
   ]);
   requireText(errors, "SPEC.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Forca da evidencia", "source: graphify"]);
   requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia"]);
@@ -195,12 +201,21 @@ function main() {
     "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
     "$env:USERPROFILE\\.dex-agent\\skills\\dex-memoria\\SKILL.md",
     "$env:USERPROFILE\\.agents\\skills\\dex-memoria\\SKILL.md",
-    "Se nenhum destino completo existir, declare bloqueio explicito"
+    "Se nenhum destino completo existir, declare bloqueio explicito",
+    "Excecao Executavel V0 Fixture-Only",
+    "V1 documental preservada",
+    "../../../docs/cli-create-fixture-v0.md"
   ]);
   validateConscienciaTemplates(errors);
   validateGraduatedMemoryBattery(errors);
   requireText(errors, "CHANGELOG.md", ["## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
-  requireText(errors, "SECURITY.md", ["must not contain secrets", "does not provide the Dex Agent runtime"]);
+  requireText(errors, "SECURITY.md", [
+    "must not contain secrets",
+    "does not provide the Dex Agent runtime",
+    "fixture-only CLI",
+    "live vault",
+    "general-purpose runtime"
+  ]);
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);
   validateNoForbiddenTrackedFiles(errors);

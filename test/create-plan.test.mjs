@@ -95,6 +95,15 @@ function resignPlan(plan) {
   return { ...unsigned, plan_hash: createHash("sha256").update(stableJson(unsigned)).digest("hex") };
 }
 
+function resignPlanAndTransaction(plan) {
+  const transaction_id = createHash("sha256").update(stableJson({
+    idempotency_key: plan.idempotency_key,
+    request_fingerprint: plan.request_fingerprint,
+    targets: plan.targets
+  })).digest("hex").slice(0, 24);
+  return resignPlan({ ...plan, transaction_id });
+}
+
 async function assertNoJournal(fixtureRoot) {
   await assert.rejects(readdir(join(fixtureRoot, "journal")), { code: "ENOENT" });
 }
@@ -189,6 +198,7 @@ test("create plan emits a deterministic read-only plan matching legacy goldens",
     "contract",
     "operation",
     "idempotency_key",
+    "request",
     "request_fingerprint",
     "transaction_id",
     "targets",
@@ -197,6 +207,7 @@ test("create plan emits a deterministic read-only plan matching legacy goldens",
   assert.equal(plan.contract, "dex.memory.create.plan.v0");
   assert.equal(plan.operation, "create");
   assert.equal(plan.idempotency_key, request.idempotency_key);
+  assert.deepEqual(plan.request, request);
   assert.match(plan.request_fingerprint, /^[a-f0-9]{64}$/);
   assert.match(plan.transaction_id, /^[a-f0-9]{24}$/);
   assert.match(plan.plan_hash, /^[a-f0-9]{64}$/);
@@ -388,6 +399,27 @@ test("create apply rejects a tampered plan hash before journal creation", async 
   await assertNoJournal(fixtureRoot);
 });
 
+test("create apply rejects arbitrary re-signed L1 and L2 payloads before journal creation", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const original = await createPlan(fixtureRoot);
+  const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+  for (const [index, arbitrary] of ["arbitrary-l1\n", "arbitrary-l2\n"].entries()) {
+    const bytes = Buffer.from(arbitrary);
+    original.targets[index].after_base64 = bytes.toString("base64");
+    original.targets[index].after_sha256 = createHash("sha256").update(bytes).digest("hex");
+    original.targets[index].changed = true;
+  }
+  const plan = resignPlanAndTransaction(original);
+
+  const result = await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(plan));
+
+  assertCliError(result, 4, "PLAN_CONFLICT");
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+  await assertNoJournal(fixtureRoot);
+});
+
 test("create apply rejects re-signed relative paths not derived from the fixture", async (t) => {
   const fixtureRoot = await createFixture(t);
   const original = await createPlan(fixtureRoot);
@@ -507,6 +539,112 @@ test("create apply returns ALREADY_COMMITTED without new checkpoints or duplicat
   assert.deepEqual(await readdir(join(fixtureRoot, "journal", plan.transaction_id)), beforeCheckpoints);
 });
 
+test("create apply returns the original ALREADY_COMMITTED receipt for a new plan of the same request and key", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const originalPlan = await createPlan(fixtureRoot);
+  assert.equal((await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(originalPlan))).exitCode, 0);
+  const committedL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const committedL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+  const originalCheckpoints = await readdir(join(fixtureRoot, "journal", originalPlan.transaction_id));
+  const replanned = await createPlan(fixtureRoot);
+  assert.notEqual(replanned.plan_hash, originalPlan.plan_hash);
+
+  const result = await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(replanned));
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(JSON.parse(result.stdout), {
+    contract: "dex.memory.create.receipt.v0",
+    command: "apply",
+    status: "ALREADY_COMMITTED",
+    transaction_id: originalPlan.transaction_id,
+    idempotency_key: originalPlan.idempotency_key,
+    request_fingerprint: originalPlan.request_fingerprint,
+    plan_hash: originalPlan.plan_hash,
+    writes: originalPlan.targets.map((target) => ({
+      slot: target.slot,
+      relative_path: target.relative_path,
+      before_sha256: target.before_sha256,
+      after_sha256: target.after_sha256,
+      changed: target.changed
+    })),
+    journal_state: "COMMITTED",
+    recovery_required: false
+  });
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), committedL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), committedL2);
+  assert.deepEqual(await readdir(join(fixtureRoot, "journal", originalPlan.transaction_id)), originalCheckpoints);
+  await assert.rejects(readdir(join(fixtureRoot, "journal", replanned.transaction_id)), { code: "ENOENT" });
+});
+
+test("create apply rejects a skipped PREPARED to COMMITTED journal sequence without target mutation", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const plan = await createPlan(fixtureRoot);
+  const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+  const transactionRoot = join(fixtureRoot, "journal", plan.transaction_id);
+  await mkdir(transactionRoot, { recursive: true });
+  await writeFile(join(transactionRoot, "0001-PREPARED.json"), `${JSON.stringify({
+    state: "PREPARED",
+    transaction_id: plan.transaction_id,
+    idempotency_key: plan.idempotency_key,
+    request_fingerprint: plan.request_fingerprint,
+    plan_hash: plan.plan_hash,
+    plan
+  })}\n`);
+  await writeFile(join(transactionRoot, "0002-COMMITTED.json"), `${JSON.stringify({
+    state: "COMMITTED",
+    transaction_id: plan.transaction_id,
+    plan_hash: plan.plan_hash
+  })}\n`);
+
+  const result = await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(plan));
+
+  assertCliError(result, 4, "JOURNAL_CONFLICT");
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+  assert.deepEqual(await readdir(transactionRoot), ["0001-PREPARED.json", "0002-COMMITTED.json"]);
+});
+
+test("create apply rejects two valid journals for the same idempotency key without target mutation", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const firstPlan = await createPlan(fixtureRoot);
+  await writeFile(join(fixtureRoot, "work", "LEMBRANCA.md"), "alternate-l1-baseline\n");
+  await writeFile(join(fixtureRoot, "work", "MEMORIA.md"), "alternate-l2-baseline\n");
+  const secondPlan = await createPlan(fixtureRoot);
+  await writeFile(join(fixtureRoot, "work", "LEMBRANCA.md"), Buffer.from(firstPlan.targets[0].before_base64, "base64"));
+  await writeFile(join(fixtureRoot, "work", "MEMORIA.md"), Buffer.from(firstPlan.targets[1].before_base64, "base64"));
+  const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+  for (const plan of [firstPlan, secondPlan]) {
+    const transactionRoot = join(fixtureRoot, "journal", plan.transaction_id);
+    await mkdir(transactionRoot, { recursive: true });
+    await writeFile(join(transactionRoot, "0001-PREPARED.json"), `${JSON.stringify({
+      state: "PREPARED",
+      transaction_id: plan.transaction_id,
+      idempotency_key: plan.idempotency_key,
+      request_fingerprint: plan.request_fingerprint,
+      plan_hash: plan.plan_hash,
+      plan
+    })}\n`);
+    await writeFile(join(transactionRoot, "0002-L1_PUBLISHED.json"), `${JSON.stringify({
+      state: "L1_PUBLISHED",
+      transaction_id: plan.transaction_id
+    })}\n`);
+    await writeFile(join(transactionRoot, "0003-COMMITTED.json"), `${JSON.stringify({
+      state: "COMMITTED",
+      transaction_id: plan.transaction_id,
+      plan_hash: plan.plan_hash
+    })}\n`);
+  }
+
+  const result = await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(firstPlan));
+
+  assertCliError(result, 4, "JOURNAL_CONFLICT");
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+});
+
 test("create apply rejects an idempotency key reused for a divergent request and plan", async (t) => {
   const fixtureRoot = await createFixture(t);
   const committedPlan = await createPlan(fixtureRoot);
@@ -522,7 +660,7 @@ test("create apply rejects an idempotency key reused for a divergent request and
   await assert.rejects(readdir(join(fixtureRoot, "journal", divergentPlan.transaction_id)), { code: "ENOENT" });
 });
 
-for (const state of ["PREPARED", "L1_PUBLISHED", "ROLLED_BACK"]) {
+for (const state of ["PREPARED", "L1_PUBLISHED"]) {
   test(`create apply requires recovery when an existing journal is ${state}`, async (t) => {
     const fixtureRoot = await createFixture(t);
     const plan = await createPlan(fixtureRoot);
@@ -548,3 +686,33 @@ for (const state of ["PREPARED", "L1_PUBLISHED", "ROLLED_BACK"]) {
       : ["0001-PREPARED.json", `0002-${state}.json`]);
   });
 }
+
+test("create apply treats ROLLED_BACK as terminal and requires a new idempotency key", async (t) => {
+  const fixtureRoot = await createFixture(t);
+  const plan = await createPlan(fixtureRoot);
+  const transactionRoot = join(fixtureRoot, "journal", plan.transaction_id);
+  await mkdir(transactionRoot, { recursive: true });
+  await writeFile(join(transactionRoot, "0001-PREPARED.json"), `${JSON.stringify({
+    state: "PREPARED",
+    transaction_id: plan.transaction_id,
+    idempotency_key: plan.idempotency_key,
+    request_fingerprint: plan.request_fingerprint,
+    plan_hash: plan.plan_hash,
+    plan
+  })}\n`);
+  await writeFile(join(transactionRoot, "0002-ROLLED_BACK.json"), `${JSON.stringify({
+    state: "ROLLED_BACK",
+    transaction_id: plan.transaction_id
+  })}\n`);
+  const beforeL1 = await readFile(join(fixtureRoot, "work", "LEMBRANCA.md"));
+  const beforeL2 = await readFile(join(fixtureRoot, "work", "MEMORIA.md"));
+
+  const result = await runCli(["create", "apply", "--fixture", fixtureRoot], JSON.stringify(plan));
+
+  assertCliError(result, 4, "TRANSACTION_ROLLED_BACK");
+  assert.match(JSON.parse(result.stderr).message, /new idempotency key/i);
+  assert.doesNotMatch(result.stderr, /recover/i);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "LEMBRANCA.md")), beforeL1);
+  assert.deepEqual(await readFile(join(fixtureRoot, "work", "MEMORIA.md")), beforeL2);
+  assert.deepEqual(await readdir(transactionRoot), ["0001-PREPARED.json", "0002-ROLLED_BACK.json"]);
+});

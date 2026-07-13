@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Hardened the fixture-only create plan provenance, shared journal validation,
+  replay identity, and terminal `ROLLED_BACK` handling.
+
 - Publica JSON Schemas Draft 2020-12 para request, recover, plan, receipt,
   error, marker, manifest e checkpoints do create L1+L2.
 - Documenta a CLI JSON fixture-only `create plan|apply|recover`, seus streams,

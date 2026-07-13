@@ -73,6 +73,7 @@ const EXPECTED = {
       contract: { const: "dex.memory.create.plan.v0" },
       operation: { const: "create" },
       idempotency_key: idempotencyKey,
+      request: { $ref: "dex.memory.create.request.v0.schema.json" },
       request_fingerprint: hash64,
       transaction_id: transactionId,
       targets: fixedTuple([
@@ -120,6 +121,8 @@ const EXPECTED = {
         "SAFETY_BLOCKED",
         "PLAN_CONFLICT",
         "IDEMPOTENCY_CONFLICT",
+        "JOURNAL_CONFLICT",
+        "TRANSACTION_ROLLED_BACK",
         "RECOVERY_REQUIRED",
         "FAILPOINT_UNAVAILABLE",
         "RECOVERY_CONFLICT",

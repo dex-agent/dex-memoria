@@ -488,6 +488,14 @@ Regra pratica:
 
 Esta V1 e contrato, template e exemplo.
 
+### Excecao Executavel V0 Fixture-Only
+
+A V1 documental preservada inclui uma excecao executavel V0 estritamente
+fixture-only: `create plan|apply|recover` opera somente sobre a fixture
+descartavel marcada e os dois destinos fixos descritos em
+[docs/cli-create-fixture-v0.md](docs/cli-create-fixture-v0.md). Essa excecao
+nao autoriza vault vivo, writer geral, segredos, hooks ou runtime Dex Agent.
+
 Ela nao executa comandos `add`, `resolve`, `archive`, `status` ou `audit`.
 Ela tambem nao e hook automatico e nao roda sozinha ao abrir ou fechar uma janela de contexto.
 

@@ -78,10 +78,14 @@ Todos usam JSON Schema Draft 2020-12 e ficam em `contracts/schemas/`:
 - checkpoint interno
   [`dex.memory.create.checkpoint.internal.v0`](../contracts/schemas/dex.memory.create.checkpoint.internal.v0.schema.json)
 
-`plan` e `receipt` mantem a ordem `l1`, depois `l2`. O plan contem bytes base64,
-hashes SHA-256, fingerprints e `plan_hash`; nao contem timestamp nem path
-absoluto. O receipt usa `command=apply|recover`, estados terminais e
-`recovery_required=false`.
+`plan` e `receipt` mantem a ordem `l1`, depois `l2`. O plan contem o request
+fechado `dex.memory.create.request.v0`, bytes base64, hashes SHA-256,
+fingerprints e `plan_hash`; nao contem timestamp nem path absoluto. No apply, o
+owner valida o request embutido e recompõe o plan esperado a partir desse
+request, dos paths derivados e dos bytes `before` declarados. `plan_hash` e
+checksum, nao autoridade isolada: payload, hashes, flags ou fingerprint
+re-assinados mas divergentes falham antes do journal. O receipt usa
+`command=apply|recover`, estados terminais e `recovery_required=false`.
 
 ## Marker, Manifest E Destinos
 
@@ -129,6 +133,23 @@ PREPARED -> L1_PUBLISHED -> COMMITTED
 - uma segunda recovery terminal nao cria novo checkpoint;
 - `recover` nunca desfaz `COMMITTED`.
 
+Apply e recover compartilham um unico leitor estrito. Ele exige entradas e
+checkpoints esperados, JSON/schema fechado, numeros contiguos, transicoes
+validas, identificadores e hashes coerentes, sem duplicatas, symlinks ou
+reparse points. Zero journals pode significar primeira aplicacao; mais de um
+journal para a mesma key ou qualquer corrupcao/ambiguidade e conflito antes de
+mutacao.
+
+Identidade primaria e `idempotency_key + request_fingerprint`:
+
+- request divergente para a mesma key e conflito;
+- `COMMITTED` com o mesmo fingerprint retorna `ALREADY_COMMITTED` usando
+  transaction id, `plan_hash` e writes do journal original, mesmo que um novo
+  plan reflita o baseline pos-commit;
+- `PREPARED` e `L1_PUBLISHED` exigem `recover` e retornam exit `5` no apply;
+- `ROLLED_BACK` e terminal, nao reutiliza a key e retorna exit `4` com
+  `TRANSACTION_ROLLED_BACK`; o chamador deve usar nova `idempotency_key`.
+
 ## Failpoints De Teste
 
 ```text
@@ -148,7 +169,7 @@ desse harness, pedir failpoint falha antes do journal e das escritas.
 | `0` | sucesso, noop idempotente ou recovery terminal conhecida |
 | `2` | uso, UTF-8, JSON ou schema invalido |
 | `3` | marker, manifest, allowlist, symlink ou path bloqueado |
-| `4` | plan, drift, idempotencia ou recovery em conflito |
+| `4` | plan, drift, journal, idempotencia, transacao rolled back ou recovery em conflito |
 | `5` | journal nao terminal exige `recover` antes de novo `apply` |
 | `6` | I/O, erro interno sanitizado ou failpoint sem controlador |
 

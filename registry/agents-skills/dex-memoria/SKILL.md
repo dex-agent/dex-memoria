@@ -95,6 +95,14 @@ O contrato resolvido de `dex-memoria` define:
 - em Windows, nao criar duplicata no mesmo diretorio apenas mudando maiusculas.
   Se precisar migrar casing, fazer com plano, backup e validacao de links.
 
+## Excecao Executavel V0 Fixture-Only
+
+A V1 documental preservada no contrato completo inclui `create
+plan|apply|recover` como excecao V0 limitada a fixture descartavel marcada. O
+contrato e os limites vivem em
+[docs/cli-create-fixture-v0.md](../../../docs/cli-create-fixture-v0.md); este
+redirecionador apenas aponta para essa fonte e nao implementa a CLI.
+
 ## Regra Curta De Tags
 
 O contrato resolvido de `dex-memoria` define que tags e links Obsidian sao

@@ -3,6 +3,8 @@
 const fs = require("fs");
 const path = require("path");
 const { createHash } = require("crypto");
+const { planCreate } = require("./create-plan");
+const { findValidatedJournal } = require("./create-journal");
 
 class ApplyError extends Error {
   constructor(exitCode, code, message) {
@@ -26,16 +28,24 @@ async function applyCreate(plan, fixtureRoot, targetPaths, failpointControl = {}
   if (plan.targets.some((target, index) => target.relative_path !== expectedPaths[index])) {
     conflict("plan targets do not match fixture targets");
   }
-  const prior = findJournalByIdempotencyKey(fixtureRoot, plan.idempotency_key);
-  if (prior) {
-    if (
-      prior.prepared.request_fingerprint !== plan.request_fingerprint ||
-      prior.prepared.plan_hash !== plan.plan_hash ||
-      prior.prepared.transaction_id !== plan.transaction_id
-    ) {
-      throw new ApplyError(4, "IDEMPOTENCY_CONFLICT", "idempotency key already belongs to a different request or plan");
+  validateOwnerPlannedContents(plan, expectedPaths);
+  const prior = findValidatedJournal(fixtureRoot, plan.idempotency_key, {
+    conflict: journalConflict,
+    invalidEntry: safetyBlocked,
+    validatePlan: (journalPlan) => {
+      validatePlanSchema(journalPlan);
+      validatePlanIntegrity(journalPlan);
+      validateOwnerPlannedContents(journalPlan, expectedPaths);
     }
-    if (prior.latest.state === "COMMITTED") return createReceipt(plan, "ALREADY_COMMITTED");
+  });
+  if (prior) {
+    if (prior.prepared.request_fingerprint !== plan.request_fingerprint) {
+      throw new ApplyError(4, "IDEMPOTENCY_CONFLICT", "idempotency key already belongs to a different request");
+    }
+    if (prior.latest.state === "COMMITTED") return createReceipt(prior.prepared.plan, "ALREADY_COMMITTED");
+    if (prior.latest.state === "ROLLED_BACK") {
+      throw new ApplyError(4, "TRANSACTION_ROLLED_BACK", "transaction was rolled back; submit a new idempotency key");
+    }
     throw new ApplyError(5, "RECOVERY_REQUIRED", "transaction journal requires recovery before apply");
   }
   for (let index = 0; index < plan.targets.length; index += 1) {
@@ -118,34 +128,11 @@ function assertJournalPathSafe(fixtureRoot) {
   }
 }
 
-function findJournalByIdempotencyKey(fixtureRoot, idempotencyKey) {
-  const journalRoot = path.join(fixtureRoot, "journal");
-  if (!fs.existsSync(journalRoot)) return null;
-  const entries = fs.readdirSync(journalRoot, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!/^[a-f0-9]{24}$/.test(entry.name)) continue;
-    if (!entry.isDirectory() || entry.isSymbolicLink()) safetyBlocked("fixture transaction journal path is invalid");
-    const transactionRoot = path.join(journalRoot, entry.name);
-    const checkpointNames = fs.readdirSync(transactionRoot, { withFileTypes: true })
-      .filter((checkpoint) => /^\d{4}-(?:PREPARED|L1_PUBLISHED|COMMITTED|ROLLED_BACK)\.json$/.test(checkpoint.name))
-      .map((checkpoint) => {
-        if (!checkpoint.isFile() || checkpoint.isSymbolicLink()) safetyBlocked("fixture journal checkpoint path is invalid");
-        return checkpoint.name;
-      })
-      .sort();
-    if (checkpointNames.length === 0 || checkpointNames[0] !== "0001-PREPARED.json") continue;
-    const prepared = JSON.parse(fs.readFileSync(path.join(transactionRoot, checkpointNames[0]), "utf8"));
-    if (prepared.idempotency_key !== idempotencyKey) continue;
-    const latest = JSON.parse(fs.readFileSync(path.join(transactionRoot, checkpointNames.at(-1)), "utf8"));
-    return { prepared, latest };
-  }
-  return null;
-}
-
 function validatePlanSchema(plan) {
-  requireExactKeys(plan, ["contract", "idempotency_key", "operation", "plan_hash", "request_fingerprint", "targets", "transaction_id"], "plan");
+  requireExactKeys(plan, ["contract", "idempotency_key", "operation", "plan_hash", "request", "request_fingerprint", "targets", "transaction_id"], "plan");
   if (plan.contract !== "dex.memory.create.plan.v0" || plan.operation !== "create") invalidSchema("unsupported plan contract or operation");
   requireString(plan.idempotency_key, "idempotency_key", 256);
+  validateEmbeddedRequest(plan.request);
   requireHash(plan.request_fingerprint, "request_fingerprint", 64);
   requireHash(plan.transaction_id, "transaction_id", 24);
   requireHash(plan.plan_hash, "plan_hash", 64);
@@ -160,6 +147,29 @@ function validatePlanSchema(plan) {
     requireBase64(target.before_base64, `targets[${index}].before_base64`);
     requireBase64(target.after_base64, `targets[${index}].after_base64`);
   });
+}
+
+function validateEmbeddedRequest(request) {
+  requireExactKeys(request, ["candidate", "contract", "idempotency_key", "operation"], "request");
+  if (request.contract !== "dex.memory.create.request.v0" || request.operation !== "create") invalidSchema("unsupported request contract or operation");
+  requireString(request.idempotency_key, "request.idempotency_key", 256);
+  requireExactKeys(request.candidate, ["anchor", "body", "localizer", "title", "trigger"], "request.candidate");
+  requireString(request.candidate.localizer, "request.candidate.localizer", 128, /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/);
+  requireString(request.candidate.trigger, "request.candidate.trigger", 512);
+  requireString(request.candidate.title, "request.candidate.title", 256);
+  requireString(request.candidate.anchor, "request.candidate.anchor", 128, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  requireString(request.candidate.body, "request.candidate.body", 65536);
+}
+
+function validateOwnerPlannedContents(plan, expectedPaths) {
+  const snapshot = Object.fromEntries(plan.targets.map((target) => [target.slot, {
+    exists: target.before_exists,
+    bytes_base64: target.before_base64
+  }]));
+  const expectedPlan = planCreate(plan.request, snapshot, expectedPaths);
+  if (stableJson(expectedPlan) !== stableJson(plan)) {
+    conflict("plan contents do not match the embedded request and declared baseline");
+  }
 }
 
 function validatePlanIntegrity(plan) {
@@ -192,8 +202,9 @@ function requireExactKeys(value, expected, label) {
   if (actual.length !== sortedExpected.length || actual.some((key, index) => key !== sortedExpected[index])) invalidSchema(`${label} contains missing or unknown fields`);
 }
 
-function requireString(value, label, maximum) {
+function requireString(value, label, maximum, pattern) {
   if (typeof value !== "string" || value.trim().length === 0 || [...value].length > maximum) invalidSchema(`${label} is invalid`);
+  if (pattern && !pattern.test(value)) invalidSchema(`${label} has invalid syntax`);
 }
 
 function requireHash(value, label, length) {
@@ -226,6 +237,10 @@ function invalidSchema(message) {
 
 function conflict(message) {
   throw new ApplyError(4, "PLAN_CONFLICT", message);
+}
+
+function journalConflict(message) {
+  throw new ApplyError(4, "JOURNAL_CONFLICT", message);
 }
 
 function safetyBlocked(message) {
@@ -285,6 +300,7 @@ module.exports = {
   createReceipt,
   publishTarget,
   validatePlanIntegrity,
+  validateOwnerPlannedContents,
   validatePlanSchema,
   writeCheckpoint
 };

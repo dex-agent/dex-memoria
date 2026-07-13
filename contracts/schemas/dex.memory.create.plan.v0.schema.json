@@ -8,6 +8,7 @@
     "contract",
     "operation",
     "idempotency_key",
+    "request",
     "request_fingerprint",
     "transaction_id",
     "targets",
@@ -25,6 +26,9 @@
       "minLength": 1,
       "maxLength": 256,
       "pattern": "\\S"
+    },
+    "request": {
+      "$ref": "dex.memory.create.request.v0.schema.json"
     },
     "request_fingerprint": {
       "type": "string",

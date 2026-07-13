@@ -33,6 +33,7 @@ function planCreate(request, snapshot, targets) {
     contract: "dex.memory.create.plan.v0",
     operation: "create",
     idempotency_key: request.idempotency_key,
+    request,
     request_fingerprint: requestFingerprint,
     transaction_id: transactionId,
     targets: plannedTargets
