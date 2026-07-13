@@ -4,6 +4,10 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const {
+  SCHEMA_FILES: createContractSchemaFiles,
+  validateCreateContractSchemas: validateCreateContractSchemaMap
+} = require("./validate-create-contracts");
 
 const root = path.resolve(__dirname, "..");
 const expectedVersion = "0.1.6";
@@ -323,82 +327,13 @@ function validateLayeredMemoryExample(errors) {
 }
 
 function validateCreateContractSchemas(errors) {
-  const draft = "https://json-schema.org/draft/2020-12/schema";
-  const files = [
-    "dex.memory.create.request.v0.schema.json",
-    "dex.memory.create.recover.v0.schema.json",
-    "dex.memory.create.plan.v0.schema.json",
-    "dex.memory.create.receipt.v0.schema.json",
-    "dex.memory.error.v0.schema.json",
-    "dex.memory.disposable-run.v1.schema.json",
-    "dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
-    "dex.memory.create.checkpoint.internal.v0.schema.json"
-  ];
   const schemas = new Map();
-  for (const file of files) {
+  for (const file of createContractSchemaFiles) {
     const schema = readJson(path.join("contracts", "schemas", file), errors);
     if (!schema) continue;
     schemas.set(file, schema);
-    assertEqual(errors, `${file} draft`, schema.$schema, draft);
   }
-
-  const request = schemas.get("dex.memory.create.request.v0.schema.json");
-  if (request) {
-    assertEqual(errors, "request additionalProperties", request.additionalProperties, false);
-    assertEqual(errors, "request contract", request.properties && request.properties.contract && request.properties.contract.const, "dex.memory.create.request.v0");
-    assertEqual(errors, "request idempotency maxLength", request.properties && request.properties.idempotency_key && request.properties.idempotency_key.maxLength, 256);
-    assertEqual(errors, "request localizer maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.localizer.maxLength, 128);
-    assertEqual(errors, "request trigger maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.trigger.maxLength, 512);
-    assertEqual(errors, "request title maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.title.maxLength, 256);
-    assertEqual(errors, "request anchor maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.anchor.maxLength, 128);
-    assertEqual(errors, "request body maxLength", request.properties && request.properties.candidate && request.properties.candidate.properties.body.maxLength, 65536);
-  }
-
-  const plan = schemas.get("dex.memory.create.plan.v0.schema.json");
-  if (plan) {
-    assertEqual(errors, "plan additionalProperties", plan.additionalProperties, false);
-    assertEqual(errors, "plan contract", plan.properties && plan.properties.contract && plan.properties.contract.const, "dex.memory.create.plan.v0");
-    assertEqual(errors, "plan target count minimum", plan.properties && plan.properties.targets && plan.properties.targets.minItems, 2);
-    assertEqual(errors, "plan target count maximum", plan.properties && plan.properties.targets && plan.properties.targets.maxItems, 2);
-    assertEqual(errors, "plan target tail closed", plan.properties && plan.properties.targets && plan.properties.targets.items, false);
-  }
-
-  const receipt = schemas.get("dex.memory.create.receipt.v0.schema.json");
-  if (receipt) {
-    assertEqual(errors, "receipt additionalProperties", receipt.additionalProperties, false);
-    assertEqual(errors, "receipt contract", receipt.properties && receipt.properties.contract && receipt.properties.contract.const, "dex.memory.create.receipt.v0");
-    assertEqual(errors, "receipt recovery_required", receipt.properties && receipt.properties.recovery_required && receipt.properties.recovery_required.const, false);
-    assertEqual(errors, "receipt variants", Array.isArray(receipt.oneOf) ? receipt.oneOf.length : undefined, 5);
-  }
-
-  const errorSchema = schemas.get("dex.memory.error.v0.schema.json");
-  if (errorSchema) {
-    assertEqual(errors, "error additionalProperties", errorSchema.additionalProperties, false);
-    assertEqual(errors, "error contract", errorSchema.properties && errorSchema.properties.contract && errorSchema.properties.contract.const, "dex.memory.error.v0");
-    assertEqual(errors, "error code count", errorSchema.properties && Array.isArray(errorSchema.properties.code.enum) ? errorSchema.properties.code.enum.length : undefined, 10);
-  }
-
-  for (const [file, contract] of [
-    ["dex.memory.disposable-run.v1.schema.json", "dex.memory.disposable-run.v1"],
-    ["dex.memory.fixture.legacy-create-l1-l2.v1.schema.json", "dex.memory.fixture.legacy-create-l1-l2.v1"]
-  ]) {
-    const schema = schemas.get(file);
-    if (!schema) continue;
-    assertEqual(errors, `${file} additionalProperties`, schema.additionalProperties, false);
-    assertEqual(errors, `${file} contract`, schema.properties && schema.properties.contract && schema.properties.contract.const, contract);
-    assertEqual(errors, `${file} target count`, schema.properties && schema.properties.targets && schema.properties.targets.maxItems, 2);
-  }
-
-  const checkpoint = schemas.get("dex.memory.create.checkpoint.internal.v0.schema.json");
-  if (checkpoint) {
-    const states = Array.isArray(checkpoint.oneOf)
-      ? checkpoint.oneOf.map((variant) => variant.properties && variant.properties.state && variant.properties.state.const).sort()
-      : [];
-    assertEqual(errors, "checkpoint states", JSON.stringify(states), JSON.stringify(["COMMITTED", "L1_PUBLISHED", "PREPARED", "ROLLED_BACK"]));
-    if (Array.isArray(checkpoint.oneOf) && checkpoint.oneOf.some((variant) => variant.additionalProperties !== false)) {
-      errors.push("checkpoint variants must set additionalProperties to false");
-    }
-  }
+  errors.push(...validateCreateContractSchemaMap(schemas));
 }
 
 function validateGraduatedMemoryBattery(errors) {

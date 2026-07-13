@@ -3,12 +3,25 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import createContractValidator from "../scripts/validate-create-contracts.js";
+
+const { SCHEMA_FILES, validateCreateContractSchemas } = createContractValidator;
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const schemaRoot = join(repoRoot, "contracts", "schemas");
 
 async function readSchema(file) {
   return JSON.parse(await readFile(join(schemaRoot, file), "utf8"));
+}
+
+async function readCreateContractSchemas() {
+  return new Map(await Promise.all(SCHEMA_FILES.map(async (file) => [file, await readSchema(file)])));
+}
+
+function mutateSchemas(schemas, file, mutate) {
+  const copy = new Map([...schemas].map(([name, schema]) => [name, structuredClone(schema)]));
+  mutate(copy.get(file));
+  return copy;
 }
 
 function assertClosedObject(schema, required) {
@@ -202,4 +215,127 @@ test("fixture control and internal checkpoint schemas match persisted objects", 
   assertClosedObject(byState.L1_PUBLISHED, ["state", "transaction_id"]);
   assertClosedObject(byState.COMMITTED, ["state", "transaction_id", "plan_hash"]);
   assertClosedObject(byState.ROLLED_BACK, ["state", "transaction_id"]);
+});
+
+test("shared public validator rejects incompatible mutations inside every contract family", async () => {
+  const schemas = await readCreateContractSchemas();
+  assert.deepEqual(validateCreateContractSchemas(schemas), []);
+
+  const cases = [
+    {
+      name: "request body limit",
+      file: "dex.memory.create.request.v0.schema.json",
+      mutate: (schema) => { schema.properties.candidate.properties.body.maxLength = 65537; }
+    },
+    {
+      name: "recover idempotency limit",
+      file: "dex.memory.create.recover.v0.schema.json",
+      mutate: (schema) => { schema.properties.idempotency_key.maxLength = 257; }
+    },
+    {
+      name: "plan target closed object",
+      file: "dex.memory.create.plan.v0.schema.json",
+      mutate: (schema) => { schema.properties.targets.prefixItems[0].additionalProperties = true; }
+    },
+    {
+      name: "plan target slot",
+      file: "dex.memory.create.plan.v0.schema.json",
+      mutate: (schema) => { schema.properties.targets.prefixItems[1].properties.slot.const = "l3"; }
+    },
+    {
+      name: "plan payload pattern",
+      file: "dex.memory.create.plan.v0.schema.json",
+      mutate: (schema) => { schema.properties.targets.prefixItems[0].properties.before_base64.pattern = ".*"; }
+    },
+    {
+      name: "receipt writes cardinality",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.maxItems = 3; }
+    },
+    {
+      name: "receipt writes closed tail",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.items = {}; }
+    },
+    {
+      name: "receipt write slot",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.prefixItems[1].properties.slot.const = "l3"; }
+    },
+    {
+      name: "receipt write required fields",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.prefixItems[0].required.pop(); }
+    },
+    {
+      name: "receipt write closed object",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.prefixItems[1].additionalProperties = true; }
+    },
+    {
+      name: "receipt write path limit",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.prefixItems[0].properties.relative_path.maxLength = 999; }
+    },
+    {
+      name: "receipt write hash pattern",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.writes.prefixItems[1].properties.after_sha256.pattern = ".*"; }
+    },
+    {
+      name: "receipt status variant",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[3].properties.journal_state.const = "COMMITTED"; }
+    },
+    {
+      name: "receipt status enum",
+      file: "dex.memory.create.receipt.v0.schema.json",
+      mutate: (schema) => { schema.properties.status.enum.push("UNKNOWN"); }
+    },
+    {
+      name: "error code enum",
+      file: "dex.memory.error.v0.schema.json",
+      mutate: (schema) => { schema.properties.code.enum[0] = "UNKNOWN"; }
+    },
+    {
+      name: "disposable marker target",
+      file: "dex.memory.disposable-run.v1.schema.json",
+      mutate: (schema) => { schema.properties.targets.prefixItems[0].const = "work/OTHER.md"; }
+    },
+    {
+      name: "fixture manifest closed object",
+      file: "dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
+      mutate: (schema) => { schema.additionalProperties = true; }
+    },
+    {
+      name: "checkpoint prepared required fields",
+      file: "dex.memory.create.checkpoint.internal.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[0].required.pop(); }
+    },
+    {
+      name: "checkpoint prepared plan reference",
+      file: "dex.memory.create.checkpoint.internal.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[0].properties.plan.$ref = "other.schema.json"; }
+    },
+    {
+      name: "checkpoint committed hash pattern",
+      file: "dex.memory.create.checkpoint.internal.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[2].properties.plan_hash.pattern = ".*"; }
+    },
+    {
+      name: "checkpoint published transaction pattern",
+      file: "dex.memory.create.checkpoint.internal.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[1].properties.transaction_id.pattern = ".*"; }
+    },
+    {
+      name: "checkpoint rolled back closed object",
+      file: "dex.memory.create.checkpoint.internal.v0.schema.json",
+      mutate: (schema) => { schema.oneOf[3].additionalProperties = true; }
+    }
+  ];
+
+  for (const mutation of cases) {
+    const errors = validateCreateContractSchemas(mutateSchemas(schemas, mutation.file, mutation.mutate));
+    assert.ok(errors.length > 0, `${mutation.name} was accepted by the shared public validator`);
+  }
 });
