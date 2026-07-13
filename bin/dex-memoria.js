@@ -4,6 +4,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { planCreate } = require("./create-plan");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
@@ -22,8 +23,18 @@ const COPY_ENTRIES = [
   "templates",
   "examples"
 ];
+const MAX_STDIN_BYTES = 1024 * 1024;
+const FIXTURE_TARGETS = ["work/LEMBRANCA.md", "work/MEMORIA.md"];
 
-function main() {
+class CliError extends Error {
+  constructor(exitCode, code, message) {
+    super(message);
+    this.exitCode = exitCode;
+    this.code = code;
+  }
+}
+
+async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || "help";
 
@@ -52,7 +63,226 @@ function main() {
     return;
   }
 
+  if (command === "create") {
+    if (args[1] !== "plan") {
+      throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan --fixture <fixture-root>");
+    }
+    try {
+      await createPlan(args.slice(2));
+    } catch (error) {
+      if (error instanceof CliError) {
+        throw error;
+      }
+      throw new CliError(6, "IO_FAILURE", "create plan failed");
+    }
+    return;
+  }
+
   fail(`Comando desconhecido: ${command}`);
+}
+
+async function createPlan(args) {
+  const fixtureRoot = parseFixtureArg(args);
+  const { marker, targetPaths } = validateFixture(fixtureRoot);
+  const input = await readStdin();
+  let request;
+  try {
+    request = JSON.parse(input);
+  } catch (error) {
+    throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
+  }
+  validateCreateRequest(request);
+  const targets = marker.targets;
+  const snapshot = {
+    l1: snapshotTarget(targetPaths[0]),
+    l2: snapshotTarget(targetPaths[1])
+  };
+  process.stdout.write(`${JSON.stringify(planCreate(request, snapshot, targets))}\n`);
+}
+
+function parseFixtureArg(args) {
+  let value;
+  if (args.length === 2 && args[0] === "--fixture") {
+    value = args[1];
+  } else if (args.length === 1 && args[0].startsWith("--fixture=")) {
+    value = args[0].slice("--fixture=".length);
+  }
+  if (!value) {
+    throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan --fixture <fixture-root>");
+  }
+  return path.resolve(value);
+}
+
+function validateFixture(fixtureRoot) {
+  try {
+    requirePlainDirectory(fixtureRoot);
+    const realRoot = fs.realpathSync(fixtureRoot);
+    if (!samePath(realRoot, fixtureRoot)) {
+      safetyBlocked("fixture root must not traverse a symlink or reparse point");
+    }
+    const markerPath = path.join(fixtureRoot, ".dex-memory-fixture.json");
+    const manifestPath = path.join(fixtureRoot, "manifest.json");
+    requirePlainFile(markerPath);
+    requirePlainFile(manifestPath);
+    const marker = readFixtureJson(markerPath, "marker");
+    const manifest = readFixtureJson(manifestPath, "manifest");
+    requireExactFixtureArray(marker.targets);
+    requireExactFixtureArray(manifest.targets);
+    if (
+      marker.contract !== "dex.memory.disposable-run.v1" ||
+      marker.operation !== "create" ||
+      marker.disposable !== true ||
+      manifest.contract !== "dex.memory.fixture.legacy-create-l1-l2.v1" ||
+      manifest.operation !== "create" ||
+      manifest.disposable_runs_only !== true
+    ) {
+      safetyBlocked("fixture marker or manifest contract is invalid");
+    }
+    const targetPaths = FIXTURE_TARGETS.map((relativePath) => validateTargetPath(fixtureRoot, realRoot, relativePath));
+    return { marker, manifest, targetPaths };
+  } catch (error) {
+    if (error instanceof CliError) {
+      throw error;
+    }
+    safetyBlocked("fixture marker, manifest or path is invalid");
+  }
+}
+
+function readFixtureJson(filePath, label) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    safetyBlocked(`fixture ${label} is invalid`);
+  }
+}
+
+function requireExactFixtureArray(value) {
+  if (!Array.isArray(value) || value.length !== FIXTURE_TARGETS.length || value.some((entry, index) => entry !== FIXTURE_TARGETS[index])) {
+    safetyBlocked("fixture targets are invalid");
+  }
+}
+
+function validateTargetPath(fixtureRoot, realRoot, relativePath) {
+  const targetPath = path.resolve(fixtureRoot, relativePath);
+  if (!isInside(realRoot, targetPath)) {
+    safetyBlocked("fixture target escapes root");
+  }
+  let current = fixtureRoot;
+  for (const segment of relativePath.split("/")) {
+    current = path.join(current, segment);
+    if (!fs.existsSync(current)) {
+      continue;
+    }
+    const stat = fs.lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      safetyBlocked("fixture target contains a symlink or reparse point");
+    }
+    const realCurrent = fs.realpathSync(current);
+    if (!isInside(realRoot, realCurrent)) {
+      safetyBlocked("fixture target escapes root");
+    }
+  }
+  return targetPath;
+}
+
+function requirePlainDirectory(filePath) {
+  const stat = fs.lstatSync(filePath);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    safetyBlocked("fixture root is invalid");
+  }
+}
+
+function requirePlainFile(filePath) {
+  const stat = fs.lstatSync(filePath);
+  if (!stat.isFile() || stat.isSymbolicLink()) {
+    safetyBlocked("fixture control file is invalid");
+  }
+}
+
+function isInside(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative !== "" && !relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative);
+}
+
+function samePath(first, second) {
+  return process.platform === "win32" ? first.toLowerCase() === second.toLowerCase() : first === second;
+}
+
+function safetyBlocked(message) {
+  throw new CliError(3, "SAFETY_BLOCKED", message);
+}
+
+function validateCreateRequest(request) {
+  requireExactKeys(request, ["candidate", "contract", "idempotency_key", "operation"], "request");
+  if (request.contract !== "dex.memory.create.request.v0" || request.operation !== "create") {
+    invalidSchema("unsupported request contract or operation");
+  }
+  requireString(request.idempotency_key, "idempotency_key", 256);
+  requireExactKeys(request.candidate, ["anchor", "body", "localizer", "title", "trigger"], "candidate");
+  requireString(request.candidate.localizer, "candidate.localizer", 128, /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/);
+  requireString(request.candidate.trigger, "candidate.trigger", 512);
+  requireString(request.candidate.title, "candidate.title", 256);
+  requireString(request.candidate.anchor, "candidate.anchor", 128, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  requireString(request.candidate.body, "candidate.body", 65536);
+}
+
+function requireExactKeys(value, expected, label) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    invalidSchema(`${label} must be an object`);
+  }
+  const actual = Object.keys(value).sort();
+  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
+    invalidSchema(`${label} contains missing or unknown fields`);
+  }
+}
+
+function requireString(value, label, maxLength, pattern) {
+  if (typeof value !== "string" || value.trim().length === 0 || [...value].length > maxLength) {
+    invalidSchema(`${label} is invalid`);
+  }
+  if (pattern && !pattern.test(value)) {
+    invalidSchema(`${label} has invalid syntax`);
+  }
+}
+
+function invalidSchema(message) {
+  throw new CliError(2, "INVALID_SCHEMA", message);
+}
+
+function snapshotTarget(targetPath) {
+  const exists = fs.existsSync(targetPath);
+  return {
+    exists,
+    bytes_base64: exists ? fs.readFileSync(targetPath).toString("base64") : ""
+  };
+}
+
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let length = 0;
+    let tooLarge = false;
+    process.stdin.on("data", (chunk) => {
+      length += chunk.length;
+      if (length > MAX_STDIN_BYTES) {
+        tooLarge = true;
+        return;
+      }
+      chunks.push(chunk);
+    });
+    process.stdin.on("end", () => {
+      if (tooLarge) {
+        reject(new CliError(2, "INVALID_SCHEMA", "stdin exceeds 1 MiB"));
+        return;
+      }
+      try {
+        resolve(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+      } catch (error) {
+        reject(new CliError(2, "INVALID_JSON", "stdin must be valid UTF-8"));
+      }
+    });
+    process.stdin.on("error", reject);
+  });
 }
 
 function printHelp() {
@@ -257,4 +487,15 @@ function fail(message) {
   process.exit(1);
 }
 
-main();
+main().catch((error) => {
+  if (error instanceof CliError) {
+    process.stderr.write(`${JSON.stringify({
+      contract: "dex.memory.error.v0",
+      code: error.code,
+      message: error.message
+    })}\n`);
+    process.exitCode = error.exitCode;
+    return;
+  }
+  fail(error.message);
+});
