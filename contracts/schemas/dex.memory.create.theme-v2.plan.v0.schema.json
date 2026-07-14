@@ -58,7 +58,7 @@
         "before_base64": { "type": "string", "contentEncoding": "base64" },
         "after_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "after_base64": { "type": "string", "contentEncoding": "base64" },
-        "changed": { "type": "boolean" }
+        "changed": { "const": true }
       }
     },
     "l1Target": { "$ref": "#/$defs/target", "properties": { "slot": { "const": "l1" } } },

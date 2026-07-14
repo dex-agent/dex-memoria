@@ -36,6 +36,21 @@ this file or a higher authority explicitly says otherwise.
 
 ## What This Repo Is
 
+### Memory architecture status
+
+- Active write profile: `legacy-v1`.
+- Approved target: `governed-theme-v2`.
+- Target status: `approved_not_active`.
+- Runtime support: `fixture_only_experimental`.
+
+The V2 decision does not authorize live V2 paths, writing, reading, validation,
+or migration. V2 writes are permitted only inside explicitly marked disposable
+transaction fixtures; every live operational surface remains on `legacy-v1`.
+Only a future cutover Trilho with compatible writer, readers and validators,
+shadow/no-shrink, recovery/rollback, and an explicit human receipt may change
+the active profile. The public documentary map is
+[`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
+
 `dex-memoria` is versioned as a public V1 package for:
 
 - documenting the Dex memory lifecycle contract;
@@ -45,6 +60,8 @@ this file or a higher authority explicitly says otherwise.
 - shipping a lightweight CLI for documentary install/doctor flows;
 - shipping a V0 fixture-only `create plan|apply|recover` boundary for marked,
   disposable L1+L2 fixtures;
+- shipping an experimental V2 fixture-only transaction tracer for
+  `L1 -> L2 OU L1 -> L3`, without live activation;
 - validating the public package structure.
 
 Current public package line: `0.1.x`.
@@ -76,6 +93,8 @@ Primary public sources:
 - `docs/runtime-boundary.md` - what belongs here vs Dex Agent runtime.
 - `docs/cli-create-fixture-v0.md` - canonical V0 fixture-only commands,
   streams, schemas, journal, failpoints, exit codes, and uncovered risks.
+- `docs/cli-create-theme-v2-transaction-v0.md` - experimental V2 fixture-only
+  create transaction, journal, recovery, failpoints, and exit codes.
 - `docs/memory-home.md` - `DEX_MEMORIA_HOME` and path blocking rules.
 - `docs/integration-dex-agent.md` - integration notes for Dex Agent.
 - `docs/layered-memory-simulations.md` - L1/L2/L3 recovery simulations.
@@ -92,8 +111,10 @@ changes the package boundary:
 
 - Dex Agent runtime;
 - Telegram bot runtime;
-- general or production automatic memory writer; the V0 fixture-only exception
-  is limited to the disposable boundary in `docs/cli-create-fixture-v0.md`;
+- general or production automatic memory writer; the V0 and experimental V2
+  fixture-only exceptions are limited to the disposable boundaries in
+  `docs/cli-create-fixture-v0.md` and
+  `docs/cli-create-theme-v2-transaction-v0.md`;
 - hook runner;
 - `/inbox` or `/memory` command implementation;
 - production ledger, inbox, session store, or recall engine;

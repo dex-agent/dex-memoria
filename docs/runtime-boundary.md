@@ -1,8 +1,15 @@
 # Runtime Boundary
 
+> `legacy-v1` continua sendo o unico perfil de escrita ativo.
+> `governed-theme-v2` esta `approved_not_active` e possui suporte runtime
+> `fixture_only_experimental`: existe apenas uma bancada descartavel, sem
+> runtime V2 vivo. A decisao alvo nao amplia esta fronteira. Veja
+> [Memory Architecture Profiles](memory-architecture-profiles.md) e
+> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md).
+
 `dex-memoria` preserva o contrato documental V1. O runtime de memoria real
-continua no Dex Agent ate decisao posterior; a unica excecao local e a CLI V0
-fixture-only descrita abaixo.
+continua no Dex Agent ate decisao posterior; as excecoes locais sao as bancadas
+fixture-only V0 e V2 experimental descritas abaixo.
 
 ## Fica No Dex Agent
 
@@ -40,6 +47,14 @@ equivalencia L1+L2 `legacy-v1` em fixture temporaria. Essa fronteira:
 
 O contrato canônico de comandos, schemas e riscos fica em
 [`cli-create-fixture-v0.md`](cli-create-fixture-v0.md).
+
+## Excecao V2 Fixture-Only Experimental
+
+O tracer descrito em
+[`cli-create-theme-v2-transaction-v0.md`](cli-create-theme-v2-transaction-v0.md)
+prova `create` com `L1 -> L2 OU L1 -> L3` somente em fixture transacional
+marcada. Ele não aceita o vault vivo, não ativa o V2 e não autoriza cutover,
+migração, readers ou validators de produção.
 
 ## Regra De Uso
 

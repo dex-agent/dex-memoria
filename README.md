@@ -2,17 +2,25 @@
 
 Versao atual: `0.1.6`
 
+> Arquitetura alvo: `governed-theme-v2`, status `approved_not_active`.
+> O unico perfil de escrita ativo continua sendo `legacy-v1`. O suporte V2 e
+> `fixture_only_experimental`: existe apenas uma bancada transacional descartavel,
+> sem runtime vivo, migracao ou cutover. Veja
+> [Memory Architecture Profiles](docs/memory-architecture-profiles.md) e a
+> [CLI create V2 transacional em fixture](docs/cli-create-theme-v2-transaction-v0.md).
+
 `dex-memoria` preserva a V1 documental do ciclo de vida de memoria operacional
-e oferece uma CLI V0 fixture-only para planejar, aplicar e recuperar um par
-L1+L2 somente em fixtures descartaveis marcadas.
+e oferece CLIs fixture-only para caracterizar `legacy-v1` e experimentar o
+roteamento V2 `L1 -> L2 OU L1 -> L3`, sempre em fixtures descartaveis marcadas.
 
 Ele nasceu a partir da skill `skills/dex-memoria` do repo `dex-agent`, mas nao
-carrega o runtime do bot, nao executa hooks e nao e um writer geral. A unica
-excecao executavel deste corte e a fixture temporaria descrita em
-[`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md); ela bloqueia o
-vault vivo. Esse limite nao transforma memorias em somente leitura; ele apenas
-separa contrato documental, bancada fixture-only e mecanismo autorizado de
-escrita real.
+carrega o runtime do bot, nao executa hooks e nao e um writer geral. As excecoes
+executaveis deste corte sao as bancadas fixture-only V0 e V2 experimental,
+descritas em [`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md) e
+[`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md);
+ambas bloqueiam o vault vivo. Esse limite nao transforma memorias em somente
+leitura; ele apenas separa contrato documental, bancada fixture-only e mecanismo
+autorizado de escrita real.
 
 Dentro deste pacote, `memorizador` e o contrato de memorizacao: o formato que
 define como, quando, quanto, por que, por quanto tempo e quando nao lembrar.
@@ -22,7 +30,7 @@ intuitivo e indexavel em `MEMORY.md`, apontando para a fonte viva completa. O
 registro global nao deve virar tutorial, copia de contrato, historico grande ou
 dump de contexto.
 
-O pacote tambem canoniza a arquitetura de recuperacao em tres camadas:
+O pacote tambem preserva a arquitetura operacional `legacy-v1` em tres camadas:
 
 ```text
 L1 lembranca -> L2 memoria -> L3 conhecimento
@@ -234,7 +242,7 @@ Instale dex-memoria neste projeto.
 Contexto:
 - dex-memoria e um pacote documental/skill de contrato de memoria.
 - Ele nao e runtime do Dex Agent, nao executa hooks e nao grava vault ou ledger
-  vivo. A CLI V0 fixture-only e a unica excecao executavel deste corte.
+  vivo. As excecoes executaveis sao as CLIs fixture-only V0 e V2 experimental.
 - Repo oficial: https://github.com/dex-agent/dex-memoria
 
 Tarefa:

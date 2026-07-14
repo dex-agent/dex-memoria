@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.theme-v2.receipt.v0.schema.json",
+  "title": "dex.memory.create.theme-v2.receipt.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "profile", "command", "status", "transaction_id", "idempotency_key",
+    "request_fingerprint", "plan_hash", "writes", "publish_order", "journal_state", "recovery_required"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.create.theme-v2.receipt.v0" },
+    "profile": { "const": "governed-theme-v2" },
+    "command": { "enum": ["apply", "recover"] },
+    "status": { "enum": ["COMMITTED", "ALREADY_COMMITTED", "ROLLED_BACK", "ALREADY_ROLLED_BACK"] },
+    "transaction_id": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+    "idempotency_key": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "request_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "plan_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "writes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "$ref": "#/$defs/l1Write" },
+        { "$ref": "#/$defs/indexWrite" },
+        { "$ref": "#/$defs/destinationWrite" }
+      ],
+      "items": false
+    },
+    "publish_order": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "const": "destination" },
+        { "const": "index" },
+        { "const": "l1" }
+      ],
+      "items": false
+    },
+    "journal_state": { "enum": ["COMMITTED", "ROLLED_BACK"] },
+    "recovery_required": { "const": false }
+  },
+  "$defs": {
+    "write": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot", "relative_path", "before_sha256", "after_sha256", "changed"],
+      "properties": {
+        "slot": { "enum": ["l1", "index", "destination"] },
+        "relative_path": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "before_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "after_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "changed": { "const": true }
+      }
+    },
+    "l1Write": { "$ref": "#/$defs/write", "properties": { "slot": { "const": "l1" } } },
+    "indexWrite": { "$ref": "#/$defs/write", "properties": { "slot": { "const": "index" } } },
+    "destinationWrite": { "$ref": "#/$defs/write", "properties": { "slot": { "const": "destination" } } }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "command": { "const": "apply" },
+        "status": { "const": "COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      },
+      "required": ["command", "status", "journal_state"]
+    },
+    {
+      "properties": {
+        "command": { "const": "apply" },
+        "status": { "const": "ALREADY_COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      },
+      "required": ["command", "status", "journal_state"]
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ROLLED_BACK" },
+        "journal_state": { "const": "ROLLED_BACK" }
+      },
+      "required": ["command", "status", "journal_state"]
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ALREADY_ROLLED_BACK" },
+        "journal_state": { "const": "ROLLED_BACK" }
+      },
+      "required": ["command", "status", "journal_state"]
+    },
+    {
+      "properties": {
+        "command": { "const": "recover" },
+        "status": { "const": "ALREADY_COMMITTED" },
+        "journal_state": { "const": "COMMITTED" }
+      },
+      "required": ["command", "status", "journal_state"]
+    }
+  ]
+}

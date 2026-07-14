@@ -44,6 +44,24 @@ binario top-level oferece `create plan|apply|recover` somente para L1+L2
 `legacy-v1` em fixture descartavel marcada. O contrato completo fica em
 [`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md).
 
+### Arquitetura alvo V2 — aprovada, nao ativa
+
+```text
+Active-Write-Profile: legacy-v1
+Target-Architecture: governed-theme-v2
+Target-Status: approved_not_active
+Runtime-Support: fixture_only_experimental
+```
+
+O alvo troca a passagem obrigatoria `L1 -> L2 -> L3` pelo roteamento
+`L1 -> L2` OU `L1 -> L3`. L2 representa memoria leve/operacional; L3,
+conhecimento profundo. Essa semantica possui somente um tracer transacional
+fixture-only experimental; nao existe runtime V2 vivo e o perfil ativo continua
+`legacy-v1`. O contrato da bancada esta em
+[`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md).
+Paths, owners, metadados, JSONs e consumidores ainda pendentes estao em
+[`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
+
 - `plan` recebe `dex.memory.create.request.v0` e emite
   `dex.memory.create.plan.v0` deterministico sem mutacao;
 - `apply` recebe o plan completo e emite `dex.memory.create.receipt.v0`;

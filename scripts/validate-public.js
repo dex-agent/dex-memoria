@@ -26,6 +26,7 @@ const requiredFiles = [
   "package.json",
   "bin/dex-memoria.js",
   "bin/create-journal.js",
+  "bin/create-theme-v2-transaction.js",
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
   "contracts/layouts/governed-theme-v2.json",
@@ -33,6 +34,10 @@ const requiredFiles = [
   "contracts/schemas/dex.memory.create.theme-v2.request.v0.schema.json",
   "contracts/schemas/dex.memory.create.theme-v2.plan.v0.schema.json",
   "contracts/schemas/dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
+  "contracts/schemas/dex.memory.fixture.governed-theme-v2-transaction.v0.schema.json",
+  "contracts/schemas/dex.memory.create.theme-v2.recover.v0.schema.json",
+  "contracts/schemas/dex.memory.create.theme-v2.receipt.v0.schema.json",
+  "contracts/schemas/dex.memory.create.theme-v2.checkpoint.internal.v0.schema.json",
   "contracts/schemas/dex.memory.create.request.v0.schema.json",
   "contracts/schemas/dex.memory.create.recover.v0.schema.json",
   "contracts/schemas/dex.memory.create.plan.v0.schema.json",
@@ -45,6 +50,7 @@ const requiredFiles = [
   "docs/runtime-boundary.md",
   "docs/cli-create-fixture-v0.md",
   "docs/cli-create-theme-v2-plan-v0.md",
+  "docs/cli-create-theme-v2-transaction-v0.md",
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
@@ -184,6 +190,46 @@ function main() {
     "não implementa apply, journal ou recover V2",
     "não aceita o vault vivo"
   ]);
+  requireText(errors, "docs/cli-create-theme-v2-transaction-v0.md", [
+    "governed-theme-v2",
+    "approved_not_active",
+    "dex.memory.fixture.governed-theme-v2-transaction.v0",
+    "L1 -> L2 OU L1 -> L3",
+    "fixture-only",
+    "destination -> index -> l1",
+    "PREPARED",
+    "DESTINATION_PUBLISHED",
+    "INDEX_PUBLISHED",
+    "L1_PUBLISHED",
+    "COMMITTED",
+    "ROLLED_BACK",
+    "FP_AFTER_DESTINATION_DIRECTORY_CREATE_BEFORE_PUBLISH",
+    "FP_AFTER_DESTINATION_PUBLISH_BEFORE_CHECKPOINT",
+    "FP_AFTER_DESTINATION_CHECKPOINT_BEFORE_INDEX",
+    "FP_AFTER_INDEX_PUBLISH_BEFORE_CHECKPOINT",
+    "FP_AFTER_INDEX_CHECKPOINT_BEFORE_L1",
+    "FP_AFTER_L1_PUBLISH_BEFORE_CHECKPOINT",
+    "FP_AFTER_L1_CHECKPOINT_BEFORE_COMMIT",
+    "dex-memoria create plan --fixture",
+    "dex-memoria create apply --fixture",
+    "dex-memoria create recover --fixture",
+    "dex.memory.create.theme-v2.request.v0",
+    "dex.memory.create.theme-v2.recover.v0",
+    "dex.memory.create.theme-v2.receipt.v0",
+    "stdout",
+    "stderr",
+    "ALREADY_COMMITTED",
+    "RECOVERY_REQUIRED",
+    "Exit codes",
+    "não aceita o vault vivo",
+    "não ativa o V2"
+  ]);
+  requireText(errors, "README.md", ["fixture_only_experimental", "docs/cli-create-theme-v2-transaction-v0.md"]);
+  requireText(errors, "SPEC.md", ["Runtime-Support: fixture_only_experimental", "docs/cli-create-theme-v2-transaction-v0.md"]);
+  requireText(errors, "AGENTS.md", ["Runtime support: `fixture_only_experimental`", "docs/cli-create-theme-v2-transaction-v0.md"]);
+  requireText(errors, "docs/runtime-boundary.md", ["fixture_only_experimental", "cli-create-theme-v2-transaction-v0.md"]);
+  requireText(errors, "docs/usage.md", ["fixture_only_experimental", "cli-create-theme-v2-transaction-v0.md"]);
+  requireText(errors, "docs/memory-architecture-profiles.md", ["Runtime-Support: fixture_only_experimental", "cli-create-theme-v2-transaction-v0.md"]);
   requireText(errors, "contracts/layouts/governed-theme-v2.json", [
     '"contract": "dex.memory.layout.v1"',
     '"profile": "governed-theme-v2"',

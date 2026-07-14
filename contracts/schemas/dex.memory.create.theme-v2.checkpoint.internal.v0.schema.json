@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.create.theme-v2.checkpoint.internal.v0.schema.json",
+  "title": "dex.memory.create.theme-v2.checkpoint.internal.v0",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state", "transaction_id", "idempotency_key", "request_fingerprint", "plan_hash",
+        "publish_order", "rollback_order", "directories", "temporary_paths", "plan"
+      ],
+      "properties": {
+        "state": { "const": "PREPARED" },
+        "transaction_id": { "$ref": "#/$defs/transactionId" },
+        "idempotency_key": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "request_fingerprint": { "$ref": "#/$defs/hash" },
+        "plan_hash": { "$ref": "#/$defs/hash" },
+        "publish_order": { "$ref": "#/$defs/publishOrder" },
+        "rollback_order": { "$ref": "#/$defs/rollbackOrder" },
+        "directories": { "type": "array", "maxItems": 1, "items": { "$ref": "#/$defs/directory" } },
+        "temporary_paths": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/temporaryPath" } },
+        "plan": { "$ref": "dex.memory.create.theme-v2.plan.v0.schema.json" }
+      }
+    },
+    { "$ref": "#/$defs/destinationCheckpoint" },
+    { "$ref": "#/$defs/indexCheckpoint" },
+    { "$ref": "#/$defs/l1Checkpoint" },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "transaction_id", "plan_hash"],
+      "properties": {
+        "state": { "const": "COMMITTED" },
+        "transaction_id": { "$ref": "#/$defs/transactionId" },
+        "plan_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "transaction_id"],
+      "properties": {
+        "state": { "const": "ROLLED_BACK" },
+        "transaction_id": { "$ref": "#/$defs/transactionId" }
+      }
+    }
+  ],
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "transactionId": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+    "publishOrder": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [{ "const": "destination" }, { "const": "index" }, { "const": "l1" }], "items": false
+    },
+    "rollbackOrder": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [{ "const": "l1" }, { "const": "index" }, { "const": "destination" }], "items": false
+    },
+    "directory": {
+      "type": "object", "additionalProperties": false,
+      "required": ["relative_path", "before_exists", "owned_if_created"],
+      "properties": {
+        "relative_path": { "type": "string", "pattern": "^work/[a-z0-9/-]+$" },
+        "before_exists": { "const": false },
+        "owned_if_created": { "const": true }
+      }
+    },
+    "temporaryPath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["slot", "relative_path"],
+      "properties": {
+        "slot": { "enum": ["destination", "index", "l1"] },
+        "relative_path": { "type": "string", "pattern": "^work/[A-Za-z0-9/.-]+\\.tmp$" }
+      }
+    },
+    "destinationCheckpoint": {
+      "type": "object", "additionalProperties": false, "required": ["state", "transaction_id"],
+      "properties": { "state": { "const": "DESTINATION_PUBLISHED" }, "transaction_id": { "$ref": "#/$defs/transactionId" } }
+    },
+    "indexCheckpoint": {
+      "type": "object", "additionalProperties": false, "required": ["state", "transaction_id"],
+      "properties": { "state": { "const": "INDEX_PUBLISHED" }, "transaction_id": { "$ref": "#/$defs/transactionId" } }
+    },
+    "l1Checkpoint": {
+      "type": "object", "additionalProperties": false, "required": ["state", "transaction_id"],
+      "properties": { "state": { "const": "L1_PUBLISHED" }, "transaction_id": { "$ref": "#/$defs/transactionId" } }
+    }
+  }
+}

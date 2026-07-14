@@ -7,6 +7,12 @@ const path = require("path");
 const { planCreate, planThemeV2 } = require("./create-plan");
 const { ApplyError, applyCreate } = require("./create-apply");
 const { RecoverError, recoverCreate } = require("./create-recover");
+const {
+  ThemeV2TransactionError,
+  applyThemeV2,
+  recoverThemeV2,
+  validateDirectoryBaselineShape
+} = require("./create-theme-v2-transaction");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
@@ -77,7 +83,7 @@ async function main() {
         throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan|apply|recover --fixture <fixture-root>");
       }
     } catch (error) {
-      if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError) {
+      if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError) {
         throw error;
       }
       throw new CliError(6, "IO_FAILURE", `create ${args[1] || "command"} failed`);
@@ -99,7 +105,38 @@ async function createApply(args) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
   if (fixture.profile === "governed-theme-v2") {
-    invalidSchema("governed-theme-v2 apply is not supported");
+    if (fixture.capability !== "transaction") invalidSchema("governed-theme-v2 plan-only fixture cannot apply");
+    const receipt = await applyThemeV2(plan, fixtureRoot, (validatedPlan) => {
+      if (validatedPlan.request.target_layer !== fixture.manifest.target_layer) {
+        throw new ThemeV2TransactionError(2, "INVALID_SCHEMA", "plan target layer does not match fixture manifest");
+      }
+      const targetPaths = resolveThemeV2Targets(fixture, validatedPlan.request);
+      const destinationDirectory = path.dirname(targetPaths[2]);
+      if (validatedPlan.request.target_layer === "L3" && fs.existsSync(destinationDirectory)) {
+        throw new ThemeV2TransactionError(4, "PLAN_CONFLICT", "fixture destination directory appeared after plan");
+      }
+      const themeState = inspectThemeV2(fixture, validatedPlan.request);
+      const snapshot = {
+        l1: snapshotTarget(targetPaths[0]),
+        index: snapshotTarget(targetPaths[1]),
+        destination: snapshotTarget(targetPaths[2]),
+        index_entries: themeState.filter((entry) => entry.layer === validatedPlan.request.target_layer)
+      };
+      return {
+        targetPaths,
+        expectedPlan: planThemeV2(
+          validatedPlan.request,
+          snapshot,
+          targetPaths.map((targetPath) => relativeFixturePath(fixtureRoot, targetPath))
+        ),
+        directories: validateDirectoryBaselineShape(validatedPlan)
+      };
+    }, {
+      name: process.env.DEX_MEMORIA_INTERNAL_TEST_FAILPOINT,
+      send: typeof process.send === "function" ? process.send.bind(process) : undefined
+    });
+    process.stdout.write(`${JSON.stringify(receipt)}\n`);
+    return;
   }
   const receipt = await applyCreate(plan, fixtureRoot, fixture.targetPaths, {
     name: process.env.DEX_MEMORIA_INTERNAL_TEST_FAILPOINT,
@@ -119,7 +156,10 @@ async function createRecover(args) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
   if (fixture.profile === "governed-theme-v2") {
-    invalidSchema("governed-theme-v2 recover is not supported");
+    if (fixture.capability !== "transaction") invalidSchema("governed-theme-v2 plan-only fixture cannot recover");
+    const receipt = await recoverThemeV2(request, fixtureRoot, fixture.manifest);
+    process.stdout.write(`${JSON.stringify(receipt)}\n`);
+    return;
   }
   const receipt = await recoverCreate(request, fixtureRoot, fixture.targetPaths);
   process.stdout.write(`${JSON.stringify(receipt)}\n`);
@@ -146,6 +186,9 @@ async function createPlan(args) {
       index_entries: themeState.filter((entry) => entry.layer === request.target_layer)
     };
     const plan = planThemeV2(request, snapshot, targetPaths.map((targetPath) => relativeFixturePath(fixtureRoot, targetPath)));
+    if (plan.targets.some((target) => target.changed !== true)) {
+      throw new CliError(4, "PLAN_CONFLICT", "fixture contains an orphan or preexisting V2 route");
+    }
     const output = JSON.stringify(plan);
     if (Buffer.byteLength(output, "utf8") > MAX_STDIN_BYTES) invalidSchema("plan exceeds 1 MiB");
     process.stdout.write(`${output}\n`);
@@ -189,7 +232,10 @@ function validateFixture(fixtureRoot) {
     if (marker.contract !== "dex.memory.disposable-run.v1" || marker.operation !== "create" || marker.disposable !== true) {
       safetyBlocked("fixture marker or manifest contract is invalid");
     }
-    if (manifest.contract === "dex.memory.fixture.governed-theme-v2-plan.v0") {
+    if ([
+      "dex.memory.fixture.governed-theme-v2-plan.v0",
+      "dex.memory.fixture.governed-theme-v2-transaction.v0"
+    ].includes(manifest.contract)) {
       return validateThemeV2Fixture(fixtureRoot, realRoot, marker, manifest);
     }
     requireExactFixtureKeys(manifest, ["contract", "operation", "disposable_runs_only", "targets"]);
@@ -241,6 +287,7 @@ function validateThemeV2Fixture(fixtureRoot, realRoot, marker, manifest) {
   }
   return {
     profile: "governed-theme-v2",
+    capability: manifest.contract === "dex.memory.fixture.governed-theme-v2-transaction.v0" ? "transaction" : "plan-only",
     fixtureRoot,
     realRoot,
     marker,
@@ -724,7 +771,7 @@ function fail(message) {
 }
 
 main().catch((error) => {
-  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError) {
+  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError) {
     process.stderr.write(`${JSON.stringify({
       contract: "dex.memory.error.v0",
       code: error.code,

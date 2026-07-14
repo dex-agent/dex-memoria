@@ -13,6 +13,10 @@ const SCHEMA_FILES = [
   "dex.memory.create.theme-v2.request.v0.schema.json",
   "dex.memory.create.theme-v2.plan.v0.schema.json",
   "dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
+  "dex.memory.fixture.governed-theme-v2-transaction.v0.schema.json",
+  "dex.memory.create.theme-v2.recover.v0.schema.json",
+  "dex.memory.create.theme-v2.receipt.v0.schema.json",
+  "dex.memory.create.theme-v2.checkpoint.internal.v0.schema.json",
   "dex.memory.create.request.v0.schema.json",
   "dex.memory.create.recover.v0.schema.json",
   "dex.memory.create.plan.v0.schema.json",
@@ -79,6 +83,38 @@ const EXPECTED = {
       title: "dex.memory.fixture.governed-theme-v2-plan.v0",
       type: "object",
       additionalProperties: false
+    }
+  },
+  "dex.memory.fixture.governed-theme-v2-transaction.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: {
+      title: "dex.memory.fixture.governed-theme-v2-transaction.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.create.theme-v2.recover.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: {
+      title: "dex.memory.create.theme-v2.recover.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.create.theme-v2.receipt.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "$defs", "oneOf"],
+    structure: {
+      title: "dex.memory.create.theme-v2.receipt.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
+  "dex.memory.create.theme-v2.checkpoint.internal.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "unevaluatedProperties", "oneOf", "$defs"],
+    structure: {
+      title: "dex.memory.create.theme-v2.checkpoint.internal.v0",
+      type: "object",
+      unevaluatedProperties: false
     }
   },
   "dex.memory.create.request.v0.schema.json": {
