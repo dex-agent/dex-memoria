@@ -105,6 +105,7 @@ codigo portavel. A prova observa o sinal IPC e valida o recovery subsequente.
 O hash do plano detecta alteracao; nao e assinatura nem prova de autoria. Crash
 durante a inicializacao do diretorio da transacao, falha de energia no meio do
 recovery, durabilidade especifica do filesystem e concorrencia distribuida
-permanecem riscos residuais. Esta bancada nao prova readers, Finder, validators,
+permanecem riscos residuais. Esta bancada de create, isoladamente, nao prova
+readers, Finder instalado, validators de producao,
 shadow/no-shrink, migracao, cutover ou rollback do vault vivo. Ativacao,
 consumidores e remocao de fallbacks exigem Trilhos e recibos humanos proprios.

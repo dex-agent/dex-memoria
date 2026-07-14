@@ -5,18 +5,20 @@
 > e `fixture_only_experimental` e não autoriza paths, escrita, leitura,
 > validacao ou migracao no vault vivo. Consulte
 > [Memory Architecture Profiles](memory-architecture-profiles.md) e
-> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md).
+> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md),
+> com o [leitor-validador V2 fixture-only](cli-routes-inspect-v2-v0.md).
 
 Este guia explica como instalar, usar e ativar a V1 documental de `dex-memoria`
 e sua excecao executavel V0 fixture-only.
 
 `dex-memoria` nao e runtime do Dex Agent nem writer geral. Ele nao executa
 hooks, nao cria inbox e nao escreve ledger ou vault vivo. O binario inclui
-somente `create plan|apply|recover` para uma fixture descartavel marcada,
-conforme a referencia canonica abaixo.
+`create plan|apply|recover` e `routes inspect` somente para fixtures
+descartaveis marcadas, conforme as referencias canonicas abaixo.
 
 O tracer V2 separado também oferece `create plan|apply|recover`, mas somente
-para a fixture transacional marcada e descartável. Ele não ativa o V2.
+para a fixture transacional marcada e descartável. `routes inspect` le e valida
+as rotas dessa mesma bancada sem escrever. Nenhum deles ativa o V2.
 
 Essa fronteira nao significa "memorias sao somente leitura" e nunca pode virar
 veto contra escrita global. Memoria global e indice gravavel: quando houver valor

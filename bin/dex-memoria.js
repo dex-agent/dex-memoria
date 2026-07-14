@@ -13,6 +13,7 @@ const {
   recoverThemeV2,
   validateDirectoryBaselineShape
 } = require("./create-theme-v2-transaction");
+const { RouteInspectionError, inspectThemeV2Routes } = require("./inspect-theme-v2-routes");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
@@ -71,6 +72,19 @@ async function main() {
     return;
   }
 
+  if (command === "routes") {
+    try {
+      if (args[1] !== "inspect") {
+        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria routes inspect --fixture <fixture-root>");
+      }
+      await routesInspect(args.slice(2));
+    } catch (error) {
+      if (error instanceof CliError || error instanceof RouteInspectionError) throw error;
+      throw new CliError(6, "IO_FAILURE", "routes inspect failed");
+    }
+    return;
+  }
+
   if (command === "create") {
     try {
       if (args[1] === "plan") {
@@ -104,6 +118,7 @@ async function createApply(args) {
   } catch (error) {
     throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
   }
+
   if (fixture.profile === "governed-theme-v2") {
     if (fixture.capability !== "transaction") invalidSchema("governed-theme-v2 plan-only fixture cannot apply");
     const receipt = await applyThemeV2(plan, fixtureRoot, (validatedPlan) => {
@@ -202,6 +217,20 @@ async function createPlan(args) {
   process.stdout.write(`${JSON.stringify(planCreate(request, snapshot, targets))}\n`);
 }
 
+async function routesInspect(args) {
+  const fixtureRoot = parseFixtureArg(args, "routes inspect");
+  const input = process.stdin.isTTY ? "" : await readStdin();
+  if (input.length > 0) throw new CliError(2, "INVALID_USAGE", "routes inspect does not accept stdin");
+  const fixture = validateFixture(fixtureRoot);
+  if (fixture.profile !== "governed-theme-v2") {
+    throw new CliError(2, "INVALID_PROFILE", "routes inspect supports only governed-theme-v2 fixtures");
+  }
+  if (fixture.capability !== "transaction") {
+    throw new CliError(2, "INVALID_PROFILE", "routes inspect requires a governed-theme-v2 transaction fixture");
+  }
+  process.stdout.write(`${JSON.stringify(inspectThemeV2Routes(fixture))}\n`);
+}
+
 function parseFixtureArg(args, subcommand) {
   let value;
   if (args.length === 2 && args[0] === "--fixture") {
@@ -210,7 +239,8 @@ function parseFixtureArg(args, subcommand) {
     value = args[0].slice("--fixture=".length);
   }
   if (!value) {
-    throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria create ${subcommand} --fixture <fixture-root>`);
+    const command = subcommand.startsWith("routes ") ? subcommand : `create ${subcommand}`;
+    throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria ${command} --fixture <fixture-root>`);
   }
   return path.resolve(value);
 }
@@ -575,6 +605,7 @@ Uso:
   dex-memoria create plan --fixture <fixture-root>
   dex-memoria create apply --fixture <fixture-root>
   dex-memoria create recover --fixture <fixture-root>
+  dex-memoria routes inspect --fixture <fixture-root>
   dex-memoria version
 
 Padrao de instalacao do contrato completo:
@@ -771,7 +802,7 @@ function fail(message) {
 }
 
 main().catch((error) => {
-  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError) {
+  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError || error instanceof RouteInspectionError) {
     process.stderr.write(`${JSON.stringify({
       contract: "dex.memory.error.v0",
       code: error.code,

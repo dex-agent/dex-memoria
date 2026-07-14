@@ -7,7 +7,8 @@ Versao atual: `0.1.6`
 > `fixture_only_experimental`: existe apenas uma bancada transacional descartavel,
 > sem runtime vivo, migracao ou cutover. Veja
 > [Memory Architecture Profiles](docs/memory-architecture-profiles.md) e a
-> [CLI create V2 transacional em fixture](docs/cli-create-theme-v2-transaction-v0.md).
+> [CLI create V2 transacional em fixture](docs/cli-create-theme-v2-transaction-v0.md),
+> acompanhada pelo [leitor-validador V2 fixture-only](docs/cli-routes-inspect-v2-v0.md).
 
 `dex-memoria` preserva a V1 documental do ciclo de vida de memoria operacional
 e oferece CLIs fixture-only para caracterizar `legacy-v1` e experimentar o
@@ -18,7 +19,9 @@ carrega o runtime do bot, nao executa hooks e nao e um writer geral. As excecoes
 executaveis deste corte sao as bancadas fixture-only V0 e V2 experimental,
 descritas em [`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md) e
 [`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md);
-ambas bloqueiam o vault vivo. Esse limite nao transforma memorias em somente
+o leitor-validador read-only fica em
+[`docs/cli-routes-inspect-v2-v0.md`](docs/cli-routes-inspect-v2-v0.md). Todas
+essas superficies bloqueiam o vault vivo. Esse limite nao transforma memorias em somente
 leitura; ele apenas separa contrato documental, bancada fixture-only e mecanismo
 autorizado de escrita real.
 
@@ -92,7 +95,8 @@ e nada entra no global se so serve para um projeto.
 - Nao e o runtime de memoria do Dex Agent.
 - Nao substitui `/inbox`, `/memory`, recall, ledger ou proposals do bot.
 - Nao contem `.agents/` reais, inbox, ledger, screenshots, logs, tokens ou secrets.
-- Nao promete scripts V2 como capacidade existente.
+- Nao promete runtime V2 vivo, Finder instalado ou validacao do vault real;
+  as capacidades V2 existentes permanecem fixture-only.
 - Nao e writer automatico geral e nao aceita vault ou workspace vivo como
   destino dos comandos `create`.
 - Instala o redirecionador global `dex-memoria` em `.agents/skills` quando o
@@ -101,12 +105,13 @@ e nada entra no global se so serve para um projeto.
 ## CLI V0 fixture-only
 
 O binario top-level preserva `doctor`, `memory-home`, `install` e `version` e
-adiciona somente:
+adiciona as seguintes superficies fixture-only:
 
 ```text
 dex-memoria create plan    --fixture <fixture-root>
 dex-memoria create apply   --fixture <fixture-root>
 dex-memoria create recover --fixture <fixture-root>
+dex-memoria routes inspect --fixture <fixture-root>
 ```
 
 Os comandos novos usam um JSON UTF-8 por stream, marker/manifest fechados,
@@ -123,6 +128,8 @@ nao integra consumidor em producao e nao remove writers existentes.
 - `docs/runtime-boundary.md`: o que ainda pertence ao Dex Agent.
 - `docs/cli-create-fixture-v0.md`: comandos, streams, schemas, fixture, journal,
   failpoints, exit codes e riscos da excecao executavel V0.
+- `docs/cli-routes-inspect-v2-v0.md`: leitura e triangulacao V2 fixture-only,
+  shadow independente e prova no-shrink.
 - `docs/memory-home.md`: raiz canonica `DEX_MEMORIA_HOME` e bloqueios de
   caminho.
 - `docs/integration-dex-agent.md`: como integrar este pacote ao Dex Agent.

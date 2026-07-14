@@ -5,7 +5,8 @@
 > `fixture_only_experimental`: existe apenas uma bancada descartavel, sem
 > runtime V2 vivo. A decisao alvo nao amplia esta fronteira. Veja
 > [Memory Architecture Profiles](memory-architecture-profiles.md) e
-> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md).
+> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md),
+> com o [leitor-validador V2 fixture-only](cli-routes-inspect-v2-v0.md).
 
 `dex-memoria` preserva o contrato documental V1. O runtime de memoria real
 continua no Dex Agent ate decisao posterior; as excecoes locais sao as bancadas
@@ -56,6 +57,11 @@ prova `create` com `L1 -> L2 OU L1 -> L3` somente em fixture transacional
 marcada. Ele não aceita o vault vivo, não ativa o V2 e não autoriza cutover,
 migração, readers ou validators de produção.
 
+O comando `routes inspect`, documentado em
+[`cli-routes-inspect-v2-v0.md`](cli-routes-inspect-v2-v0.md), reconstrói e
+triangula L1, INDEX e destino somente nessa fixture. Shadow e no-shrink dessa
+bancada não provam Finder instalado, validator live ou consumidores externos.
+
 ## Regra De Uso
 
 Quando a pergunta for sobre como operar uma memoria, use este repo.
@@ -65,7 +71,8 @@ Quando a pergunta for sobre como o bot grava, recupera, mostra ou injeta memoria
 ## Carregamento De L1/L2/L3
 
 `dex-memoria` recomenda os nomes canonicos `lembranca.md`, `memoria.md` e
-`conhecimento/`, mas nao carrega esses arquivos sozinho.
+`conhecimento/`, mas nao carrega esses arquivos do vault vivo. A unica leitura
+V2 executavel deste repo e `routes inspect` sobre fixture marcada.
 
 Responsabilidade deste repo:
 

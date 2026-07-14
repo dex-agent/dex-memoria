@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dex.memory.routes.inspect.v0.schema.json",
+  "title": "dex.memory.routes.inspect.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "profile", "status", "theme", "routes", "counts"],
+  "properties": {
+    "contract": { "const": "dex.memory.routes.inspect.v0" },
+    "profile": { "const": "governed-theme-v2" },
+    "status": { "const": "VALID" },
+    "theme": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 63,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/l2Route" },
+          { "$ref": "#/$defs/l3Route" }
+        ]
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routes", "l1_routes", "index_entries", "destinations", "l2", "l3"],
+      "properties": {
+        "routes": { "type": "integer", "minimum": 0 },
+        "l1_routes": { "type": "integer", "minimum": 0 },
+        "index_entries": { "type": "integer", "minimum": 0 },
+        "destinations": { "type": "integer", "minimum": 0 },
+        "l2": { "type": "integer", "minimum": 0 },
+        "l3": { "type": "integer", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "commonRouteProperties": {
+      "identity": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+      },
+      "slug": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "title": { "type": "string", "minLength": 1, "maxLength": 256 },
+      "trigger": { "type": "string", "minLength": 1, "maxLength": 512 },
+      "destination_relative_path": { "type": "string", "pattern": "^work/[a-z0-9]+(?:-[a-z0-9]+)*/(?:memorias/[a-z0-9]+(?:-[a-z0-9]+)*\\.md|conhecimento/[a-z0-9]+(?:-[a-z0-9]+)*/README\\.md)$" },
+      "index_relative_path": { "type": "string", "pattern": "^work/[a-z0-9]+(?:-[a-z0-9]+)*/(?:memorias|conhecimento)/INDEX\\.md$" },
+      "content_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "updated_at": { "type": "string", "format": "date-time" },
+      "last_reused_at": { "type": ["string", "null"], "format": "date-time" },
+      "reuse_count": { "type": "integer", "minimum": 0 }
+    },
+    "l2Route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "layer", "slug", "title", "trigger", "destination_relative_path", "index_relative_path", "content_sha256", "updated_at", "last_reused_at", "reuse_count"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/commonRouteProperties/identity" },
+        "layer": { "const": "L2" },
+        "slug": { "$ref": "#/$defs/commonRouteProperties/slug" },
+        "title": { "$ref": "#/$defs/commonRouteProperties/title" },
+        "trigger": { "$ref": "#/$defs/commonRouteProperties/trigger" },
+        "destination_relative_path": { "$ref": "#/$defs/commonRouteProperties/destination_relative_path" },
+        "index_relative_path": { "$ref": "#/$defs/commonRouteProperties/index_relative_path" },
+        "content_sha256": { "$ref": "#/$defs/commonRouteProperties/content_sha256" },
+        "updated_at": { "$ref": "#/$defs/commonRouteProperties/updated_at" },
+        "last_reused_at": { "$ref": "#/$defs/commonRouteProperties/last_reused_at" },
+        "reuse_count": { "$ref": "#/$defs/commonRouteProperties/reuse_count" }
+      }
+    },
+    "l3Route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "layer", "slug", "title", "trigger", "destination_relative_path", "index_relative_path", "content_sha256", "updated_at", "last_reused_at", "reuse_count", "owner_skill"],
+      "properties": {
+        "identity": { "$ref": "#/$defs/commonRouteProperties/identity" },
+        "layer": { "const": "L3" },
+        "slug": { "$ref": "#/$defs/commonRouteProperties/slug" },
+        "title": { "$ref": "#/$defs/commonRouteProperties/title" },
+        "trigger": { "$ref": "#/$defs/commonRouteProperties/trigger" },
+        "destination_relative_path": { "$ref": "#/$defs/commonRouteProperties/destination_relative_path" },
+        "index_relative_path": { "$ref": "#/$defs/commonRouteProperties/index_relative_path" },
+        "content_sha256": { "$ref": "#/$defs/commonRouteProperties/content_sha256" },
+        "updated_at": { "$ref": "#/$defs/commonRouteProperties/updated_at" },
+        "last_reused_at": { "$ref": "#/$defs/commonRouteProperties/last_reused_at" },
+        "reuse_count": { "$ref": "#/$defs/commonRouteProperties/reuse_count" },
+        "owner_skill": { "type": "string", "pattern": "^[a-z0-9]+(?:(?:-|:)[a-z0-9]+)*$" }
+      }
+    }
+  }
+}

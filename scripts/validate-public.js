@@ -25,12 +25,14 @@ const requiredFiles = [
   "VERSION",
   "package.json",
   "bin/dex-memoria.js",
+  "bin/inspect-theme-v2-routes.js",
   "bin/create-journal.js",
   "bin/create-theme-v2-transaction.js",
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
   "contracts/layouts/governed-theme-v2.json",
   "contracts/schemas/dex.memory.layout.v1.schema.json",
+  "contracts/schemas/dex.memory.routes.inspect.v0.schema.json",
   "contracts/schemas/dex.memory.create.theme-v2.request.v0.schema.json",
   "contracts/schemas/dex.memory.create.theme-v2.plan.v0.schema.json",
   "contracts/schemas/dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
@@ -51,6 +53,7 @@ const requiredFiles = [
   "docs/cli-create-fixture-v0.md",
   "docs/cli-create-theme-v2-plan-v0.md",
   "docs/cli-create-theme-v2-transaction-v0.md",
+  "docs/cli-routes-inspect-v2-v0.md",
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
@@ -223,6 +226,20 @@ function main() {
     "Exit codes",
     "não aceita o vault vivo",
     "não ativa o V2"
+  ]);
+  requireText(errors, "docs/cli-routes-inspect-v2-v0.md", [
+    "routes inspect",
+    "fixture_only_experimental",
+    "governed-theme-v2",
+    "approved_not_active",
+    "dex.memory.routes.inspect.v0",
+    "ROUTE_INVALID",
+    "L1 -> memorias/<slug>.md",
+    "L1 -> conhecimento/<slug>/README.md",
+    "owner_skill",
+    "shadow",
+    "no-shrink",
+    "nao aceita o vault vivo"
   ]);
   requireText(errors, "README.md", ["fixture_only_experimental", "docs/cli-create-theme-v2-transaction-v0.md"]);
   requireText(errors, "SPEC.md", ["Runtime-Support: fixture_only_experimental", "docs/cli-create-theme-v2-transaction-v0.md"]);

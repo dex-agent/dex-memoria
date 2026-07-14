@@ -14,8 +14,10 @@ Este documento explica a decisao V2 aprovada. Existe um tracer transacional
 fixture-only experimental, documentado em
 [`cli-create-theme-v2-transaction-v0.md`](cli-create-theme-v2-transaction-v0.md),
 mas ele nao implementa runtime vivo nem ativa a V2. Enquanto o recibo de
-cutover nao trocar o perfil ativo, writers, readers, Finder, validators,
-templates e exemplos vivos continuam em `legacy-v1`.
+cutover nao trocar o perfil ativo, writers, readers instalados, Finder,
+validators, templates e exemplos vivos continuam em `legacy-v1`. O
+`routes inspect` fixture-only e somente um consumidor experimental da bancada,
+nao uma mudanca nessas superficies vivas.
 
 ## Perfis
 
@@ -151,7 +153,7 @@ do cutover:
 | Grupo | Dependencia V1 atual | Acao futura |
 | --- | --- | --- |
 | writer/mineracao PPIRTV | destinos L1+L2 e L3 encadeado | destino tipado L2 OU L3 |
-| Finder/CLI | reconhece `memoria.md` | reconhecer arquivos em `memorias/` e pacote L3 |
+| Finder/CLI | Finder instalado reconhece `memoria.md`; CLI possui somente `routes inspect` em fixture V2 | reconhecer arquivos em `memorias/` e pacote L3 no consumidor real |
 | validadores | exigem L2 antes de L3 | validar exclusividade e backlinks por perfil |
 | skills instaladas | instruem cadeia V1 | atualizar somente apos suporte fixture comprovado |
 | tools e policies do vault | paths V1 literais | compatibilidade e no-shrink |

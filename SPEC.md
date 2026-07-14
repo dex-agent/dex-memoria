@@ -59,6 +59,10 @@ conhecimento profundo. Essa semantica possui somente um tracer transacional
 fixture-only experimental; nao existe runtime V2 vivo e o perfil ativo continua
 `legacy-v1`. O contrato da bancada esta em
 [`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md).
+Um leitor-validador independente reconstrói as rotas somente nessa bancada e
+esta documentado em
+[`docs/cli-routes-inspect-v2-v0.md`](docs/cli-routes-inspect-v2-v0.md); ele nao
+e Finder, validator live nem permissao de cutover.
 Paths, owners, metadados, JSONs e consumidores ainda pendentes estao em
 [`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
 

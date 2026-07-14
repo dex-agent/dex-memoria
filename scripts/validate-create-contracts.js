@@ -10,6 +10,7 @@ const TARGET_PATHS = ["work/LEMBRANCA.md", "work/MEMORIA.md"];
 
 const SCHEMA_FILES = [
   "dex.memory.layout.v1.schema.json",
+  "dex.memory.routes.inspect.v0.schema.json",
   "dex.memory.create.theme-v2.request.v0.schema.json",
   "dex.memory.create.theme-v2.plan.v0.schema.json",
   "dex.memory.fixture.governed-theme-v2-plan.v0.schema.json",
@@ -53,6 +54,14 @@ const receiptWriteFields = {
 };
 
 const EXPECTED = {
+  "dex.memory.routes.inspect.v0.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties", "$defs"],
+    structure: {
+      title: "dex.memory.routes.inspect.v0",
+      type: "object",
+      additionalProperties: false
+    }
+  },
   "dex.memory.layout.v1.schema.json": {
     allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
     structure: {
