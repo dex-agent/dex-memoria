@@ -74,8 +74,10 @@ O plan contém bytes e SHA-256 `before`/`after` de exatamente três targets:
 `serialization_order_only: true` significa apenas ordem canônica do array. Não
 é ordem futura de publicação e o payload não possui `publish_order`.
 
-L1 recebe um link Markdown relativo e metadata estrutural canônica
-`dex.memory.route.v1`. O INDEX é uma projeção derivada. O destino usa front
+L1 recebe um link Markdown relativo, a tag visível determinística `#<tema>` e
+metadata estrutural canônica `dex.memory.route.v1`. A tag usa o tema já
+validado pela fixture, sem introduzir um campo livre no request. O INDEX é uma
+projeção derivada. O destino usa front
 matter fechado, UTF-8/LF, `updated_at = created_at`,
 `last_reused_at = null`, `reuse_count = 0` e backlink direto para L1.
 

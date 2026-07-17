@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
@@ -39,6 +39,26 @@ async function runCli(args, stdin = "", environment = process.env) {
       exitCode
     }));
     child.stdin.end(stdin);
+  });
+}
+
+async function runCliFile(executablePath, workingDirectory, args, environment = process.env) {
+  return new Promise((resolveRun, rejectRun) => {
+    const child = spawn(process.execPath, [executablePath, ...args], {
+      cwd: workingDirectory,
+      env: environment,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const stdout = [];
+    const stderr = [];
+    child.stdout.on("data", (chunk) => stdout.push(chunk));
+    child.stderr.on("data", (chunk) => stderr.push(chunk));
+    child.on("error", rejectRun);
+    child.on("close", (exitCode) => resolveRun({
+      stdout: Buffer.concat(stdout).toString("utf8"),
+      stderr: Buffer.concat(stderr).toString("utf8"),
+      exitCode
+    }));
   });
 }
 
@@ -135,24 +155,113 @@ test("preserves exact V1 memory-home output", async (t) => {
   });
 });
 
-test("preserves exact V1 install dry-run output", async (t) => {
+test("install dry-run is registry-only and names the canonical source", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "dex-memoria-install-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const target = join(root, "target");
   const registryTarget = join(root, "registry");
-  const result = await runCli(["install", "--target", target, "--registry-target", registryTarget, "--dry-run"]);
+  const result = await runCli(["install", "--registry-target", registryTarget, "--dry-run"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
   assert.deepEqual(result, {
     stdout: [
-      `Instalaria dex-memoria em: ${target}`,
-      "- SKILL.md", "- SPEC.md", "- README.md", "- CHANGELOG.md", "- DECISIONS.md", "- VERSION", "- package.json",
-      "- bin", "- contracts", "- docs", "- registry", "- templates", "- examples",
       `Instalaria redirecionador global em: ${join(registryTarget, "SKILL.md")}`,
+      "Fonte canonica: C:\\CodexProjetos\\dex-memoria\\SKILL.md",
       "- registry\\agents-skills\\dex-memoria\\SKILL.md",
       ""
     ].join("\n"),
     stderr: "",
     exitCode: 0
   });
+});
+
+test("install writes only the global redirector and leaves the legacy install root absent", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-only-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = join(root, "registry");
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(
+    await readFile(join(registryTarget, "SKILL.md"), "utf8"),
+    await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"), "utf8")
+  );
+  await assert.rejects(readdir(join(root, ".dex-agent")), { code: "ENOENT" });
+});
+
+test("install rejects the removed --target option instead of ignoring it", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-target-rejected-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const result = await runCli([
+    "install",
+    "--target",
+    join(root, "forbidden"),
+    "--registry-target",
+    join(root, "registry"),
+    "--dry-run"
+  ], "", { ...process.env, HOME: root, USERPROFILE: root });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Opcao desconhecida para install: --target/);
+});
+
+test("install blocks explicitly before writing when the canonical source is absent or not a file", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-canonical-absent-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const productionSource = await readFile(cliPath, "utf8");
+  assert.match(productionSource, /accessSync\(CANONICAL_SKILL_PATH, fs\.constants\.R_OK\)/);
+
+  for (const scenario of ["absent", "directory"]) {
+    const scenarioRoot = join(root, scenario);
+    const sandboxCli = join(scenarioRoot, "bin", "dex-memoria.js");
+    const sandboxRedirector = join(scenarioRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md");
+    const invalidCanonical = join(scenarioRoot, "canonical", "SKILL.md");
+    const registryTarget = join(scenarioRoot, "installed-registry");
+    await cp(join(repoRoot, "bin"), join(scenarioRoot, "bin"), { recursive: true });
+    await mkdir(dirname(sandboxRedirector), { recursive: true });
+    if (scenario === "directory") {
+      await mkdir(invalidCanonical, { recursive: true });
+    }
+
+    const sandboxSource = productionSource.replace(
+      /const CANONICAL_SKILL_PATH = .*?;/,
+      `const CANONICAL_SKILL_PATH = ${JSON.stringify(invalidCanonical)};`
+    );
+    assert.notEqual(sandboxSource, productionSource);
+    await writeFile(sandboxCli, sandboxSource, "utf8");
+    await writeFile(
+      sandboxRedirector,
+      await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"))
+    );
+
+    const result = await runCliFile(sandboxCli, scenarioRoot, [
+      "install",
+      "--registry-target",
+      registryTarget,
+      "--force"
+    ], { ...process.env, HOME: scenarioRoot, USERPROFILE: scenarioRoot });
+
+    assert.equal(result.exitCode, 1, scenario);
+    assert.equal(result.stdout, "", scenario);
+    assert.match(result.stderr, /Fonte canonica indisponivel/, scenario);
+    await assert.rejects(readdir(registryTarget), { code: "ENOENT" });
+  }
+});
+
+test("the registry redirector has one canonical source and no fallback resolution", async () => {
+  const redirector = await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"), "utf8");
+  assert.match(redirector, /C:\\CodexProjetos\\dex-memoria\\SKILL\.md/);
+  assert.match(redirector, /bloqueio explicito/i);
+  assert.doesNotMatch(redirector, /\.dex-agent/);
+  assert.doesNotMatch(redirector, /<WORKSPACE>\\skills\\dex-memoria/);
+  assert.doesNotMatch(redirector, /Ordem De Resolucao/);
 });
 
 test("help advertises the fixture-only create apply command", async () => {

@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-07-16 - Fonte unica e instalador registry-only
+
+- A fonte completa e unica da skill e
+  `C:\CodexProjetos\dex-memoria\SKILL.md`.
+- O registry global recebe apenas um redirecionador direto para essa fonte.
+- `dex-memoria install` nao instala outra copia completa e rejeita `--target`;
+  `--registry-target` permanece apenas para testar ou localizar o registry.
+- Copias completas em workspaces e instalacoes antigas sao residuo
+  nao-autoritativo, preservado ate decisao separada de limpeza.
+- Ausencia da fonte canonica e bloqueio explicito, sem selecao silenciosa de
+  outra copia.
+- A decisao nao ativa V2 no vault vivo: `legacy-v1` continua ativo e V2 segue
+  fixture/SHADOW ate recibos independentes e aceite humano.
+
 ## 2026-05-02 - Extracao Inicial
 
 - O repo nasce como pacote documental, nao como runtime.
@@ -39,3 +53,20 @@
 - Nenhum codigo esta autorizado por esta decisao isoladamente. O Trilho
   `.agents/PLAN-TASKS/2026-07-12-cli-json-create-l1-l2-fixture-only.md` precisa
   passar por revisao humana e nova liberacao antes de Implementacao.
+
+## 2026-07-13 - Arquitetura alvo governed-theme-v2 aprovada, ainda inativa
+
+- `legacy-v1` continua sendo o unico perfil operacional de escrita.
+- `governed-theme-v2` foi aprovado como arquitetura alvo com status
+  `approved_not_active` e suporte runtime `not_implemented`.
+- No alvo, L1 roteia para exatamente um destino ativo: L2 para memoria
+  leve/operacional ou L3 para conhecimento profundo.
+- Conhecimento profundo nao cria L2 artificial apenas para servir de passagem.
+- A classificacao depende de densidade; idade e quantidade de reusos nao
+  promovem memoria automaticamente.
+- A decisao nao autoriza paths, schema, writer, reader, validator, Finder,
+  `lembranca.json`, migracao ou cutover V2.
+- O mapa publico completo fica em
+  [`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
+- A ativacao exige Trilho separado, writer/readers/validators compativeis,
+  shadow/no-shrink, recovery/rollback e recibo humano explicito de cutover.

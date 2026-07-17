@@ -140,6 +140,7 @@ test("V2 L2 plan is deterministic, read-only and routes only to memorias", async
   ]);
   assert.doesNotMatch(first.stdout, /conhecimento\/mapa-visual-v2/);
   assert.ok(decodeTarget(plan, "l1").includes("[Quando o mapa \\[visual\\] (V2) falhar?](memorias/mapa-visual-v2.md)"));
+  assert.ok(decodeTarget(plan, "l1").includes(") #tema-exemplo <!-- dex.memory.route.v1"));
   assert.match(decodeTarget(plan, "l1"), /dex\.memory\.route\.v1 \{"identity":"11111111-1111-4111-8111-111111111111","last_reused_at":null,"layer":"L2","reuse_count":0,"slug":"mapa-visual-v2","updated_at":"2026-07-13T12:00:00\.000Z"\}/);
   assert.match(decodeTarget(plan, "index"), /\[Mapa visual V2\]\(mapa-visual-v2\.md\)/);
   assert.match(decodeTarget(plan, "destination"), /layer: L2/);
@@ -161,7 +162,7 @@ test("V2 L3 plan routes directly from L1 to knowledge and requires an owner", as
     "work/tema-exemplo/conhecimento/journal-recuperavel/README.md"
   ]);
   assert.doesNotMatch(result.stdout, /memorias\/journal-recuperavel/);
-  assert.match(decodeTarget(plan, "l1"), /\]\(conhecimento\/journal-recuperavel\/README\.md\)/);
+  assert.match(decodeTarget(plan, "l1"), /\]\(conhecimento\/journal-recuperavel\/README\.md\) #tema-exemplo/);
   assert.match(decodeTarget(plan, "destination"), /layer: L3/);
   assert.match(decodeTarget(plan, "destination"), /owner_skill: dex-memoria/);
   assert.match(decodeTarget(plan, "destination"), /L1 relacionada: \[\.\.\/\.\.\/lembranca\.md\]\(\.\.\/\.\.\/lembranca\.md\)/);

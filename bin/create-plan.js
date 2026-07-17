@@ -44,6 +44,7 @@ function planCreate(request, snapshot, targets) {
 function planThemeV2(request, snapshot, targets) {
   const canonicalRequest = sortValue(request);
   const requestFingerprint = sha256(stableJson(canonicalRequest));
+  const theme = themeFromL1Target(targets[0]);
   const targetDirectory = request.target_layer === "L2" ? "memorias" : "conhecimento";
   const destinationLink = request.target_layer === "L2"
     ? `${targetDirectory}/${request.slug}.md`
@@ -59,7 +60,7 @@ function planThemeV2(request, snapshot, targets) {
     last_reused_at: null,
     reuse_count: 0
   });
-  const l1Block = `- [${escapeMarkdownLabel(request.trigger)}](${destinationLink}) <!-- dex.memory.route.v1 ${routeMetadata} -->`;
+  const l1Block = `- [${escapeMarkdownLabel(request.trigger)}](${destinationLink}) #${theme} <!-- dex.memory.route.v1 ${routeMetadata} -->`;
   const candidateIndexEntry = {
     identity: request.identity,
     layer: request.target_layer,
@@ -102,6 +103,12 @@ function planThemeV2(request, snapshot, targets) {
     targets: plannedTargets
   };
   return { ...unsignedPlan, plan_hash: sha256(stableJson(unsignedPlan)) };
+}
+
+function themeFromL1Target(relativePath) {
+  const match = relativePath?.match(/^work\/([a-z0-9]+(?:-[a-z0-9]+)*)\/lembranca\.md$/);
+  if (!match) throw new Error("V2 L1 target does not contain a canonical theme");
+  return match[1];
 }
 
 function renderDestination(request) {

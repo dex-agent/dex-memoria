@@ -1,5 +1,10 @@
 # Memory Home
 
+> O mapeamento abaixo e `legacy-v1` e permanece operacional. O layout alvo
+> `governed-theme-v2` esta `approved_not_active`; ele nao deve ser criado ou
+> inferido por este guia. Consulte
+> [Memory Architecture Profiles](memory-architecture-profiles.md).
+
 `DEX_MEMORIA_HOME` e a raiz canonica de memoria cross-project do
 `dex-memoria`.
 

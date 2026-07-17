@@ -8,6 +8,9 @@ const {
   SCHEMA_FILES: createContractSchemaFiles,
   validateCreateContractSchemas: validateCreateContractSchemaMap
 } = require("./validate-create-contracts");
+const {
+  verifyGeneratedArtifacts: validateMemoryResourceLimitBundle
+} = require("./generate-memory-resource-limit-artifacts");
 
 const root = path.resolve(__dirname, "..");
 const expectedVersion = "0.1.6";
@@ -31,6 +34,13 @@ const requiredFiles = [
   "registry/agents-skills/dex-memoria/SKILL.md",
   "contracts/CONTRATO_OPERACIONAL_CONDICAO_ACAO_EXECUCAO_RETORNO.md",
   "contracts/layouts/governed-theme-v2.json",
+  "contracts/policies/dex.memory.resource-limits.v1.json",
+  "contracts/policies/dex.memory.resource-limits.v1.schema.json",
+  "contracts/policies/generated/dex.memory.resource-limits.bootstrap.node.v1.cjs",
+  "contracts/policies/generated/dex.memory.resource-limits.bootstrap.powershell.v1.ps1",
+  "contracts/policies/generated/dex.memory.resource-limits.provenance.v1.json",
+  "contracts/policies/README.md",
+  "contracts/policies/INDEX.md",
   "contracts/schemas/dex.memory.layout.v1.schema.json",
   "contracts/schemas/dex.memory.routes.inspect.v0.schema.json",
   "contracts/schemas/dex.memory.create.theme-v2.request.v0.schema.json",
@@ -47,7 +57,9 @@ const requiredFiles = [
   "contracts/schemas/dex.memory.error.v0.schema.json",
   "contracts/schemas/dex.memory.disposable-run.v1.schema.json",
   "contracts/schemas/dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
+  "contracts/schemas/dex.memory.precutover.evidence.v0.schema.json",
   "contracts/schemas/dex.memory.create.checkpoint.internal.v0.schema.json",
+  "contracts/fixtures/precutover-v1-recall-corpus.v0.json",
   "docs/usage.md",
   "docs/runtime-boundary.md",
   "docs/cli-create-fixture-v0.md",
@@ -57,8 +69,23 @@ const requiredFiles = [
   "docs/integration-dex-agent.md",
   "docs/memory-home.md",
   "docs/layered-memory-simulations.md",
+  "docs/resource-limits-shadow-fixture-v1.md",
+  "docs/v2-fixture-consolidation-map.md",
   "scripts/validate-graduated-memory.js",
+  "scripts/generate-memory-resource-limit-artifacts.js",
+  "scripts/compare-memory-resource-limits-shadow.js",
+  "scripts/read-memory-resource-limits-shadow.js",
+  "scripts/read-memory-resource-limits-shadow.ps1",
+  "scripts/run-memory-resource-limits-shadow-fixture.js",
+  "scripts/run-memory-tag-limit-shadow-fixture.js",
+  "scripts/run-memory-link-line-limit-shadow-fixture.js",
+  "scripts/run-memory-v2-create-recall-fixture.js",
+  "scripts/run-memory-v2-precutover-clone.ps1",
+  "scripts/validate-memory-v2-precutover-evidence.js",
   "scripts/smoke-consciencia-templates.js",
+  "skills/dex-memoria-v2-pilot/SKILL.md",
+  "skills/dex-memoria-v2-pilot/agents/openai.yaml",
+  "skills/dex-memoria-v2-pilot/scripts/run-v2-memory-pilot.ps1",
   "templates/memory-contract.md",
   "templates/memory-resolution-checklist.md",
   "templates/child-usage-prompt.md",
@@ -160,8 +187,44 @@ function main() {
   requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
   requireText(errors, "README.md", ["CLI V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
+  requireText(errors, "README.md", ["probe SHADOW fixture-only", "docs/resource-limits-shadow-fixture-v1.md"]);
+  requireText(errors, "README.md", ["mapa consolidado V2 fixture-only", "docs/v2-fixture-consolidation-map.md", "fixture-ready"]);
   requireText(errors, "SPEC.md", ["Fronteira Executavel V0 Fixture-Only", "dex.memory.create.plan.v0", "dex.memory.create.receipt.v0"]);
   requireText(errors, "docs/usage.md", ["Usar A CLI V0 Fixture-Only", "create plan", "create apply", "create recover"]);
+  requireText(errors, "docs/usage.md", ["probe SHADOW de limites fixture-only", "resource-limits-shadow-fixture-v1.md", "--bundle", "--receipt"]);
+  requireText(errors, "docs/usage.md", ["Usar O Piloto V2 Fixture-Only", "run-v2-memory-pilot.ps1", "nao toca o vault vivo"]);
+  requireText(errors, "docs/v2-fixture-consolidation-map.md", [
+    "ACTIVE",
+    "FIXTURE_ONLY",
+    "CANDIDATE_SHADOW",
+    "EXTERNAL_CONSUMER",
+    "fixture-ready",
+    "run-memory-v2-create-recall-fixture.js",
+    "run-memory-v2-precutover-clone.ps1",
+    "validate-memory-v2-precutover-evidence.js",
+    "precutover-v1-recall-corpus.v0.json",
+    "legacy-v1",
+    "explicit human acceptance"
+  ]);
+  requireText(errors, "docs/resource-limits-shadow-fixture-v1.md", [
+    "DEFAULT",
+    "operation_child",
+    "comparison_child",
+    "validate-memory-tags",
+    "v2.tags.max_files",
+    "100 files",
+    "101 files",
+    "validate-memory-links",
+    "v2.document.max_lines",
+    "5000 lines",
+    "5001 lines",
+    "candidate_invalid",
+    "comparison_not_run",
+    "cli.stdin.max_bytes",
+    "v2.routes.document.max_bytes",
+    "v2.routes.max_entries",
+    "--help"
+  ]);
   requireText(errors, "docs/runtime-boundary.md", ["Excecao V0 Fixture-Only", "nao aceita o vault vivo"]);
   requireText(errors, "docs/cli-create-fixture-v0.md", [
     "dex-memoria create plan",
@@ -269,7 +332,7 @@ function main() {
     "DESBLOQUEIO-MANUAL-CONTROLADO",
     "Anti-gatilho nao e obrigatorio em toda memoria",
     "Checklist De L3 Robusto",
-    "Precedencia Local E Fallbacks",
+    "Fonte Única E Perfis Operacionais",
     "Fronteira De Escrita",
     "mecanismo fisico ja autorizado",
     "Fonte Completa",
@@ -282,17 +345,33 @@ function main() {
   requireText(errors, "SPEC.md", ["MEMORIA-GRADUADA-COM-ANTI-GATILHO", "DESBLOQUEIO-MANUAL-CONTROLADO", "Forca da evidencia", "source: graphify"]);
   requireText(errors, "docs/usage.md", ["Usar Memoria Graduada Com Anti-Gatilho", "DESBLOQUEIO-MANUAL-CONTROLADO", "Anti-exemplo entra quando evita erro real", "Pontes esperadas", "smoke:consciencia", "integracao local", "memory-policy.ps1", "memory-policy.json", "memory-policy.compat.json"]);
   requireText(errors, "package.json", ["smoke:consciencia", "test:local", "scripts/smoke-consciencia-templates.js"]);
-  requireText(errors, "bin/dex-memoria.js", ["REDIRECTOR_ENTRY", "defaultRegistryTarget", "--registry-target", "redirecionador global"]);
+  requireText(errors, "bin/dex-memoria.js", ["REDIRECTOR_ENTRY", "CANONICAL_SKILL_PATH", "defaultRegistryTarget", "--registry-target", "redirecionador global"]);
   requireText(errors, "registry/agents-skills/dex-memoria/SKILL.md", [
-    "Redirecionador Global",
-    "<WORKSPACE>\\skills\\dex-memoria\\SKILL.md",
+    "Destino Único",
     "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
-    "$env:USERPROFILE\\.dex-agent\\skills\\dex-memoria\\SKILL.md",
-    "$env:USERPROFILE\\.agents\\skills\\dex-memoria\\SKILL.md",
-    "Se nenhum destino completo existir, declare bloqueio explicito",
-    "Excecao Executavel V0 Fixture-Only",
-    "V1 documental preservada",
-    "../../../docs/cli-create-fixture-v0.md"
+    "bloqueio explicito",
+    "Nenhuma rota alternativa"
+  ]);
+  rejectText(errors, "registry/agents-skills/dex-memoria/SKILL.md", [
+    ".dex-agent",
+    "<WORKSPACE>",
+    "fallback"
+  ]);
+  requireText(errors, "README.md", [
+    "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
+    "Nao copie nem adapte `SKILL.md` como skill local autoritativa"
+  ]);
+  requireText(errors, "docs/usage.md", [
+    "C:\\CodexProjetos\\dex-memoria\\SKILL.md",
+    "Nao copie nem adapte `SKILL.md` como skill local"
+  ]);
+  rejectText(errors, "README.md", [
+    "Copiar ou adaptar como skill local do projeto",
+    "Para usar como skill local"
+  ]);
+  rejectText(errors, "docs/usage.md", [
+    "Copiar Ou Adaptar Como Skill Local",
+    "Quando um projeto precisar usar `dex-memoria` como skill local"
   ]);
   validateConscienciaTemplates(errors);
   validateGraduatedMemoryBattery(errors);
@@ -308,6 +387,7 @@ function main() {
   validateLayeredMemoryExample(errors);
   validateNoForbiddenTrackedFiles(errors);
   validateNoHardcodedWindowsUserProfilePath(errors);
+  validateResourceLimitPolicy(errors);
 
   if (errors.length > 0) {
     console.error(errors.join("\n"));
@@ -315,6 +395,14 @@ function main() {
   }
 
   console.log("dex-memoria public structure ok");
+}
+
+function validateResourceLimitPolicy(errors) {
+  try {
+    validateMemoryResourceLimitBundle(path.join(root, "contracts", "policies"));
+  } catch (error) {
+    errors.push(`Resource limit SHADOW policy failed: ${error.message}`);
+  }
 }
 
 function validateNoHardcodedWindowsUserProfilePath(errors) {
@@ -506,6 +594,15 @@ function requireText(errors, file, snippets) {
   for (const snippet of snippets) {
     if (!text.includes(snippet)) {
       errors.push(`${file} must mention: ${snippet}`);
+    }
+  }
+}
+
+function rejectText(errors, file, snippets) {
+  const text = readText(file, errors);
+  for (const snippet of snippets) {
+    if (text.includes(snippet)) {
+      errors.push(`${file} must not mention: ${snippet}`);
     }
   }
 }

@@ -107,9 +107,9 @@ function parseL1(text) {
   const routes = [];
   for (const line of normalizeLf(text).split("\n")) {
     if (!line.includes("dex.memory.route.v1")) continue;
-    const match = line.match(/^- \[(.*)\]\(([^)]+)\) <!-- dex\.memory\.route\.v1 (\{.*\}) -->$/);
+    const match = line.match(/^- \[(.*)\]\(([^)]+)\)(?: #([a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*))? <!-- dex\.memory\.route\.v1 (\{.*\}) -->$/);
     if (!match) invalid("L1 route is not parseable");
-    const metadata = parseJsonObject(match[3], "L1 route metadata");
+    const metadata = parseJsonObject(match[4], "L1 route metadata");
     requireExactKeys(metadata, ["identity", "last_reused_at", "layer", "reuse_count", "slug", "updated_at"], "L1 route metadata");
     validateCoreMetadata(metadata, "L1 route metadata");
     const expected = metadata.layer === "L2"

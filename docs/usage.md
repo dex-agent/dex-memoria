@@ -20,6 +20,11 @@ O tracer V2 separado também oferece `create plan|apply|recover`, mas somente
 para a fixture transacional marcada e descartável. `routes inspect` le e valida
 as rotas dessa mesma bancada sem escrever. Nenhum deles ativa o V2.
 
+O [probe SHADOW de limites fixture-only](resource-limits-shadow-fixture-v1.md)
+executa a operacao vigente primeiro e, somente com `--bundle` e `--receipt`
+explicitos, compara tres limites Node em outro processo. O bundle continua
+`effective=false`; a comparacao nunca decide o resultado operacional.
+
 Essa fronteira nao significa "memorias sao somente leitura" e nunca pode virar
 veto contra escrita global. Memoria global e indice gravavel: quando houver valor
 de lembranca/indexacao, grave um ponteiro curto, intuitivo e apontado para a
@@ -40,8 +45,9 @@ global curto. Nao e a skill/pacote antigo arquivado.
 
 ### Usar Via npm/npx
 
-Use este modo quando quiser instalar ou atualizar a copia local sem depender de
-`git remote`, branch ou pasta clonada:
+Use este modo para instalar ou atualizar somente o redirecionador do registry
+global. A fonte completa deve existir no clone canonico
+`C:\CodexProjetos\dex-memoria\SKILL.md`:
 
 ```bash
 npx github:dex-agent/dex-memoria doctor
@@ -57,23 +63,17 @@ npx dex-memoria@latest memory-home
 npx dex-memoria@latest install
 ```
 
-Por padrao, o comando instala o contrato completo em:
-
-```text
-~/.dex-agent/skills/dex-memoria
-```
-
-E instala o redirecionador global em:
+Por padrao, o comando instala somente o redirecionador global em:
 
 ```text
 ~/.agents/skills/dex-memoria/SKILL.md
 ```
 
-No Windows PowerShell, para atualizar os dois destinos padrao:
-
-```powershell
-npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
-```
+O redirecionador aponta diretamente para
+`C:\CodexProjetos\dex-memoria\SKILL.md`. Nao ha precedencia de skill local,
+instalacao de copia completa ou rota alternativa. Se a fonte canonica estiver
+indisponivel, a operacao deve parar com bloqueio explicito. `--target` nao e uma
+opcao valida.
 
 Use `--registry-target` quando o registry global de skills ficar em outro
 caminho:
@@ -379,17 +379,16 @@ Validacao por simulacao:
 
 - `docs/layered-memory-simulations.md`
 
-### Copiar Ou Adaptar Como Skill Local
+### Referenciar Em Outro Projeto
 
-Quando um projeto precisar usar `dex-memoria` como skill local, copie ou referencie estes itens:
+Quando um projeto precisar usar `dex-memoria`, referencie a fonte completa e
+unica `C:\CodexProjetos\dex-memoria\SKILL.md`, diretamente ou pelo
+redirecionador global. Nao copie nem adapte `SKILL.md` como skill local
+autoritativa.
 
-- `SKILL.md`
-- `SPEC.md`
-- `docs/`
-- `templates/`
-- `examples/`
-
-Depois ajuste somente caminhos de referencia do projeto destino. Nao copie `.agents/` reais, inbox, ledger, logs, screenshots, secrets, caches ou runtime `src/`.
+Templates e exemplos sanitizados podem ser copiados como artefatos de projeto,
+sem se tornarem fonte do contrato. Nao copie `.agents/` reais, inbox, ledger,
+logs, screenshots, secrets, caches ou runtime `src/`.
 
 ## Como Ativar
 
@@ -625,6 +624,35 @@ autocontido e nao executa esse smoke.
 
 Use `npm run test:local` quando quiser rodar a bateria portavel e o smoke local
 da consciencia no mesmo comando.
+
+## Usar O Piloto V2 Fixture-Only
+
+O mapa consolidado de writers, readers, validators, consumidores externos,
+comandos, backup e rollback esta em
+[`v2-fixture-consolidation-map.md`](v2-fixture-consolidation-map.md).
+
+Para executar a prova manual preservavel:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
+  ".\skills\dex-memoria-v2-pilot\scripts\run-v2-memory-pilot.ps1" `
+  -LinkValidator "<caminho-absoluto-validate-memory-links.ps1>" `
+  -Finder "<caminho-absoluto-find-memory-atual.ps1>" `
+  -BaselineFinder "<caminho-absoluto-find-memory-baseline.ps1>"
+```
+
+O piloto:
+
+- cria somente fixtures novas sob o laboratorio governado;
+- exige Finder e link validator por paths explicitos;
+- exige tambem um Finder baseline explicito para a prova de no-shrink;
+- prova create, retry, recovery e recall L2/L3;
+- preserva `receipt.json` e `PILOT-MANIFEST.json`;
+- nao instala a skill, nao toca o vault vivo e nao altera `legacy-v1`.
+
+`skills/dex-memoria-v2-pilot/` permanece fonte de repositorio e nao faz parte
+de `package.json#files`. Empacotamento, instalacao ou sync exigem decisao
+separada.
 
 ## O Que Depende Do Dex Agent
 

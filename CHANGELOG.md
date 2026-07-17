@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Torna `C:\CodexProjetos\dex-memoria\SKILL.md` a fonte completa e unica da
+  skill; `install` passa a atualizar apenas o redirecionador do registry global,
+  rejeita `--target` e nao seleciona copias locais ou instalacoes antigas.
+- Documenta explicitamente `legacy-v1` como perfil vivo e V2 como
+  `approved_not_active`, limitada a fixture/SHADOW sem cutover.
+
 - Hardened the fixture-only create plan provenance, shared journal validation,
   replay identity, and terminal `ROLLED_BACK` handling.
 

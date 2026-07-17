@@ -17,21 +17,7 @@ const { RouteInspectionError, inspectThemeV2Routes } = require("./inspect-theme-
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
-const COPY_ENTRIES = [
-  "SKILL.md",
-  "SPEC.md",
-  "README.md",
-  "CHANGELOG.md",
-  "DECISIONS.md",
-  "VERSION",
-  "package.json",
-  "bin",
-  "contracts",
-  "docs",
-  "registry",
-  "templates",
-  "examples"
-];
+const CANONICAL_SKILL_PATH = "C:\\CodexProjetos\\dex-memoria\\SKILL.md";
 const MAX_STDIN_BYTES = 1024 * 1024;
 const FIXTURE_TARGETS = ["work/LEMBRANCA.md", "work/MEMORIA.md"];
 
@@ -601,18 +587,18 @@ function printHelp() {
 Uso:
   dex-memoria doctor
   dex-memoria memory-home
-  dex-memoria install [--target <path>] [--registry-target <path>] [--force] [--dry-run]
+  dex-memoria install [--registry-target <path>] [--force] [--dry-run]
   dex-memoria create plan --fixture <fixture-root>
   dex-memoria create apply --fixture <fixture-root>
   dex-memoria create recover --fixture <fixture-root>
   dex-memoria routes inspect --fixture <fixture-root>
   dex-memoria version
 
-Padrao de instalacao do contrato completo:
-  ${defaultTarget()}
-
 Padrao de instalacao do redirecionador global:
   ${defaultRegistryTarget()}
+
+Fonte canonica unica:
+  ${CANONICAL_SKILL_PATH}
 
 Raiz padrao de memoria cross-project:
   ${memoryHomeInfo().path}
@@ -648,55 +634,52 @@ function printMemoryHome() {
 
 function install(args) {
   const options = parseInstallArgs(args);
-  const target = path.resolve(options.target || defaultTarget());
   const registryTarget = path.resolve(options.registryTarget || defaultRegistryTarget());
-  const planned = COPY_ENTRIES.map((entry) => ({
-    from: path.join(PACKAGE_ROOT, entry),
-    to: path.join(target, entry)
-  }));
   const redirector = {
     from: path.join(PACKAGE_ROOT, REDIRECTOR_ENTRY),
     to: path.join(registryTarget, "SKILL.md")
   };
-  const allPlanned = [...planned, redirector];
 
-  const missing = allPlanned.filter((item) => !fs.existsSync(item.from));
+  const missing = [redirector].filter((item) => !fs.existsSync(item.from));
   if (missing.length > 0) {
     fail(`Pacote incompleto. Ausentes: ${missing.map((item) => path.relative(PACKAGE_ROOT, item.from)).join(", ")}`);
   }
+  let canonicalSkillReady = false;
+  try {
+    canonicalSkillReady = fs.statSync(CANONICAL_SKILL_PATH).isFile();
+    if (canonicalSkillReady) {
+      fs.accessSync(CANONICAL_SKILL_PATH, fs.constants.R_OK);
+    }
+  } catch {
+    canonicalSkillReady = false;
+  }
+  if (!canonicalSkillReady) {
+    fail(`Fonte canonica indisponivel: ${CANONICAL_SKILL_PATH}`);
+  }
 
   if (options.dryRun) {
-    console.log(`Instalaria dex-memoria em: ${target}`);
-    if (fs.existsSync(target)) {
-      console.log("Destino existente: sim");
-    }
-    planned.forEach((item) => console.log(`- ${path.relative(PACKAGE_ROOT, item.from)}`));
     console.log(`Instalaria redirecionador global em: ${redirector.to}`);
     if (fs.existsSync(redirector.to)) {
       console.log("Redirecionador existente: sim");
     }
+    console.log(`Fonte canonica: ${CANONICAL_SKILL_PATH}`);
     console.log(`- ${path.relative(PACKAGE_ROOT, redirector.from)}`);
     return;
   }
 
-  const existing = allPlanned.filter((item) => fs.existsSync(item.to));
-  if (existing.length > 0 && !options.force) {
-    fail(`Destino ja contem arquivos dex-memoria. Use --force para atualizar: ${existing.map((item) => item.to).join(", ")}`);
+  if (fs.existsSync(redirector.to) && !options.force) {
+    fail(`Destino ja contem o redirecionador dex-memoria. Use --force para atualizar: ${redirector.to}`);
   }
 
-  fs.mkdirSync(target, { recursive: true });
-  for (const item of planned) {
-    copyRecursive(item.from, item.to);
-  }
-  copyRecursive(redirector.from, redirector.to);
+  fs.mkdirSync(path.dirname(redirector.to), { recursive: true });
+  fs.copyFileSync(redirector.from, redirector.to);
 
-  console.log(`dex-memoria ${readVersion()} instalado em: ${target}`);
   console.log(`redirecionador global instalado em: ${redirector.to}`);
+  console.log(`fonte canonica: ${CANONICAL_SKILL_PATH}`);
 }
 
 function parseInstallArgs(args) {
   const options = {
-    target: "",
     registryTarget: "",
     force: false,
     dryRun: false
@@ -704,19 +687,6 @@ function parseInstallArgs(args) {
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === "--target") {
-      const value = args[index + 1];
-      if (!value) {
-        fail("Opcao --target exige um caminho.");
-      }
-      options.target = value;
-      index += 1;
-      continue;
-    }
-    if (arg.startsWith("--target=")) {
-      options.target = arg.slice("--target=".length);
-      continue;
-    }
     if (arg === "--registry-target") {
       const value = args[index + 1];
       if (!value) {
@@ -742,25 +712,6 @@ function parseInstallArgs(args) {
   }
 
   return options;
-}
-
-function copyRecursive(from, to) {
-  const stat = fs.statSync(from);
-  if (stat.isDirectory()) {
-    fs.rmSync(to, { recursive: true, force: true });
-    fs.mkdirSync(to, { recursive: true });
-    for (const child of fs.readdirSync(from)) {
-      copyRecursive(path.join(from, child), path.join(to, child));
-    }
-    return;
-  }
-
-  fs.mkdirSync(path.dirname(to), { recursive: true });
-  fs.copyFileSync(from, to);
-}
-
-function defaultTarget() {
-  return path.join(os.homedir(), ".dex-agent", "skills", "dex-memoria");
 }
 
 function defaultRegistryTarget() {

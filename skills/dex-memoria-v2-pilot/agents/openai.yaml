@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dex Memoria V2 Pilot"
+  short_description: "Executa e preserva uma prova V2 fixture-only auditavel."
+  default_prompt: "Use $dex-memoria-v2-pilot para criar, pesquisar e preservar uma prova V2 descartavel sem tocar o vault vivo."

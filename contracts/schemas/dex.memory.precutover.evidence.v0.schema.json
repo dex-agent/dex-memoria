@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dex.memory.precutover.evidence.v0.schema.json",
+  "title": "dex.memory.precutover.evidence.v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "evidence_type",
+    "status",
+    "corpus_id",
+    "corpus_contract_sha256",
+    "oracle_sha256",
+    "query_count",
+    "result_count",
+    "result_layers",
+    "exit_code",
+    "warnings_count",
+    "no_shrink"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.precutover.evidence.v0" },
+    "evidence_type": { "enum": ["finder-v1-replay", "writer-v2-l2", "writer-v2-l3", "validator", "rollback"] },
+    "status": { "enum": ["PASS", "FAIL"] },
+    "corpus_id": { "const": "v1-synthetic-daily-memory-v0" },
+    "corpus_contract_sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+    "oracle_sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+    "query_count": { "type": "integer", "minimum": 0 },
+    "result_count": { "type": "integer", "minimum": 0 },
+    "result_layers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["L1", "L2", "L3"] }
+    },
+    "exit_code": { "type": "integer" },
+    "warnings_count": { "type": "integer", "minimum": 0 },
+    "no_shrink": { "type": "boolean" }
+  }
+}

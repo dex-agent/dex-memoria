@@ -1,0 +1,28 @@
+{
+  "contract": "dex.memory.resource-limits.provenance.v1",
+  "version": 1,
+  "authority_state": "SHADOW",
+  "effective": false,
+  "policy": {
+    "path": "dex.memory.resource-limits.v1.json",
+    "bytes": 13854,
+    "sha256": "b3820dd469f5232f6c31ef2da953a6f6b09247c94731f28f60a6d351aaba1965"
+  },
+  "schema": {
+    "path": "dex.memory.resource-limits.v1.schema.json",
+    "bytes": 2850,
+    "sha256": "714ecbf79b896a2942276bc39241f45a519564b6b80d1a3962098e56b3900a75"
+  },
+  "generated": {
+    "node_bootstrap": {
+      "path": "generated/dex.memory.resource-limits.bootstrap.node.v1.cjs",
+      "bytes": 546,
+      "sha256": "f1706c91f1f8a2bfe050483bc16aaf71479be08bf0b57ad38d60dd6ee9a78aff"
+    },
+    "powershell_bootstrap": {
+      "path": "generated/dex.memory.resource-limits.bootstrap.powershell.v1.ps1",
+      "bytes": 505,
+      "sha256": "fcefd9b29b748b2cab81c65f574eb570208ff79b06794800b9a112e075cd42a5"
+    }
+  }
+}

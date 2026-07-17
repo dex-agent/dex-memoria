@@ -801,6 +801,7 @@ test("V2 transaction documentation freezes emitted recovery status and exit code
     join(repoRoot, "docs", "cli-create-theme-v2-transaction-v0.md"),
     "utf8"
   );
+  const normalizedTransactionDoc = transactionDoc.replace(/\r\n?/g, "\n");
   for (const expected of [
     "status `ROLLED_BACK`",
     "`plan`\nproduz exatamente um plano `dex.memory.create.theme-v2.plan.v0`",
@@ -815,6 +816,6 @@ test("V2 transaction documentation freezes emitted recovery status and exit code
     "| `5` | `RECOVERY_REQUIRED` antes de novo apply |",
     "| `6` | `FAILPOINT_UNAVAILABLE` ou falha de I/O sanitizada como `IO_FAILURE` |"
   ]) {
-    assert.ok(transactionDoc.includes(expected), `missing transaction documentation contract: ${expected}`);
+    assert.ok(normalizedTransactionDoc.includes(expected), `missing transaction documentation contract: ${expected}`);
   }
 });

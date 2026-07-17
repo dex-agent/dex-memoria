@@ -68,20 +68,22 @@ Current public package line: `0.1.x`.
 
 Canonical development source:
 
-- this repository, `C:\CodexProjetos\dex-memoria`, is the development source
-  for the public `dex-memoria` contract package, including the complete
-  operational `SKILL.md` installed from GitHub/npm;
+- this repository, `C:\CodexProjetos\dex-memoria`, is the unique development
+  and operational source for the complete `dex-memoria` contract package;
+- the complete skill is always
+  `C:\CodexProjetos\dex-memoria\SKILL.md`; child repositories must reference
+  it instead of keeping an authoritative local copy;
 - `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md` is a short
   global redirector/registry bridge, not a full canonical copy of the contract;
   its versioned source in this repo is
   `registry/agents-skills/dex-memoria/SKILL.md`;
-- when no workspace-local `dex-memoria` exists, the redirector should load this
-  repository's complete `SKILL.md` first; if this repository is not available on
-  the machine, use the installed operational fallback
-  `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`;
-- local copies in child repos are project-local until a backup, diff and
-  explicit sync decision exists;
-- incompatible local copies should be marked `conflict-review`, not overwritten.
+- `dex-memoria install` installs or updates only that registry redirector; it
+  does not install a second complete skill;
+- workspace-local and `.dex-agent` copies are non-authoritative residue. Never
+  select, synchronize or overwrite them as an operational source; inventory
+  and preserve them until a separate cleanup decision exists;
+- if the canonical skill is unavailable, stop with an explicit blocker. Do not
+  silently select another copy.
 
 Primary public sources:
 

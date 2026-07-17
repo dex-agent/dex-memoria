@@ -295,6 +295,6 @@ Ha regressao se:
 
 ## 10. Proximo Passo
 
-Integracao de producao, SemVer e eventual remocao de writer/fallback so podem
-ser reconsiderados depois de decisao humana especifica e evidencia de shadow;
+Integracao de producao, SemVer e eventual ativacao/cutover V2 so podem ser
+reconsiderados depois de decisao humana especifica e evidencia de shadow;
 na ausencia desses gatilhos, permanecem fora do escopo.

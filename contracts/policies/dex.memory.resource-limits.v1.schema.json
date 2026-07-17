@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.dev/contracts/dex.memory.resource-limits.v1.schema.json",
+  "title": "Dex Memory Resource Limits V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "contract",
+    "version",
+    "authority_state",
+    "effective",
+    "owner",
+    "limits"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contract": {
+      "const": "dex.memory.resource-limits.v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "authority_state": {
+      "const": "SHADOW"
+    },
+    "effective": {
+      "const": false
+    },
+    "owner": {
+      "const": "dex-memoria"
+    },
+    "limits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/limit"
+      }
+    }
+  },
+  "$defs": {
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "limit_id",
+        "value",
+        "unit",
+        "kind",
+        "scope",
+        "profile",
+        "owner",
+        "source_evidence"
+      ],
+      "properties": {
+        "limit_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit": {
+          "enum": [
+            "bytes",
+            "lines",
+            "references",
+            "entries",
+            "packages",
+            "files",
+            "seconds"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "safety_ceiling",
+            "operational_default",
+            "fixture_profile"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ceiling_limit_id": {
+          "type": "string"
+        },
+        "duplicate_group": {
+          "type": "string"
+        },
+        "source_evidence": {
+          "$ref": "#/$defs/sourceEvidence"
+        }
+      }
+    },
+    "sourceEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "locator",
+        "path",
+        "line"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "repo_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    }
+  }
+}

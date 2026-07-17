@@ -1,1 +1,8 @@
 test/fixtures/**/*.md binary
+contracts/policies/dex.memory.resource-limits.v1.json text eol=lf
+contracts/policies/dex.memory.resource-limits.v1.schema.json text eol=lf
+contracts/policies/generated/* text eol=lf
+scripts/generate-memory-resource-limit-artifacts.js text eol=lf
+scripts/read-memory-resource-limits-shadow.js text eol=lf
+scripts/read-memory-resource-limits-shadow.ps1 text eol=lf
+test/memory-resource-limits-shadow.test.mjs text eol=lf

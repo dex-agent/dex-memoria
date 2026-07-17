@@ -49,6 +49,11 @@ OU
 L1 -> conhecimento/<slug>/README.md
 ```
 
+O inspector aceita a tag visível canônica opcional entre o link e a metadata
+estrutural. Novos writes V2 usam `#<tema>`; a forma sem tag permanece legível
+para compatibilidade com fixtures e provas anteriores. Quando presente, a tag
+precisa estar em lowercase kebab-case, com segmentos aninhados opcionais.
+
 L3 exige `owner_skill` e nao cria L2 artificial. Orfaos, divergencias,
 duplicatas, colisao case-insensitive, backlink incorreto ou destino ausente
 retornam exit code `4`, code `ROUTE_INVALID`, sem recibo parcial.

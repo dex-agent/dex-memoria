@@ -1,6 +1,6 @@
 ---
 name: dex-memoria
-description: Use quando for preciso criar, revisar, resolver, arquivar ou superseder memoria operacional de projetos Dex Agent com contrato de ciclo de vida, evitando que memoria resolvida continue viva como proximo passo. Esta e a versao operacional completa e publicavel; antes de aplica-la, verificar se o workspace atual possui `skills/dex-memoria/SKILL.md` ou skill local equivalente e preferir a versao local quando existir.
+description: Use quando for preciso criar, revisar, resolver, arquivar ou superseder memória operacional de projetos Dex Agent com contrato de ciclo de vida, distinguindo legacy-v1 ativo de governed-theme-v2 fixture/SHADOW. Esta é a única fonte operacional completa desta instalação.
 ---
 
 # Dex Memoria
@@ -24,8 +24,11 @@ continua vivo dentro de `dex-memoria`.
 ## Fonte Publicavel Completa
 
 Este `SKILL.md` e a versao operacional completa do contrato `dex-memoria`.
-Ele deve ser o arquivo publicado pelo repositorio de desenvolvimento
-`C:\CodexProjetos\dex-memoria` e instalado em outras maquinas via GitHub/npm.
+Ele é a única fonte operacional completa desta instalação:
+
+```text
+C:\CodexProjetos\dex-memoria\SKILL.md
+```
 
 O redirecionador do registry global fica em:
 
@@ -39,16 +42,10 @@ A fonte versionada desse redirecionador fica neste repositorio:
 registry\agents-skills\dex-memoria\SKILL.md
 ```
 
-Esse redirecionador deve procurar, nesta ordem:
-
-1. uma `dex-memoria` local no workspace atual;
-2. esta fonte completa do repositorio de desenvolvimento;
-3. a copia operacional instalada em
-   `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md`.
-
-A copia `.dex-agent` e fallback operacional instalado e deve ser sincronizada a
-partir desta fonte completa. O redirecionador `.agents` nao deve substituir este
-contrato nem esconder falha quando nenhum destino completo existir.
+Esse redirecionador aponta diretamente para esta fonte. Ele não procura skill
+local, `.codex`, `skills/dex-agent`, `.dex-agent`, backup ou cópia irmã. Se esta
+fonte estiver ausente ou ilegível, a resolução bloqueia explicitamente; não há
+fallback.
 
 ## Sincronizacao Canonica 2026-06-22
 
@@ -416,33 +413,30 @@ Status: confirmado | parcial | candidato
 rg -n "<gatilho>|<alias>|<termo-tecnico>" <L1> <L2> <L3>
 ```
 
-## Precedencia Local E Fallbacks
+## Fonte Única E Perfis Operacionais
 
-Antes de aplicar esta skill em um workspace, verifique se o repositorio da
-janela de contexto atual possui uma versao local de `dex-memoria`, nesta ordem:
+Não resolva outra cópia de `dex-memoria`. Cópias repo-locais, `.codex`,
+`skills/dex-agent`, `.dex-agent`, backups e lixeira são resíduos sem autoridade.
+Elas podem ser inventariadas, mas não governam o turno e não devem ser
+sincronizadas ou apagadas sem Trilho próprio.
 
-1. `skills/dex-memoria/SKILL.md`
-2. `skills/dex-agent/skills/dex-memoria/SKILL.md`
-3. `.codex/skills/dex-memoria/SKILL.md`
-4. outro caminho local indicado por `AGENTS.md`, `INDEX.md`, `ACTIVE.md` ou `HANDOFF.md`
+| Perfil | Estado | Uso autorizado agora | Escrita live |
+| --- | --- | --- | --- |
+| `legacy-v1` | `active` | memória diária, escopo projeto/global/tema, L1/L2/L3 e rotas documentais vigentes | sim, pelo writer autorizado do ambiente |
+| `governed-theme-v2` | `approved_not_active` | fixtures descartáveis e SHADOW com corpus sintético | não |
 
-Se existir `dex-memoria` local, use a versao local e pare de aplicar esta copia
-como contrato principal.
+Regras:
 
-Se nao existir versao local, declare antes de continuar:
-
-`Estou usando o dex-memoria completo do repositorio/fallback global pois nao existe dex-memoria local neste workspace.`
-
-Regra de conflito:
-
-- a `dex-memoria` local do projeto vence a global;
-- `C:\CodexProjetos\dex-memoria\SKILL.md` e a fonte completa publicavel;
-- `$env:USERPROFILE\.dex-agent\skills\dex-memoria\SKILL.md` e fallback
-  operacional instalado quando o repo de desenvolvimento nao existir;
-- `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md` e apenas
-  redirecionador do registry global;
-- para proximo passo operacional, `HANDOFF.md` vence `.agents/MEMORY.ndjson`;
-- `.agents/MEMORY.ndjson` e ledger, nao fila viva.
+- `legacy-v1` continua sendo o único decisor de escrita live;
+- V2 pode executar apenas os comandos fixture-only e probes SHADOW descritos
+  neste repositório;
+- `shadow-ready` não significa `live-ready`;
+- ativar V2 exige Trilho de cutover separado, writer/leitores/validadores
+  compatíveis, no-shrink V1, backup/rollback, recibos independentes e aceite
+  humano explícito;
+- pedido de memorização diária sem cutover usa V1, nunca V2 por inferência;
+- para próximo passo operacional, `HANDOFF.md` vence `.agents/MEMORY.ndjson`;
+- `.agents/MEMORY.ndjson` é ledger, não fila viva.
 
 ## Fronteira De Escrita
 
@@ -524,3 +518,15 @@ Ela nao executa comandos `add`, `resolve`, `archive`, `status` ou `audit`.
 Ela tambem nao e hook automatico e nao roda sozinha ao abrir ou fechar uma janela de contexto.
 
 Scripts so entram numa V2 depois de uso real repetido com baixa ambiguidade.
+
+## Limite Da V2
+
+O suporte V2 atual é `fixture_only_experimental` e `SHADOW`. Ele compreende:
+
+- `L1 -> L2 OU L1 -> L3` por densidade;
+- create, retry, recovery e recall somente nas bancadas marcadas;
+- leitura/validação, policy e limites somente em fixtures ou corpus sintético;
+- preservação `legacy_no_shrink=true` e `live_vault_touched=false`.
+
+Ele não autoriza caminho live, migração, cutover, troca de perfil ou escrita no
+vault vivo. Na dúvida, bloquear V2 e continuar a memória diária em `legacy-v1`.

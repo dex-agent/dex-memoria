@@ -2,6 +2,10 @@
 
 Data: `2026-05-15`
 Status: `validacao antes de aprovacao`
+Perfil: `legacy-v1`
+
+> Estas simulacoes representam a cadeia vigente `L1 -> L2 -> L3`. Elas nao
+> sao exemplos de `governed-theme-v2` e nao autorizam paths ou escrita V2.
 
 Este documento registra simulacoes sanitizadas feitas a partir de uma memoria em
 camadas ja usada em ambiente local. O objetivo e testar se a arquitetura

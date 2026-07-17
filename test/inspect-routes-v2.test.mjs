@@ -102,7 +102,7 @@ async function renderFixture(themeRoot, routes) {
     const destination = route.layer === "L2"
       ? `memorias/${route.slug}.md`
       : `conhecimento/${route.slug}/README.md`;
-    return `- [${route.trigger}](${destination}) <!-- dex.memory.route.v1 ${stableJson({
+    return `- [${route.trigger}](${destination}) #tema-exemplo <!-- dex.memory.route.v1 ${stableJson({
       identity: route.identity,
       layer: route.layer,
       slug: route.slug,
@@ -241,6 +241,30 @@ test("routes inspect emits a deterministic independent shadow for mixed L2 and d
     counts: { routes: 2, l1_routes: 2, index_entries: 2, destinations: 2, l2: 1, l3: 1 }
   });
   assert.doesNotMatch(first.stdout, /dex-memoria-routes-v2-|Contexto curto|Modelo profundo/);
+});
+
+test("routes inspect accepts preserved untagged fixtures and rejects non-canonical visible tags", async (t) => {
+  const untagged = await createFixture(t, [l2Route]);
+  const untaggedPath = join(untagged.themeRoot, "lembranca.md");
+  await writeFile(
+    untaggedPath,
+    (await readFile(untaggedPath, "utf8")).replace(" #tema-exemplo <!--", " <!--")
+  );
+  const compatible = await runCli(["routes", "inspect", "--fixture", untagged.fixtureRoot]);
+  assert.equal(compatible.exitCode, 0, compatible.stderr);
+  assert.equal(JSON.parse(compatible.stdout).status, "VALID");
+
+  const invalidTag = await createFixture(t, [l2Route]);
+  const invalidTagPath = join(invalidTag.themeRoot, "lembranca.md");
+  await writeFile(
+    invalidTagPath,
+    (await readFile(invalidTagPath, "utf8")).replace("#tema-exemplo", "#Tema_Exemplo")
+  );
+  assertCliError(
+    await runCli(["routes", "inspect", "--fixture", invalidTag.fixtureRoot]),
+    4,
+    "ROUTE_INVALID"
+  );
 });
 
 test("routes inspect proves no-shrink after a fixture-only create", async (t) => {

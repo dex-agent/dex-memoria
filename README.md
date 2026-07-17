@@ -8,7 +8,8 @@ Versao atual: `0.1.6`
 > sem runtime vivo, migracao ou cutover. Veja
 > [Memory Architecture Profiles](docs/memory-architecture-profiles.md) e a
 > [CLI create V2 transacional em fixture](docs/cli-create-theme-v2-transaction-v0.md),
-> acompanhada pelo [leitor-validador V2 fixture-only](docs/cli-routes-inspect-v2-v0.md).
+> acompanhada pelo [leitor-validador V2 fixture-only](docs/cli-routes-inspect-v2-v0.md)
+> e pelo [mapa consolidado V2 fixture-only](docs/v2-fixture-consolidation-map.md).
 
 `dex-memoria` preserva a V1 documental do ciclo de vida de memoria operacional
 e oferece CLIs fixture-only para caracterizar `legacy-v1` e experimentar o
@@ -120,6 +121,20 @@ targets allowlisted e journal recuperavel. Consulte a
 Draft 2020-12 em `contracts/schemas/`. Esta fronteira nao anuncia release nova,
 nao integra consumidor em producao e nao remove writers existentes.
 
+Para diagnosticar os limites Node sem ativa-los, use o
+[probe SHADOW fixture-only](docs/resource-limits-shadow-fixture-v1.md). Ele
+mantem o processo operacional como autoridade e grava a comparacao em recibo
+separado somente quando `--bundle` e `--receipt` forem informados juntos.
+
+O mapa unico de writers, readers, validators, consumidores externos, comandos,
+backup e rollback esta em
+[`docs/v2-fixture-consolidation-map.md`](docs/v2-fixture-consolidation-map.md).
+O SHADOW com corpus sintetico e consumidores externos terminou `PASS`, portanto
+o veredito local atual e `shadow-ready`. Isso nao autoriza cutover, instalacao
+global, migracao, remocao de fallbacks nem escrita V2 no vault vivo.
+O marco anterior da consolidacao isolada permanece registrado como
+`fixture-ready`.
+
 ## Estrutura
 
 - `SKILL.md`: entrada operacional da skill.
@@ -130,6 +145,10 @@ nao integra consumidor em producao e nao remove writers existentes.
   failpoints, exit codes e riscos da excecao executavel V0.
 - `docs/cli-routes-inspect-v2-v0.md`: leitura e triangulacao V2 fixture-only,
   shadow independente e prova no-shrink.
+- `docs/resource-limits-shadow-fixture-v1.md`: comparacao fora de banda dos
+  limites Node atuais contra o bundle SHADOW, com help e recuperacao.
+- `docs/v2-fixture-consolidation-map.md`: mapa portavel de produto,
+  consumidores, comandos, SHADOW, backup, rollback e gates para cutover.
 - `docs/memory-home.md`: raiz canonica `DEX_MEMORIA_HOME` e bloqueios de
   caminho.
 - `docs/integration-dex-agent.md`: como integrar este pacote ao Dex Agent.
@@ -142,6 +161,8 @@ nao integra consumidor em producao e nao remove writers existentes.
 - `examples/layered-memory/`: exemplo sanitizado de L1 acionando L2 e L3.
 - `docs/layered-memory-simulations.md`: simulacoes sanitizadas para validar se
   a arquitetura recupera aprendizado de fato.
+- `skills/dex-memoria-v2-pilot/`: piloto manual fixture-only mantido somente
+  no repositorio; nao e instalado e nao entra no pacote npm atual.
 
 ## Instalacao Rapida
 
@@ -153,16 +174,10 @@ npx github:dex-agent/dex-memoria memory-home
 npx github:dex-agent/dex-memoria install
 ```
 
-Por padrao, `install` copia:
-
-- o contrato completo para `~/.dex-agent/skills/dex-memoria`;
-- o redirecionador global para `~/.agents/skills/dex-memoria/SKILL.md`.
-
-No Windows, para atualizar os dois destinos padrao:
-
-```powershell
-npx github:dex-agent/dex-memoria install --target "$env:USERPROFILE\.dex-agent\skills\dex-memoria" --force
-```
+`install` copia somente o redirecionador global para
+`~/.agents/skills/dex-memoria/SKILL.md`. Esse arquivo aponta diretamente para a
+fonte completa e unica em `C:\CodexProjetos\dex-memoria\SKILL.md`. O comando nao
+instala uma segunda skill completa e nao aceita `--target`.
 
 Para instalar o redirecionador em outro registry de skills:
 
@@ -193,23 +208,13 @@ copia controlada em outro projeto.
 
 ## Usar Em Outro Projeto
 
-Use uma destas formas:
+Outro projeto consumidor deve referenciar a fonte completa e unica
+`C:\CodexProjetos\dex-memoria\SKILL.md`, diretamente ou pelo redirecionador
+global. Nao copie nem adapte `SKILL.md` como skill local autoritativa.
 
-1. Referenciar este repo como documentacao externa do projeto.
-2. Copiar ou adaptar como skill local do projeto quando o agente precisar aplicar
-   o contrato diretamente.
-
-Para usar como skill local, copie ou referencie apenas:
-
-- `SKILL.md`
-- `SPEC.md`
-- `docs/`
-- `templates/`
-- `examples/`
-
-Depois ajuste somente os caminhos de referencia do projeto destino. Nao copie
-`.agents/` reais, inbox, ledger, logs, screenshots, secrets, caches ou runtime
-`src/`.
+Templates e exemplos sanitizados podem ser copiados como artefatos de projeto,
+sem transformar a copia em fonte do contrato. Nao copie `.agents/` reais,
+inbox, ledger, logs, screenshots, secrets, caches ou runtime `src/`.
 
 Para usar o modelo em camadas em outro projeto, crie ou adapte:
 
@@ -253,25 +258,21 @@ Contexto:
 - Repo oficial: https://github.com/dex-agent/dex-memoria
 
 Tarefa:
-1. Verifique se ja existe uma copia local de dex-memoria neste projeto.
-2. Se nao existir, clone o repo oficial ou copie apenas os arquivos necessarios.
-3. Se for usar como skill local, inclua somente:
-   - SKILL.md
-   - SPEC.md
-   - docs/
-   - templates/
-   - examples/
-4. Ajuste apenas caminhos de referencia do projeto destino.
+1. Confirme que a fonte canonica existe em C:\CodexProjetos\dex-memoria\SKILL.md.
+2. Execute `dex-memoria install` para atualizar somente o redirecionador em
+   ~/.agents/skills/dex-memoria/SKILL.md.
+3. Configure este projeto consumidor para referenciar a fonte canonica; nao
+   copie a skill completa para o workspace.
+4. Nao selecione copias antigas de workspace ou .dex-agent como autoridade.
 5. Nao copie .agents reais, inbox, ledger, logs, screenshots, secrets, caches, .env ou runtime src/.
-6. Atualize a documentacao local do projeto para dizer onde dex-memoria foi instalado ou referenciado.
-7. Ao final, mostre:
-   - caminho instalado ou referenciado;
-   - arquivos copiados ou linkados;
+6. Ao final, mostre:
+   - caminho do redirecionador instalado;
+   - caminho da fonte canonica referenciada;
    - como ativar dex-memoria em uma proxima conversa;
    - limites que continuam fora do pacote.
 
 Criterio de pronto:
-- O projeto consegue apontar para dex-memoria como contrato de memoria.
+- O projeto aponta para a fonte canonica unica do contrato de memoria.
 - Nenhum segredo ou estado real foi copiado.
 - A IA nao prometeu automacoes que a V1 nao entrega.
 ```
@@ -282,7 +283,7 @@ Leia [docs/usage.md](docs/usage.md) para:
 
 - clonar o repo;
 - usar `dex-memoria` como pacote documental;
-- copiar ou adaptar como skill local quando fizer sentido;
+- referenciar a fonte canonica sem criar skill local autoritativa;
 - ativar a skill com prompts prontos;
 - entender o que ainda depende do Dex Agent.
 

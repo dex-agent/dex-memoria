@@ -1,0 +1,406 @@
+{
+  "$schema": "./dex.memory.resource-limits.v1.schema.json",
+  "contract": "dex.memory.resource-limits.v1",
+  "version": 1,
+  "authority_state": "SHADOW",
+  "effective": false,
+  "owner": "dex-memoria",
+  "limits": [
+    {
+      "limit_id": "legacy.default.max_file_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "safety_ceiling",
+      "scope": "legacy-v1 default document",
+      "profile": "legacy-v1",
+      "owner": "memory-policy",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "defaults.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 7
+      }
+    },
+    {
+      "limit_id": "legacy.tags.max_file_bytes",
+      "value": 200000,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 tag validator document",
+      "profile": "legacy-v1",
+      "owner": "validate-memory-tags",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "two-hundred-kilobyte-fast-path",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.tool-tags-compatibility.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 17
+      }
+    },
+    {
+      "limit_id": "legacy.links.max_file_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 link validator document",
+      "profile": "legacy-v1",
+      "owner": "validate-memory-links",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.tool-links-compatibility.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 26
+      }
+    },
+    {
+      "limit_id": "legacy.l1.max_file_bytes",
+      "value": 200000,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 L1 document",
+      "profile": "legacy-v1",
+      "owner": "memory-policy",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "two-hundred-kilobyte-fast-path",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.layer-l1.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 35
+      }
+    },
+    {
+      "limit_id": "legacy.l2.max_file_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 L2 document",
+      "profile": "legacy-v1",
+      "owner": "memory-policy",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.layer-l2.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 44
+      }
+    },
+    {
+      "limit_id": "legacy.l3.max_file_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 L3 document",
+      "profile": "legacy-v1",
+      "owner": "memory-policy",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.layer-l3.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 53
+      }
+    },
+    {
+      "limit_id": "legacy.index.max_file_bytes",
+      "value": 200000,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "legacy-v1 index document",
+      "profile": "legacy-v1",
+      "owner": "memory-policy",
+      "ceiling_limit_id": "legacy.default.max_file_bytes",
+      "duplicate_group": "two-hundred-kilobyte-fast-path",
+      "source_evidence": {
+        "source_id": "installed-memory-policy",
+        "locator": "rules.memory-type-index.max_file_bytes",
+        "path": "$DEX_MEMORY_HOME/.agents/policies/memory-policy.json",
+        "line": 62
+      }
+    },
+    {
+      "limit_id": "v2.tags.max_files",
+      "value": 100,
+      "unit": "files",
+      "kind": "operational_default",
+      "scope": "governed-theme-v2 tag validation files per theme",
+      "profile": "governed-theme-v2",
+      "owner": "consciencia-memorias",
+      "source_evidence": {
+        "source_id": "installed-tag-validator",
+        "locator": "MaxFiles",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-tags.ps1",
+        "line": 10
+      }
+    },
+    {
+      "limit_id": "v2.document.max_file_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "safety_ceiling",
+      "scope": "governed-theme-v2 Markdown document",
+      "profile": "governed-theme-v2",
+      "owner": "validate-memory-links",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "installed-link-validator",
+        "locator": "MaxFileBytes",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-links.ps1",
+        "line": 566
+      }
+    },
+    {
+      "limit_id": "v2.document.max_lines",
+      "value": 5000,
+      "unit": "lines",
+      "kind": "operational_default",
+      "scope": "governed-theme-v2 Markdown document",
+      "profile": "governed-theme-v2",
+      "owner": "validate-memory-links",
+      "source_evidence": {
+        "source_id": "installed-link-validator",
+        "locator": "MaxLines",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-links.ps1",
+        "line": 15
+      }
+    },
+    {
+      "limit_id": "v2.route.max_refs",
+      "value": 1000,
+      "unit": "references",
+      "kind": "operational_default",
+      "scope": "governed-theme-v2 route validation",
+      "profile": "governed-theme-v2",
+      "owner": "validate-memory-links",
+      "source_evidence": {
+        "source_id": "installed-link-validator",
+        "locator": "MaxRefs",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-links.ps1",
+        "line": 17
+      }
+    },
+    {
+      "limit_id": "v2.knowledge.max_packages",
+      "value": 250,
+      "unit": "packages",
+      "kind": "operational_default",
+      "scope": "governed-theme-v2 knowledge packages",
+      "profile": "governed-theme-v2",
+      "owner": "validate-memory-links",
+      "source_evidence": {
+        "source_id": "installed-link-validator",
+        "locator": "MaxL3Files",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-links.ps1",
+        "line": 19
+      }
+    },
+    {
+      "limit_id": "v2.validation.max_elapsed_seconds",
+      "value": 20,
+      "unit": "seconds",
+      "kind": "safety_ceiling",
+      "scope": "governed-theme-v2 link validation run",
+      "profile": "governed-theme-v2",
+      "owner": "validate-memory-links",
+      "source_evidence": {
+        "source_id": "installed-link-validator",
+        "locator": "MaxElapsedSeconds",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/validate-memory-links.ps1",
+        "line": 21
+      }
+    },
+    {
+      "limit_id": "v2.routes.document.max_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "operational_default",
+      "scope": "fixture-only V2 route inspection input",
+      "profile": "fixture-only-experimental",
+      "owner": "inspect-theme-v2-routes",
+      "ceiling_limit_id": "v2.document.max_file_bytes",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "dex-memoria-repository",
+        "locator": "MAX_DOCUMENT_BYTES",
+        "path": "bin/inspect-theme-v2-routes.js",
+        "line": 7,
+        "repo_commit": "e7bc10e9f2d6e7d1da2ebe720738f588792e0edc"
+      }
+    },
+    {
+      "limit_id": "v2.routes.max_entries",
+      "value": 1000,
+      "unit": "entries",
+      "kind": "operational_default",
+      "scope": "fixture-only V2 route inspection entries",
+      "profile": "fixture-only-experimental",
+      "owner": "inspect-theme-v2-routes",
+      "source_evidence": {
+        "source_id": "dex-memoria-repository",
+        "locator": "MAX_ROUTES",
+        "path": "bin/inspect-theme-v2-routes.js",
+        "line": 8,
+        "repo_commit": "e7bc10e9f2d6e7d1da2ebe720738f588792e0edc"
+      }
+    },
+    {
+      "limit_id": "cli.stdin.max_bytes",
+      "value": 1048576,
+      "unit": "bytes",
+      "kind": "safety_ceiling",
+      "scope": "dex-memoria CLI JSON stdin",
+      "profile": "fixture-only-experimental",
+      "owner": "dex-memoria-cli",
+      "duplicate_group": "one-mebibyte-document-ceiling",
+      "source_evidence": {
+        "source_id": "dex-memoria-repository",
+        "locator": "MAX_STDIN_BYTES",
+        "path": "bin/dex-memoria.js",
+        "line": 21,
+        "repo_commit": "e7bc10e9f2d6e7d1da2ebe720738f588792e0edc"
+      }
+    },
+    {
+      "limit_id": "smoke.safety.max_elapsed_seconds",
+      "value": 5,
+      "unit": "seconds",
+      "kind": "fixture_profile",
+      "scope": "installed validator safety smoke",
+      "profile": "safety-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "safety.MaxElapsedSeconds",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 229
+      }
+    },
+    {
+      "limit_id": "smoke.safety.max_file_bytes",
+      "value": 100000,
+      "unit": "bytes",
+      "kind": "fixture_profile",
+      "scope": "installed validator safety smoke document",
+      "profile": "safety-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "ceiling_limit_id": "v2.document.max_file_bytes",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "safety.MaxFileBytes",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 230
+      }
+    },
+    {
+      "limit_id": "smoke.safety.max_lines",
+      "value": 1000,
+      "unit": "lines",
+      "kind": "fixture_profile",
+      "scope": "installed validator safety smoke document",
+      "profile": "safety-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "safety.MaxLines",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 231
+      }
+    },
+    {
+      "limit_id": "smoke.safety.max_refs",
+      "value": 100,
+      "unit": "references",
+      "kind": "fixture_profile",
+      "scope": "installed validator safety smoke references",
+      "profile": "safety-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "safety.MaxRefs",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 232
+      }
+    },
+    {
+      "limit_id": "smoke.safety.max_l3_files",
+      "value": 20,
+      "unit": "files",
+      "kind": "fixture_profile",
+      "scope": "installed validator safety smoke L3 files",
+      "profile": "safety-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "safety.MaxL3Files",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 233
+      }
+    },
+    {
+      "limit_id": "smoke.reference.max_elapsed_seconds",
+      "value": 10,
+      "unit": "seconds",
+      "kind": "fixture_profile",
+      "scope": "installed validator reference smoke",
+      "profile": "reference-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "reference.MaxElapsedSeconds",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 282
+      }
+    },
+    {
+      "limit_id": "smoke.reference.max_lines",
+      "value": 5000,
+      "unit": "lines",
+      "kind": "fixture_profile",
+      "scope": "installed validator reference smoke document",
+      "profile": "reference-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "reference.MaxLines",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 283
+      }
+    },
+    {
+      "limit_id": "smoke.reference.max_refs",
+      "value": 500,
+      "unit": "references",
+      "kind": "fixture_profile",
+      "scope": "installed validator reference smoke references",
+      "profile": "reference-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "reference.MaxRefs",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 284
+      }
+    },
+    {
+      "limit_id": "smoke.reference.max_l3_files",
+      "value": 50,
+      "unit": "files",
+      "kind": "fixture_profile",
+      "scope": "installed validator reference smoke L3 files",
+      "profile": "reference-smoke",
+      "owner": "smoke-validate-memory-links-safety",
+      "source_evidence": {
+        "source_id": "installed-validator-smoke",
+        "locator": "reference.MaxL3Files",
+        "path": "$DEX_MEMORY_HOME/.agents/tools/smoke-validate-memory-links-safety.ps1",
+        "line": 285
+      }
+    }
+  ]
+}

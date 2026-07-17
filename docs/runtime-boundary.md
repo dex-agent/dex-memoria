@@ -123,8 +123,9 @@ Memoria de projeto nao usa `DEX_MEMORIA_HOME`. Ela fica no workspace:
 <WORKSPACE>/.agents
 ```
 
-`DEX_AGENT_HOME` localiza runtime, fallback de skill e estado operacional do Dex
-Agent. Ele nao deve virar raiz de memoria cross-project automaticamente. Se um
+`DEX_AGENT_HOME` localiza runtime e estado operacional do Dex Agent; ele nao
+localiza nem substitui a fonte canonica da skill `dex-memoria`. Ele nao deve
+virar raiz de memoria cross-project automaticamente. Se um
 ambiente quiser guardar memoria dentro de `DEX_AGENT_HOME`, deve configurar
 `DEX_MEMORIA_HOME` explicitamente.
 
