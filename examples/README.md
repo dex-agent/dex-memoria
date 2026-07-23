@@ -1,9 +1,9 @@
 # Examples
 
-Perfil destes artefatos: `legacy-v1`.
+Perfil histórico destes artefatos: compatibilidade `legacy-v1`.
 
-Os exemplos desta pasta demonstram a cadeia vigente `L1 -> L2 -> L3`. Eles nao
-representam o layout `governed-theme-v2` e nao autorizam paths, escrita ou
-migracao V2. A arquitetura alvo esta documentada em
-[`../docs/memory-architecture-profiles.md`](../docs/memory-architecture-profiles.md)
-com status `approved_not_active`.
+Os exemplos antigos desta pasta demonstram a cadeia V1 `L1 -> L2 -> L3`; eles
+não definem o writer ativo nem o layout de uma unidade nova. Dex Memória V2 usa
+`L1 <-> L2` OU `L1 <-> L3`, conforme densidade, com o mesmo `resolved_root`.
+O contrato ativo está documentado em
+[`../docs/memory-architecture-profiles.md`](../docs/memory-architecture-profiles.md).

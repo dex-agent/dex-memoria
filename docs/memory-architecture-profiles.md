@@ -1,35 +1,47 @@
 # Memory Architecture Profiles
 
-Status: `approved_not_active`
-Date: `2026-07-13`
+Status: `active_v2`
+Date: `2026-07-19`
 
 ```text
-Active-Write-Profile: legacy-v1
-Target-Architecture: governed-theme-v2
-Target-Status: approved_not_active
-Runtime-Support: fixture_only_experimental
+Product: Dex Memoria V2
+Implementation-Version: v2
+Scope: project | global | theme
+Active-Write-Profile: v2
 ```
 
-Este documento explica a decisao V2 aprovada. Existe um tracer transacional
-fixture-only experimental, documentado em
+Este documento explica a transicao para Dex Memoria V2. Implementation, scope e
+root sao independentes:
+
+```text
+project/local -> <WORKSPACE>/.agents
+global -> <DEX_MEMORIA_HOME>/global
+theme -> <DEX_MEMORIA_HOME>/temas/<tema>
+dual-scope -> dois destinos e dois recibos
+```
+
+Selecionar o root nao define nem congela o layout interno. O V1 historico
+continua read-only, restauravel e recuperavel junto do V2 novo, sem o usuario
+precisar informar profile. Existe um tracer transacional historico, documentado em
 [`cli-create-theme-v2-transaction-v0.md`](cli-create-theme-v2-transaction-v0.md),
-mas ele nao implementa runtime vivo nem ativa a V2. Enquanto o recibo de
-cutover nao trocar o perfil ativo, writers, readers instalados, Finder,
-validators, templates e exemplos vivos continuam em `legacy-v1`. O
+mas `governed-theme-v2` e somente identificador historico de fixture: nao e o
+produto, umbrella ou perfil ativo. O SPT 04 trocou o selector live para V2;
+`legacy-v1` permanece somente reader/restore. O
 `routes inspect` fixture-only e somente um consumidor experimental da bancada,
 nao uma mudanca nessas superficies vivas.
 
-## Perfis
+## Estados de implementacao
 
-| Perfil | Estado | Rota | Uso atual |
+| Identidade | Estado | Rota | Uso atual |
 | --- | --- | --- | --- |
-| `legacy-v1` | `active_write_profile` | `L1 -> L2 -> L3` | unico perfil que pode operar hoje |
-| `governed-theme-v2` | `approved_not_active` | `L1 -> L2` OU `L1 -> L3` | tracer fixture-only; sem suporte live |
+| `legacy-v1` | `read_restore_only` | `L1 -> L2 -> L3` | corpus historico recuperavel, nunca fallback writer |
+| Dex Memoria V2 | `active_write_profile` | `L1 -> L2` OU `L1 -> L3` | writer/selector unico para todos os escopos |
+| `governed-theme-v2` | `historical_only` | prova do roteamento V2 | fixture historica; nunca identidade do produto |
 
 ## Topologia alvo
 
 ```text
-<tema>/
+<resolved_root>/
 ├── lembranca.md
 ├── memorias/
 │   ├── INDEX.md
@@ -72,19 +84,25 @@ ativa por omissao.
 
 ## Nomes, escopo e identidade
 
-- O layout V2 aprovado nesta rodada cobre somente `<tema>`.
-- Dentro de `<tema>`, paths V2 sao literais e em lowercase: `lembranca.md`, `memorias/`,
-  `conhecimento/`, `referencias/` e `artefatos/`.
-- Escopos global/governado e seu casing permanecem em `legacy-v1` ate decisao
-  e cutover proprios. A V2 de tema nao supersede silenciosamente essa regra.
+- A selecao de escopo/root cobre `project`, `global` e `theme`; o layout
+  estrutural live foi congelado nos SPTs 02/03.
+- Dentro de cada `<resolved_root>`, paths V2 usam `memorias/`, `conhecimento/`,
+  `referencias/` e `artefatos/` em lowercase. Para L1, o arquivo historico
+  case-insensitive existente vence; em root novo, projeto usa `lembranca.md` e
+  global/tema usam `LEMBRANCA.md`.
+  No escopo `theme`, o root resolvido ja inclui `temas/<tema>`; `project` e
+  `global` nao inventam uma camada de tema.
+- O mesmo contrato V2 deve operar em todos os escopos sem criar perfis por
+  escopo.
 - `lembrancas/`, `memoria.md`, `conhecimentos/` e variantes de casing nao sao
   novos destinos V2. `memoria.md` permanece nome de compatibilidade V1.
 - No Windows, comparacao de slug considera casefold. O mesmo slug nao pode
-  ficar ativo simultaneamente em `memorias/` e `conhecimento/` no mesmo tema.
-- Slug nao e identidade. A identidade futura deve ser estavel e sobreviver a
+  ficar ativo simultaneamente em `memorias/` e `conhecimento/` no mesmo
+  `resolved_root`.
+- Slug nao e identidade. A identidade V2 e estavel e sobrevive a
   rename, movimento e reclassificacao.
-- A gramatica executavel de slug e nomes reservados pertence ao futuro Trilho
-  de schema/fixture; este documento nao a implementa.
+- A gramatica executavel de slug e nomes reservados pertence aos schemas e ao
+  core V2; este documento apenas a referencia.
 
 ## Metadados propostos
 
@@ -112,7 +130,7 @@ Trilho fixture/schema. Nenhum ledger foi criado neste corte.
 | Responsabilidade | Fonte canonica | Derivacao |
 | --- | --- | --- |
 | principios humanos | `PRINCIPLES.md` global | fonte normativa humana |
-| gates operacionais vigentes | `operational-contract.json` global | derivado dos principios; V1 continua ativo |
+| gates operacionais vigentes | `operational-contract.json` global | derivado dos principios; selector V2 ativo |
 | decisao e contrato publico do dominio | `DECISIONS.md` e `SPEC.md` deste repo | explicam sem ativar |
 | conteudo humano futuro | Markdown L1/L2/L3 | fonte do conteudo |
 | `INDEX.md` futuro | projecao regeneravel | derivado do conteudo ativo |
@@ -121,67 +139,63 @@ Trilho fixture/schema. Nenhum ledger foi criado neste corte.
 
 | Artefato | Finalidade | Fonte/owner | Derivacao e divergencia | Estado |
 | --- | --- | --- | --- | --- |
-| `operational-contract.json` global | operacionalizar principios vigentes | derivado de `PRINCIPLES.md`; owner da governanca PPIRTV | bloco `memory_architecture_profiles` e somente `metadata_documental`; revisao/data sao observaveis, mas o efeito comportamental e `none` e os campos operacionais continuam V1 | existente |
-| futuro contrato estrutural `governed-theme-v2` | regras versionadas de paths, slugs, links e invariantes | futura especificacao aprovada; owner `dex-memoria` | ID e path ainda nao decididos; mudanca exigira revisao e compatibilidade | nao criado |
+| `operational-contract.json` global | operacionalizar principios vigentes | derivado de `PRINCIPLES.md`; owner da governanca PPIRTV | bloco `memory_architecture_profiles` declara V2 ativo e V1 reader/restore; nao executa escrita por si so | existente |
+| contratos `governed-theme-v2` existentes | prova versionada de paths, slugs, links e invariantes | prototipo historico theme-fixture; owner `dex-memoria` | nao e contrato live multi-scope | existente, `historical_only` |
+| contrato estrutural live multi-scope | paths internos e receipts da implementacao V2 | SPT 02/03; owner `dex-memoria` | preserva roots e recall V1 | ativo |
 | `lembranca.json` | recuperacao deterministica das rotas vivas | `lembranca.md`, fontes de conteudo e eventos de reuso aceitos; owner do gerador futuro `dex-memoria` | Markdown/eventos -> JSON; regeneracao deve ser byte a byte e edicao manual gera divergencia explicita | nao criado |
 
-O contrato global atual nao e o contrato estrutural V2. O futuro contrato
-estrutural nao e copia do conteudo. `lembranca.json` nao e fonte humana e deve
-ser descartavel, regeneravel e comparavel de forma deterministica. Os dois
-artefatos V2 futuros nao foram criados neste corte.
+O contrato global de principios nao substitui o contrato estrutural V2.
+`lembranca.json` nao e fonte humana e, se criado futuramente, deve ser
+descartavel, regeneravel e comparavel de forma deterministica.
 
 ## Owners
 
 | Superficie | Owner |
 | --- | --- |
-| protocolo e futuro core de mutacao | `dex-memoria` |
+| protocolo e core de mutacao | `dex-memoria` |
 | intencao/consumo PPIRTV | `dex-PPIRTV` |
 | qualidade e governanca da memoria | `consciencia-memorias` |
-| `<tema>/lembranca.md` | owner de conteudo do tema; mutacao pelo futuro core `dex-memoria` |
-| `<tema>/memorias/<slug>.md` | owner de conteudo do tema; mutacao pelo futuro core `dex-memoria` |
-| `<tema>/conhecimento/<slug>/README.md` | `owner_skill` do dominio; sem skill permanece candidato |
+| `<resolved_root>/lembranca.md` ou casing historico preservado | owner do escopo; mutacao pelo core `dex-memoria` |
+| `<resolved_root>/memorias/<slug>.md` | owner do escopo; mutacao pelo core `dex-memoria` |
+| `<resolved_root>/conhecimento/<slug>/README.md` | `owner_skill` do dominio; sem skill permanece candidato |
 | `referencias/` e `artefatos/` | mesmo `owner_skill` do conhecimento; integridade por validator futuro |
 | `INDEX.md` | projecao do gerador futuro `dex-memoria`, nunca segunda fonte manual |
-| identidade e eventos de reuso | futuro core `dex-memoria` |
+| identidade e eventos de reuso | core `dex-memoria`; projecao JSON futura continua opcional |
 | Trilho e ordem de execucao | `sprinter` |
 
-## Consumidores ainda V1
+## Consumidores reconciliados
 
-Os seguintes grupos permanecem deliberadamente V1 e exigem Trilho futuro antes
-do cutover:
+Os seguintes grupos leem V1 historico e V2 novo; somente V2 escreve:
 
-| Grupo | Dependencia V1 atual | Acao futura |
+| Grupo | Compatibilidade V1 | Estado V2 |
 | --- | --- | --- |
-| writer/mineracao PPIRTV | destinos L1+L2 e L3 encadeado | destino tipado L2 OU L3 |
-| Finder/CLI | Finder instalado reconhece `memoria.md`; CLI possui somente `routes inspect` em fixture V2 | reconhecer arquivos em `memorias/` e pacote L3 no consumidor real |
-| validadores | exigem L2 antes de L3 | validar exclusividade e backlinks por perfil |
-| skills instaladas | instruem cadeia V1 | atualizar somente apos suporte fixture comprovado |
-| tools e policies do vault | paths V1 literais | compatibilidade e no-shrink |
+| writer/mineracao PPIRTV | recall V1 preservado | destino tipado L2 OU L3 e recibo por root |
+| Finder/CLI | reconhece `memoria.md` | reconhece `memorias/` e pacote L3 automaticamente |
+| validadores | validam corpus V1 | validam unidade V2 Markdown/Obsidian |
+| skills instaladas | explicam recall V1 | redirecionam para a skill canonica V2 |
+| tools e policies do vault | paths V1 continuam legiveis | compatibilidade e no-shrink comprovados |
 | templates e exemplos deste pacote | representam V1 | manter rotulo V1 ate templates V2 aprovados |
 
 Esta cobertura e limitada as raizes declaradas no Trilho documental; nao afirma
 conhecer consumidores externos ou paths dinamicos fora delas.
 
-## Gate de ativacao
+## Gate de ativacao concluido
 
-`governed-theme-v2` so pode se tornar perfil ativo depois de um Trilho separado
-provar, em fixture e sem tocar o vault vivo:
+Dex Memoria V2 foi ativado pelo SPT 04 depois de os SPTs 02/03 provarem:
 
 1. writer, readers e validators compativeis;
 2. contrato estrutural e paths congelados;
-3. shadow/no-shrink e comparacao de cobertura;
+3. no-shrink e recall misto V1 historico + V2 novo;
 4. idempotencia, conflito e recovery/rollback;
 5. plano de migracao e bridges V1;
-6. recibo humano explicito de cutover.
-
-Sem esse recibo, `approved_not_active` significa somente desenho aprovado.
+6. transacao de selector com journal e rollback em falha real.
 
 ## Estacionamento com quando
 
 - Rótulo dentro de cada template/exemplo: reconsiderar no Trilho de templates
-  V2, antes de qualquer template V2 ser publicado. Até lá, READMEs de diretório
-  e docs públicas classificam os corpos atuais como `legacy-v1`, e o SKILL V1
-  continua apontando para eles como superfícies vigentes.
+  V2, antes de qualquer template V2 ser publicado. Até lá, corpos antigos
+  continuam rotulados `legacy-v1` apenas como exemplos históricos; a SKILL V2
+  ativa aponta para eles somente quando compatibilidade V1 for necessária.
 - Tornar os três novos documentos obrigatórios no `validate-public.js`: tratar
   no próximo corte de empacotamento público, antes de release, pois exige
   alteração de validator/código proibida neste GOAL documental.

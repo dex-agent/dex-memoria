@@ -1,16 +1,23 @@
 # Runtime Boundary
 
-> `legacy-v1` continua sendo o unico perfil de escrita ativo.
-> `governed-theme-v2` esta `approved_not_active` e possui suporte runtime
-> `fixture_only_experimental`: existe apenas uma bancada descartavel, sem
-> runtime V2 vivo. A decisao alvo nao amplia esta fronteira. Veja
-> [Memory Architecture Profiles](memory-architecture-profiles.md) e
-> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md),
-> com o [leitor-validador V2 fixture-only](cli-routes-inspect-v2-v0.md).
+> Dex Memoria V2 e a implementacao multi-rota ativa. `legacy-v1` permanece
+> somente como reader/restore do corpus historico. Bancadas
+> anteriores sao evidencia historica e nao controlam defaults vivos. Veja
+> [Memory Architecture Profiles](memory-architecture-profiles.md).
 
-`dex-memoria` preserva o contrato documental V1. O runtime de memoria real
-continua no Dex Agent ate decisao posterior; as excecoes locais sao as bancadas
-fixture-only V0 e V2 experimental descritas abaixo.
+`dex-memoria` preserva o contrato documental e o corpus V1, e possui o writer
+V2 CLI explicito. Captura automatica, hooks, bot e injecao de contexto continuam
+no ambiente consumidor; as bancadas fixture-only V0/V2 abaixo sao historicas.
+
+Um checkout Git limpo pode executar `doctor` para verificacao reprodutivel
+quando declara explicitamente
+`DEX_MEMORIA_SOURCE_CHECKOUT_ROOT=<raiz-do-checkout>`. A raiz declarada deve
+resolver para o proprio pacote, ser um repositorio Git real e limpo, estar no
+mesmo commit da fonte canonica e conter `package.json` com a identidade publica
+esperada e `SKILL.md`. A excecao nao vale para `install` nem para qualquer
+comando `v2`; portanto nao muda a fonte operacional instalada, nao cria
+precedencia local e nao autoriza um repositorio consumidor a escrever por uma
+copia da skill.
 
 ## Fica No Dex Agent
 
@@ -33,6 +40,8 @@ fixture-only V0 e V2 experimental descritas abaixo.
 - exemplos sanitizados;
 - criterios de criacao, resolucao, arquivamento e supersedencia;
 - documentacao de fronteira.
+- writer V2 explicito `v2 plan|apply|resume|recover` e validador de unidade por
+  escopo; nenhuma automacao de captura e implicita.
 
 ## Excecao V0 Fixture-Only
 
@@ -70,9 +79,9 @@ Quando a pergunta for sobre como o bot grava, recupera, mostra ou injeta memoria
 
 ## Carregamento De L1/L2/L3
 
-`dex-memoria` recomenda os nomes canonicos `lembranca.md`, `memoria.md` e
-`conhecimento/`, mas nao carrega esses arquivos do vault vivo. A unica leitura
-V2 executavel deste repo e `routes inspect` sobre fixture marcada.
+`dex-memoria` escreve unidades V2 explicitamente, mas nao injeta memoria em
+prompt. Finder e validadores externos leem V1 e V2; `routes inspect` permanece
+somente o leitor historico das fixtures antigas.
 
 Responsabilidade deste repo:
 

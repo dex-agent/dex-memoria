@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.recover.request.v2.schema.json",
+  "title": "dex.memory.recover.request.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "request", "scope"],
+  "properties": {
+    "contract": { "const": "dex.memory.recover.request.v2" },
+    "request": { "$ref": "dex.memory.operation.request.v2.schema.json" },
+    "scope": { "enum": ["project", "global", "theme"] }
+  }
+}

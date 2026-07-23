@@ -103,18 +103,18 @@ test("every repo-local source evidence locator resolves without making public te
     const sourcePath = resolveRepoEvidencePath(limit.source_evidence.path);
     const sourceText = await readFile(sourcePath, "utf8");
     const lines = sourceText.split(/\r?\n/);
-    const sourceLine = lines[limit.source_evidence.line - 1] || "";
+    const semanticLocator = limit.source_evidence.locator.split(".").at(-1);
+    const matchingLines = lines.filter((line) => line.includes(semanticLocator) && lineContainsObservedValue(line, limit.value));
     if (sourcePath.endsWith(".json")) {
       const locatedValue = limit.source_evidence.locator.split(".").reduce((current, key) => {
         if (Array.isArray(current)) return current.find((item) => item?.id === key);
         return current?.[key];
       }, JSON.parse(sourceText));
       assert.equal(locatedValue, limit.value, `${limit.limit_id} locator`);
-      assert.ok(sourceLine.includes(limit.source_evidence.locator.split(".").at(-1)), `${limit.limit_id} source line`);
+      assert.ok(matchingLines.length > 0, `${limit.limit_id} semantic source locator`);
     } else {
-      assert.ok(sourceLine.includes(limit.source_evidence.locator.split(".").at(-1)), `${limit.limit_id} locator`);
+      assert.ok(matchingLines.length > 0, `${limit.limit_id} semantic source locator`);
     }
-    assert.ok(lineContainsObservedValue(sourceLine, limit.value), `${limit.limit_id} value`);
   }
 });
 

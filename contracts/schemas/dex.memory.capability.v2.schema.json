@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.capability.v2.schema.json",
+  "title": "dex.memory.capability.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability", "require_obsidian"],
+  "properties": {
+    "capability": { "enum": ["legacy-obsidian", "v2-markdown", "v2-obsidian"] },
+    "require_obsidian": { "type": "boolean" },
+    "block_ids": { "type": "array", "items": { "type": "string" } },
+    "markdown_links": { "type": "array", "items": { "type": "string" } },
+    "wikilinks": { "type": "array", "items": { "type": "string" } },
+    "backlinks": { "type": "array", "items": { "enum": ["L1->L2", "L2->L1", "L1->L3", "L3->L1", "L2->L3", "L3->L2"] } },
+    "unresolved_markdown_links": { "type": "array", "items": { "type": "string" } },
+    "unresolved_wikilinks": { "type": "array", "items": { "type": "string" } }
+  }
+}

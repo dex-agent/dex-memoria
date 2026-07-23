@@ -10,7 +10,7 @@ contrato de memória.
 
 ## Destino Único
 
-Leia completamente e aplique:
+Abra a fonte canônica e comece pela seção `Entrada cotidiana`:
 
 ```text
 C:\CodexProjetos\dex-memoria\SKILL.md
@@ -18,6 +18,10 @@ C:\CodexProjetos\dex-memoria\SKILL.md
 
 Ignore qualquer cópia alternativa de `dex-memoria`. Somente o destino acima
 possui autoridade operacional.
+
+Para gravação normal, use `dex-memoria v2 remember`; não carregue SPEC, usage,
+runtime-boundary ou código de desenvolvimento. Consulte a seção de manutenção
+da fonte canônica somente quando houver falha, recovery ou mudança de contrato.
 
 ## Falha Bloqueante
 

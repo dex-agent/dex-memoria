@@ -10,6 +10,68 @@ const { SCHEMA_FILES, validateCreateContractSchemas } = createContractValidator;
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const schemaRoot = join(repoRoot, "contracts", "schemas");
 
+function readSection(text, heading) {
+  const start = text.indexOf(heading);
+  assert.notEqual(start, -1, `missing section: ${heading}`);
+  const next = text.indexOf("\n## ", start + heading.length);
+  return text.slice(start, next === -1 ? undefined : next).replace(/\s+/g, " ");
+}
+
+test("the ordinary dex-memoria prompt uses V2 by default while scope remains content-routed", async () => {
+  const [skill, usage] = await Promise.all([
+    readFile(join(repoRoot, "SKILL.md"), "utf8"),
+    readFile(join(repoRoot, "docs", "usage.md"), "utf8")
+  ]);
+
+  const daily = readSection(skill, "## Entrada cotidiana");
+  const proof = readSection(skill, "## Como comprovar a gravação");
+  const reference = readSection(usage, "## Usar Dex Memória V2");
+
+  assert.match(daily, /Use \$dex-memoria para gravar/);
+  assert.match(daily, /dex-memoria v2 remember/);
+  assert.match(daily, /não.*necessári[oa].*V2/i);
+  assert.match(daily, /V1.*somente.*(?:recall|leitura|restaura)/i);
+  assert.match(daily, /scope.*project.*global.*theme.*dual/i);
+  assert.match(daily, /Não invente o escopo/i);
+  assert.match(daily, /dois route receipts e duas validações/i);
+  assert.match(proof, /deduplicated=true/i);
+  assert.match(proof, /não deve ecoar `body`, `title`, `trigger` ou payload privado/i);
+  assert.match(proof, /Sempre que `recovery` não for `null`.*inclusive em `FAILED`/i);
+  assert.doesNotMatch(daily, /abra.*SPEC\.md|abra.*docs\/usage\.md|abra.*runtime-boundary/i);
+
+  assert.match(reference, /Use \$dex-memoria: <conteúdo>/);
+  assert.match(reference, /V2.*opcional/i);
+  assert.match(reference, /dual-scope.*dois destinos e dois recibos/i);
+  assert.match(reference, /dois recibos independentes/i);
+  assert.match(reference, /Inclua também o corpus V1 histórico/i);
+  assert.match(reference, /governed-theme-v2.*histórico.*não é.*perfil ativo/i);
+
+  for (const section of [daily, reference]) {
+    assert.doesNotMatch(section, /Use .* no canário ativo|ponteiro global-canário|laboratorio-memories/i);
+  }
+});
+
+test("active public navigation and prompts do not describe the canonical CLI as V1", async () => {
+  const [index, readme, usage, historicalMap] = await Promise.all([
+    readFile(join(repoRoot, "INDEX.md"), "utf8"),
+    readFile(join(repoRoot, "README.md"), "utf8"),
+    readFile(join(repoRoot, "docs", "usage.md"), "utf8"),
+    readFile(join(repoRoot, "docs", "v2-fixture-consolidation-map.md"), "utf8")
+  ]);
+
+  assert.doesNotMatch(index, /CLI documental da V1/i);
+  assert.doesNotMatch(readme, /não existem nesta V1 documental/i);
+  assert.doesNotMatch(usage, /não existem nesta V1 documental/i);
+
+  for (const source of [index, readme, usage]) {
+    assert.match(source, /Dex Mem[oó]ria V2|Dex Memoria V2/);
+    assert.match(source, /legacy-v1[\s\S]{0,160}(?:leitura|reader|restore|restaura)/i);
+  }
+
+  assert.match(historicalMap, /Historical snapshot, superseded for operational authority/i);
+  assert.match(historicalMap, /current writer[\s\S]{0,80}V2/i);
+});
+
 async function readSchema(file) {
   return JSON.parse(await readFile(join(schemaRoot, file), "utf8"));
 }

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.apply.request.v2.schema.json",
+  "title": "dex.memory.apply.request.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "request", "candidate"],
+  "properties": {
+    "contract": { "const": "dex.memory.apply.request.v2" },
+    "request": { "$ref": "dex.memory.operation.request.v2.schema.json" },
+    "candidate": { "$ref": "dex.memory.write.candidate.v2.schema.json" }
+  }
+}

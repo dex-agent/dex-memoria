@@ -2,11 +2,21 @@
 
 ## Unreleased
 
+- Adiciona `dex-memoria v2 remember` como entrada cotidiana única: payload
+  fechado, L2 default, slug/operação determinísticos, composição dos owners V2
+  existentes, recibo sem payload privado e validação independente por rota.
+- Encurta a skill canônica para uso cotidiano e remove do redirecionador global
+  a exigência de leitura integral de SPEC/usage/runtime antes de gravar.
+- Fecha schemas e limites do payload cotidiano, não fabrica hashes em falha sem
+  commit e orienta `ROLLED_BACK` para retry com novo `operation_id`
+  determinístico em vez de `resume` impossível.
+
 - Torna `C:\CodexProjetos\dex-memoria\SKILL.md` a fonte completa e unica da
   skill; `install` passa a atualizar apenas o redirecionador do registry global,
   rejeita `--target` e nao seleciona copias locais ou instalacoes antigas.
-- Documenta explicitamente `legacy-v1` como perfil vivo e V2 como
-  `approved_not_active`, limitada a fixture/SHADOW sem cutover.
+- Dex Memória V2 passa a ser o writer/selector ativo; `legacy-v1` permanece somente para
+  leitura e restauração do corpus histórico. Fixtures antigas continuam
+  preservadas como evidência histórica, não como perfil ativo.
 
 - Hardened the fixture-only create plan provenance, shared journal validation,
   replay identity, and terminal `ROLLED_BACK` handling.

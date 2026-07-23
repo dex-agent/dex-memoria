@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dex Memoria"
+  short_description: "Redireciona para a fonte canonica Dex Memoria V2"
+  default_prompt: "Use $dex-memoria pela entrada cotidiana canonica em C:\\CodexProjetos\\dex-memoria\\SKILL.md. Para gravar, prefira dex-memoria v2 remember; nao selecione copias locais ou .dex-agent."

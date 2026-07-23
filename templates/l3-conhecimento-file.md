@@ -1,9 +1,12 @@
 # L3 - Conhecimento - Arquivo
 
-Use este template para um arquivo L3 robusto sob `conhecimento/<slug>.md`.
+Use este template para uma unidade L3 robusta V2 sob
+`conhecimento/<slug>/README.md`.
 
-L3 existe sob demanda: nao crie arquivo L3 sem L2 que explique quando abrir
-este detalhe e sem entrada em `conhecimento/INDEX.md`.
+L3 existe sob demanda. Na V2, L3 pode ser o destino direto de L1 e exige
+`owner_skill`; não crie uma L2 artificial. Preserve backlink bidirecional
+`L1 <-> L3` e entrada em `conhecimento/INDEX.md`. Para corpus V1 histórico,
+uma L2 existente pode continuar sendo a origem e deve permanecer recuperável.
 
 ## Propriedades Obsidian
 
@@ -17,7 +20,8 @@ aliases:
   - <alias-humano>
 status: ativa
 layer: l3
-theme: <tema-ou-global>
+scope: <project-ou-global-ou-theme>
+owner_skill: <skill-dona>
 ---
 ```
 
@@ -26,8 +30,9 @@ theme: <tema-ou-global>
 Localizador: `<GATILHO-CURTO>`
 Tags: `#<dominio/tag-especifica>`
 Aliases: `<alias humano; termo tecnico; erro comum>`
-L2 relacionada: [../memoria.md#<ancora-estavel>](../memoria.md#<ancora-estavel>)
-Obsidian: L2 [[../memoria#^<ancora-estavel>|<ancora-estavel>]]
+L1 origem: [../../lembranca.md#^<gatilho-estavel>](../../lembranca.md#^<gatilho-estavel>)
+Obsidian: L1 [[../../lembranca#^<gatilho-estavel>|<gatilho-estavel>]]
+L2 histórica opcional: <somente quando a unidade pertence ao corpus V1>
 
 ## Objetivo
 

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.remember.receipt.v2.schema.json",
+  "title": "dex.memory.remember.receipt.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "implementation_version", "status", "operation_id", "request_fingerprint", "candidate_id", "content_hash", "normalized_request", "routes", "route_receipts", "validations", "recovery"],
+  "properties": {
+    "contract": { "const": "dex.memory.remember.receipt.v2" },
+    "implementation_version": { "const": "v2" },
+    "status": { "enum": ["COMMITTED", "PARTIAL_PENDING", "FAILED"] },
+    "operation_id": { "type": "string", "minLength": 1 },
+    "request_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "candidate_id": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "content_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "normalized_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "scope", "target_layer", "slug", "operation_id", "workspace_root", "memory_home"],
+      "properties": {
+        "contract": { "const": "dex.memory.remember.request.v2" },
+        "scope": { "enum": ["project", "global", "theme", "dual"] },
+        "target_layer": { "enum": ["L2", "L3"] },
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "operation_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "workspace_root": { "type": "string", "minLength": 1 },
+        "memory_home": { "type": "string", "minLength": 1 },
+        "theme": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "owner_skill": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        { "if": { "properties": { "scope": { "const": "theme" } }, "required": ["scope"] }, "then": { "required": ["theme"] }, "else": { "not": { "required": ["theme"] } } },
+        { "if": { "properties": { "target_layer": { "const": "L3" } }, "required": ["target_layer"] }, "then": { "required": ["owner_skill"] }, "else": { "not": { "required": ["owner_skill"] } } }
+      ]
+    },
+    "routes": { "$ref": "dex.memory.operation.plan.v2.schema.json#/properties/routes" },
+    "route_receipts": { "$ref": "dex.memory.operation.receipt.v2.schema.json#/properties/route_receipts" },
+    "validations": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 2,
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["contract", "ok", "receipt_path", "receipt_hash"],
+            "properties": {
+              "contract": { "const": "dex.memory.capability.unit-receipt.v2" },
+              "ok": { "const": true },
+              "receipt_path": { "type": "string", "minLength": 1 },
+              "receipt_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["contract", "ok", "failure_code"],
+            "properties": {
+              "contract": { "type": "null" },
+              "ok": { "const": false },
+              "failure_code": { "type": "string", "minLength": 1 }
+            }
+          }
+        ]
+      }
+    },
+    "recovery": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "actions"],
+          "properties": {
+            "mode": { "enum": ["recover_then_retry_new_operation", "retry_new_operation", "manual_resolution"] },
+            "actions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["scope", "failure_code", "command"],
+                "properties": {
+                  "scope": { "enum": ["project", "global", "theme"] },
+                  "failure_code": { "type": "string", "minLength": 1 },
+                  "failure_cause": { "type": "string", "minLength": 1 },
+                  "command": { "enum": ["dex-memoria v2 recover", null] }
+                }
+              }
+            },
+            "then_command": { "const": "dex-memoria v2 remember" },
+            "next_operation_id": { "type": "string", "minLength": 1, "maxLength": 256 }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "mode": { "const": "recover_then_retry_new_operation" } }, "required": ["mode"] },
+              "then": {
+                "required": ["then_command", "next_operation_id"],
+                "properties": { "actions": { "contains": { "properties": { "command": { "const": "dex-memoria v2 recover" } }, "required": ["command"] } } }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "retry_new_operation" } }, "required": ["mode"] },
+              "then": {
+                "required": ["then_command", "next_operation_id"],
+                "properties": { "actions": { "items": { "properties": { "command": { "type": "null" } } } } }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "manual_resolution" } }, "required": ["mode"] },
+              "then": {
+                "dependentRequired": {
+                  "then_command": ["next_operation_id"],
+                  "next_operation_id": ["then_command"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

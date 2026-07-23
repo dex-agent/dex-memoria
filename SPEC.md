@@ -44,26 +44,45 @@ binario top-level oferece `create plan|apply|recover` somente para L1+L2
 `legacy-v1` em fixture descartavel marcada. O contrato completo fica em
 [`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md).
 
-### Arquitetura alvo V2 — aprovada, nao ativa
+### Contrato ativo do Dex Memoria V2
 
 ```text
-Active-Write-Profile: legacy-v1
-Target-Architecture: governed-theme-v2
-Target-Status: approved_not_active
-Runtime-Support: fixture_only_experimental
+Product: Dex Memoria V2
+Implementation-Version: v2
+Scope: project | global | theme
+Active-Write-Profile: v2
 ```
 
-O alvo troca a passagem obrigatoria `L1 -> L2 -> L3` pelo roteamento
+`Dex Memoria V2` e a implementacao do produto, nao um perfil de tema. As
+dimensoes implementation, scope e root sao independentes:
+
+```text
+project/local -> <WORKSPACE>/.agents
+global -> <DEX_MEMORIA_HOME>/global
+theme -> <DEX_MEMORIA_HOME>/temas/<tema>
+dual-scope -> dois destinos e dois recibos
+```
+
+A selecao do root nao define nem congela o layout interno. Ela preserva o
+destino publico, enquanto o contrato estrutural V2 decide a topologia dentro do
+root. O V1 historico continua read-only, restauravel e recuperavel; Finder,
+readers e validators devem recuperar V1 antigo e V2 novo sem profile informado
+pelo usuario.
+
+O V2 troca a passagem obrigatoria `L1 -> L2 -> L3` pelo roteamento
 `L1 -> L2` OU `L1 -> L3`. L2 representa memoria leve/operacional; L3,
-conhecimento profundo. Essa semantica possui somente um tracer transacional
-fixture-only experimental; nao existe runtime V2 vivo e o perfil ativo continua
-`legacy-v1`. O contrato da bancada esta em
+conhecimento profundo. `governed-theme-v2` e somente o identificador historico
+da fixture que provou essa semantica; nao e o produto, umbrella ou perfil ativo.
+O writer/selector ativo e `v2`; `legacy-v1` permanece somente como
+reader/restore do corpus historico. O
+contrato historico da bancada esta em
 [`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md).
-Um leitor-validador independente reconstrói as rotas somente nessa bancada e
+Um leitor-validador independente reconstrói as rotas nessa bancada e
 esta documentado em
 [`docs/cli-routes-inspect-v2-v0.md`](docs/cli-routes-inspect-v2-v0.md); ele nao
 e Finder, validator live nem permissao de cutover.
-Paths, owners, metadados, JSONs e consumidores ainda pendentes estao em
+O congelamento live de paths internos, owners, metadados, JSONs e consumidores
+foi concluido nos SPTs 02 e 03. O mapa historico esta em
 [`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
 
 - `plan` recebe `dex.memory.create.request.v0` e emite
@@ -73,8 +92,25 @@ Paths, owners, metadados, JSONs e consumidores ainda pendentes estao em
 - falhas dos comandos `create` emitem `dex.memory.error.v0` no `stderr`;
 - marker, manifest, targets e checkpoints possuem schemas Draft 2020-12 em
   `contracts/schemas/`;
-- nenhum request recebe paths internos e nenhum comando aceita o vault vivo;
-- L3, layout V2, writer geral, release e integracao de producao ficam fora.
+- nenhum request historico `create` recebe paths internos ou aceita o vault vivo;
+- Esses limites pertencem aos comandos historicos `create`. A superficie live
+  V2 usa `v2 remember` como entrada cotidiana e preserva
+  `v2 plan|apply|resume|recover|validate|capability` como primitivas avançadas.
+  `remember` resolve defaults portáveis, compõe os owners existentes e emite
+  recibo independente por destino sem ecoar o payload. `ROLLED_BACK` é terminal:
+  o receipt fornece um novo `operation_id` determinístico para retry; recovery
+  pendente executa `recover` antes desse novo retry. Falha sem commit não recebe
+  `candidate_id` nem `content_hash` fabricados. Release e SemVer ficam fora.
+
+Novos commits feitos pela CLI live registram `receipt_revision: 2` e
+`producer_provenance` tanto no `receipt.json` fisico quanto na projecao do
+recibo coordenador. A provenance contem o `entrypoint_realpath` realmente
+invocado e o SHA-256 dos bytes desse entrypoint. Ela nao vem do request, do
+workspace, do `cwd` nem de variavel de ambiente. Um oracle deve reabrir o path
+indicado e recalcular o hash; o receipt nao prova a si proprio. Receipts
+historicos sem revision/provenance continuam legiveis, mas nao podem ser usados
+como prova positiva do produtor nem receber autoria retroativa. No retry, uma
+provenance existente permanece a do commit original.
 
 ## 3. Conceitos
 
@@ -83,9 +119,10 @@ Paths, owners, metadados, JSONs e consumidores ainda pendentes estao em
 Camada curta de gatilhos. Deve ser sempre carregavel, ou carregavel pelo dominio
 ativo, sem virar tutorial ou historico longo.
 
-Cada lembranca deve apontar para uma ancora de `L2 memoria` ou para uma fonte
-viva equivalente. A regra pratica e: se L1 nao dispara L2 na hora certa, a
-memoria detalhada vira entulho.
+Cada lembranca V2 deve apontar para exatamente um destino ativo: L2 em
+`memorias/<slug>.md` ou L3 em `conhecimento/<slug>/README.md`. L3 direto exige
+`owner_skill` e backlink para L1. No corpus V1 historico, a cadeia L1 -> L2 ->
+L3 permanece legivel, mas nao governa novas escritas.
 
 ### L2 - Memoria
 
@@ -295,6 +332,8 @@ Ha regressao se:
 
 ## 10. Proximo Passo
 
-Integracao de producao, SemVer e eventual ativacao/cutover V2 so podem ser
-reconsiderados depois de decisao humana especifica e evidencia de shadow;
-na ausencia desses gatilhos, permanecem fora do escopo.
+Os SPTs 01–04 reconciliaram o contrato, congelaram a unidade reproduzivel,
+reconciliaram consumidores e ativaram o selector V2 com journal e rollback.
+O proximo Trilho e SPT 05, para migracao/consolidacao gradual do corpus
+historico sem remover recall V1. SemVer e release continuam fora ate
+autorizacao propria.

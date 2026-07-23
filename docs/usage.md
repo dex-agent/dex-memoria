@@ -1,20 +1,17 @@
 # Usage
 
-> O perfil vivo deste guia continua exclusivamente em `legacy-v1`. A
-> arquitetura alvo `governed-theme-v2` esta `approved_not_active`; seu suporte
-> e `fixture_only_experimental` e não autoriza paths, escrita, leitura,
-> validacao ou migracao no vault vivo. Consulte
-> [Memory Architecture Profiles](memory-architecture-profiles.md) e
-> [CLI create V2 transacional em fixture](cli-create-theme-v2-transaction-v0.md),
-> com o [leitor-validador V2 fixture-only](cli-routes-inspect-v2-v0.md).
+> Dex Memoria V2 e o writer/selector ativo. `legacy-v1` permanece somente para
+> leitura/restauracao do corpus historico; as bancadas anteriores sao evidencia
+> historica, nao default, fallback ou autoridade live. Consulte
+> [Memory Architecture Profiles](memory-architecture-profiles.md).
 
-Este guia explica como instalar, usar e ativar a V1 documental de `dex-memoria`
-e sua excecao executavel V0 fixture-only.
+Este guia explica como instalar e usar Dex Memoria V2, preservar o corpus V1 e
+consultar as bancadas historicas fixture-only.
 
-`dex-memoria` nao e runtime do Dex Agent nem writer geral. Ele nao executa
-hooks, nao cria inbox e nao escreve ledger ou vault vivo. O binario inclui
-`create plan|apply|recover` e `routes inspect` somente para fixtures
-descartaveis marcadas, conforme as referencias canonicas abaixo.
+`dex-memoria` nao e runtime do Dex Agent nem writer automatico. Ele nao executa
+hooks nem cria inbox/ledger. O binario possui writer transacional V2 explicito
+para roots publicas e preserva `create plan|apply|recover` e `routes inspect`
+como superficies historicas de fixture.
 
 O tracer V2 separado também oferece `create plan|apply|recover`, mas somente
 para a fixture transacional marcada e descartável. `routes inspect` le e valida
@@ -43,25 +40,26 @@ global curto. Nao e a skill/pacote antigo arquivado.
 
 ## Instalacao
 
-### Usar Via npm/npx
+### Usar Pela Fonte Canonica
 
-Use este modo para instalar ou atualizar somente o redirecionador do registry
-global. A fonte completa deve existir no clone canonico
-`C:\CodexProjetos\dex-memoria\SKILL.md`:
+Instale um redirecionador novo somente pelo clone canonico. `doctor` e
+`install` recusam copias, caches npx e clones alternativos:
 
-```bash
-npx github:dex-agent/dex-memoria doctor
-npx github:dex-agent/dex-memoria memory-home
-npx github:dex-agent/dex-memoria install
+```powershell
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js doctor
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js memory-home
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install
 ```
 
-Depois de publicar no npm registry, o mesmo fluxo fica:
+Para atualizar um redirecionador limpo existente, use:
 
-```bash
-npx dex-memoria@latest doctor
-npx dex-memoria@latest memory-home
-npx dex-memoria@latest install
+```powershell
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --force --dry-run
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --force
 ```
+
+O tarball npm e artefato de transporte e auditoria; nao e fonte operacional
+para `doctor` ou `install`.
 
 Por padrao, o comando instala somente o redirecionador global em:
 
@@ -75,21 +73,21 @@ instalacao de copia completa ou rota alternativa. Se a fonte canonica estiver
 indisponivel, a operacao deve parar com bloqueio explicito. `--target` nao e uma
 opcao valida.
 
-Use `--registry-target` quando o registry global de skills ficar em outro
-caminho:
+O unico `--registry-target` valido e o registry global do `USERPROFILE` ativo:
 
 ```powershell
-npx github:dex-agent/dex-memoria install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force --dry-run
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
 ```
 
 Para ver antes de copiar:
 
-```bash
-npx github:dex-agent/dex-memoria install --dry-run
+```powershell
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --force --dry-run
 ```
 
-O CLI incluido nesta V1 e distribuidor documental e instalador do redirecionador
-global de skill. Ele nao cria runtime, hooks, inbox, ledger, tokens ou
+O CLI inclui o writer V2 explicito e o instalador recuperavel do redirecionador
+global. Ele nao cria hooks, captura em background, inbox, ledger, tokens ou
 automacao do Dex Agent. A excecao V0 fixture-only nao altera essa fronteira.
 
 ### Usar A CLI V0 Fixture-Only
@@ -157,8 +155,8 @@ conhecimento/
 
 Camadas:
 
-- `L1 lembranca`: gatilhos curtos. Deve apontar para L2 e evitar conteudo
-  longo.
+- `L1 lembranca`: gatilhos curtos. No `legacy-v1`, aponta para L2; no V2,
+  aponta para exatamente um destino L2 ou L3 e evita conteudo longo.
 - `L2 memoria`: detalhe operacional com ancoras. Deve explicar mecanismo,
   verificacao, prevencao e links para L3 quando necessario.
 - `L3 conhecimento`: documentacao, tutoriais, modelos e exemplos sob demanda.
@@ -167,7 +165,8 @@ Fluxo:
 
 ```text
 gatilho -> ancora -> detalhe
-captura -> classificacao -> L1 gatilho -> L2 ancora -> L3 sob demanda
+legacy-v1: captura -> classificacao -> L1 gatilho -> L2 ancora -> L3 sob demanda
+V2: captura -> classificacao -> L1 gatilho -> L2 OU L3
 ```
 
 Regra pratica:
@@ -176,7 +175,9 @@ Regra pratica:
 - L2 e carregavel por dominio ativo.
 - L3 nao deve ser carregada automaticamente por padrao.
 - Nada entra em L2 sem gatilho L1 ou fonte viva equivalente.
-- Nada entra em L3 sem ancora L2.
+- No `legacy-v1`, nada entra em L3 sem ancora L2.
+- No V2, L3 direto exige `owner_skill`, backlinks L1 <-> L3 e nao cria L2
+  artificial.
 
 Use `L3 robusto` quando o aprendizado for reutilizavel, recorrente, tecnico ou
 derivado de Graphify, Bibliotecario, pesquisa, diagnostico, bug real ou decisao
@@ -184,9 +185,10 @@ repetivel.
 
 Checklist minimo:
 
-- L1 tem gatilho curto para uma ancora L2 estavel.
-- L2 tem contexto operacional, quando usar, quando nao usar, fonte viva e link
-  direto para L3.
+- No `legacy-v1`, L1 aponta para L2 e L2 aponta para L3.
+- No V2, L1 aponta para exatamente um destino; L3 direto exige `owner_skill`.
+- L2, quando for a rota escolhida, tem contexto operacional, quando usar,
+  quando nao usar e fonte viva.
 - L3 tem objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
   comandos ou scripts de validacao, referencias e riscos de obsolescencia.
 - Fontes separam `confirmado`, `inferido` e `lacuna`.
@@ -264,9 +266,9 @@ aberta como prova final ou evidencia contraria que torne o resultado falso.
 Pontes esperadas:
 
 ```text
-L1 -> L2: [GATILHO-CURTO] frase curta -> [memoria.md#ancora-l2]
-L2 -> L3: Conhecimento sob demanda: conhecimento/<slug>.md
-L3 -> L2: L2 relacionada: memoria.md#ancora-l2
+V2 L2: L1 <-> L2
+V2 L3: L1 <-> L3, com owner_skill
+legacy-v1 L3: L1 <-> L2 <-> L3
 Graphify -> fonte: source: graphify -> confirmado em <arquivo>:<linha ou secao>
 ```
 
@@ -420,8 +422,9 @@ Antes de salvar, lembrar, arquivar ou encaminhar qualquer captura operacional, a
 
 Nao trate MEMORY.ndjson como fila viva.
 Nao deixe memoria resolvida orientar o proximo passo.
-Nao prometa scripts gerais, hooks ou automacao que nao existem nesta V1
-documental e na excecao V0 fixture-only.
+Nao prometa scripts gerais, hooks ou automacao que nao existem no contrato
+operacional V2. As bancadas V0 permanecem apenas como fixtures historicas
+explicitamente delimitadas.
 ```
 
 ### Classificar Uma Captura
@@ -596,10 +599,10 @@ Use `templates/memory-contract.md` quando a captura realmente precisa virar memo
 
 Use `templates/memory-resolution-checklist.md` quando uma memoria ativa foi corrigida, cumprida, substituida ou arquivada.
 
-Use `templates/l1-lembranca.md`, `templates/l2-memoria.md`,
-`templates/l3-conhecimento-index.md`, `templates/l3-conhecimento-file.md` e
-`templates/layered-memory-checklist.md` quando a captura precisar virar
-recuperacao em camadas.
+Para uma unidade nova V2, use `templates/l3-conhecimento-file.md` na rota direta
+`L1 <-> L3`. Os demais templates em camadas ainda documentam compatibilidade
+histórica V1 e não devem impor L2 artificial ao V2. O contrato ativo escolhe
+exatamente `L1 <-> L2` OU `L1 <-> L3` conforme a densidade.
 
 Use `examples/active-operational-memory.md`, `examples/ledger-only-memory.md`, `examples/resolved-operational-finding.md` e `examples/child-to-child-handoff.md` como exemplos sanitizados.
 
@@ -654,6 +657,89 @@ O piloto:
 de `package.json#files`. Empacotamento, instalacao ou sync exigem decisao
 separada.
 
+## Usar Dex Memória V2
+
+O pedido comum usa V2 por default. O consumidor resolve a intenção humana para
+um escopo explícito `project`, `global`, `theme` ou `dual`; o writer não inventa
+essa decisão:
+
+```text
+Use $dex-memoria: <conteúdo>
+```
+
+Escrever `V2` no pedido é opcional e pode servir apenas como ênfase; não é
+necessário informar V2 para selecionar o writer. V1 explícito serve somente
+para recall, leitura ou restauração do corpus histórico, nunca para escrita.
+O atalho não ignora classificação, duplicata, validação ou recibo. As dimensões
+implementation, scope e root são independentes. Selecionar o root não define
+nem congela o layout interno.
+
+```text
+Product: Dex Memória V2
+Implementation-Version: v2
+Scope: project | global | theme
+project/local -> <WORKSPACE>/.agents
+global -> <DEX_MEMORIA_HOME>/global
+theme -> <DEX_MEMORIA_HOME>/temas/<tema>
+dual-scope -> dois destinos e dois recibos
+```
+
+Em dual-scope, são duas operações e dois recibos independentes. O V1 histórico
+continua read-only, restaurável e recuperável junto do V2 novo.
+
+Cada novo commit pela CLI emite `receipt_revision: 2` e
+`producer_provenance.entrypoint_realpath` + `entrypoint_sha256`. Para validar a
+origem, abra o entrypoint indicado e recalcule SHA-256 sobre seus bytes; não use
+o próprio receipt como único oracle. Esses paths absolutos descrevem o ambiente
+da execução e não são uma identidade portátil. Receipts históricos sem esses
+campos permanecem legíveis, mas significam `legacy_provenance_unavailable`: não
+atribua a escrita antiga ao binário atual. Retry preserva a provenance original
+e resume pode revelar produtores diferentes entre siblings executados em
+momentos distintos.
+
+Superficies live, todas com JSON por stdin:
+
+| Comando | Entrada | Saida principal |
+| --- | --- | --- |
+| `dex-memoria v2 remember` | payload cotidiano fechado; `scope`, conteúdo e tags | receipt de orquestração com rotas, hashes e validações; não ecoa payload |
+| `dex-memoria v2 plan` | `dex.memory.operation.request.v2` | rotas e identidades deterministicas |
+| `dex-memoria v2 apply` | request + candidate V2 | recibo por destino; dual exige dois |
+| `dex-memoria v2 resume` | operacao parcial + candidate | executa somente o sibling pendente |
+| `dex-memoria v2 recover` | operacao + scope | rollback ou `ALREADY_COMMITTED` |
+| `dex-memoria v2 validate` | root + unidade tocada | recibo independente Markdown/Obsidian |
+| `dex-memoria v2 validate-root` | root completo | colisões de block id e links entre unidades |
+| `dex-memoria v2 capability` | matriz de capacidade | compatibilidade observavel |
+
+No caminho cotidiano, o caller informa escopo e conteúdo. `remember` usa o cwd
+como workspace, `DEX_MEMORIA_HOME` ou o fallback portátil como memory home, L2
+como camada default e deriva slug/operation id. `theme` exige tema e L3 exige
+`owner_skill`. Não forneça paths internos do destino. Para dual, confira dois
+route receipts e duas validações independentes.
+
+Em qualquer resultado não `COMMITTED`, siga `recovery` sempre que não for
+`null`. `recover_then_retry_new_operation`
+primeiro recupera a rota e depois repete `remember`; `retry_new_operation`
+repete diretamente com o `next_operation_id` determinístico. Um journal
+`ROLLED_BACK` é terminal e nunca deve receber `resume`. Em falha total sem rota
+comprometida, `candidate_id` e `content_hash` são `null`; o helper não fabrica
+identidades que pertencem ao writer.
+
+`recovery.actions` contém uma entrada fechada para cada rota pendente. Execute
+todas antes do `then_command`; em dual, nunca conclua a recuperação olhando
+somente o primeiro sibling. Se qualquer action exigir resolução manual, o mode
+é `manual_resolution`, mas um `next_operation_id` ainda é fornecido quando
+outro sibling já ficou terminal ou precisou de recovery.
+
+Para retomar, use:
+
+```text
+Vamos retomar o contexto: recarregue as memórias V2 locais e as globais.
+Inclua também o corpus V1 histórico pelos mesmos escopos.
+```
+
+`governed-theme-v2` permanece identificador histórico de fixture; não é
+produto, umbrella ou perfil ativo. O selector live usa a interface V2 acima.
+
 ## O Que Depende Do Dex Agent
 
 Continua no Dex Agent:
@@ -675,16 +761,17 @@ Este pacote nao:
 - instala skill global;
 - altera `dex-agent`;
 - cria comandos no Dex Agent ou em consumidores;
-- executa hooks, scripts externos ou automacao fora da CLI V0 fixture-only;
+- executa hooks, captura automatica ou scripts externos fora das CLIs
+  explicitamente invocadas;
 - grava ledger;
 - move arquivos;
 - publica releases;
 - apaga memoria antiga;
 - valida projetos filhos sozinho.
 
-## Limites Da V1
+## Limites Das Superficies Historicas
 
-A V1 e contrato, template, exemplo e guia de uso. A excecao V0 executa apenas
-`create plan|apply|recover` em fixture descartavel. Scripts gerais, hooks,
-writer real e integracoes automaticas continuam fora ate decisao humana
-especifica apoiada por uso real repetido e evidencia.
+A V1 permanece contrato e corpus historico de leitura/restauracao. A excecao V0
+executa apenas `create plan|apply|recover` em fixture descartavel. Hooks,
+captura automatica e integracoes de bot continuam fora; a escrita real explicita
+pertence aos comandos `v2`.

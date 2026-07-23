@@ -4,6 +4,8 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { createHash } = require("crypto");
+const { execFileSync } = require("child_process");
 const { planCreate, planThemeV2 } = require("./create-plan");
 const { ApplyError, applyCreate } = require("./create-apply");
 const { RecoverError, recoverCreate } = require("./create-recover");
@@ -14,10 +16,26 @@ const {
   validateDirectoryBaselineShape
 } = require("./create-theme-v2-transaction");
 const { RouteInspectionError, inspectThemeV2Routes } = require("./inspect-theme-v2-routes");
+const {
+  MemoryRuntimeError,
+  assertCoordinatorReceiptMatchesPlan,
+  coordinateMemoryOperation,
+  planMemoryOperation,
+  resumePendingSibling
+} = require("./memory-v2-runtime-core");
+const { executeMemoryRoute, recoverMemoryRoute } = require("./memory-v2-route-executor");
+const { rememberMemory } = require("./memory-v2-remember");
+const {
+  validateMemoryCapability,
+  validateMemoryCapabilityRoot,
+  validateMemoryCapabilityUnit
+} = require("./memory-v2-capabilities");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const REDIRECTOR_ENTRY = path.join("registry", "agents-skills", "dex-memoria", "SKILL.md");
+const REDIRECTOR_INTERFACE = path.join("registry", "agents-skills", "dex-memoria", "agents", "openai.yaml");
 const CANONICAL_SKILL_PATH = "C:\\CodexProjetos\\dex-memoria\\SKILL.md";
+const SOURCE_CHECKOUT_ROOT_ENV = "DEX_MEMORIA_SOURCE_CHECKOUT_ROOT";
 const MAX_STDIN_BYTES = 1024 * 1024;
 const FIXTURE_TARGETS = ["work/LEMBRANCA.md", "work/MEMORIA.md"];
 
@@ -67,6 +85,35 @@ async function main() {
     } catch (error) {
       if (error instanceof CliError || error instanceof RouteInspectionError) throw error;
       throw new CliError(6, "IO_FAILURE", "routes inspect failed");
+    }
+    return;
+  }
+
+  if (command === "v2") {
+    assertCanonicalPackageRoot();
+    try {
+      if (args[1] === "plan") {
+        await v2Plan(args.slice(2));
+      } else if (args[1] === "remember") {
+        await v2Remember(args.slice(2));
+      } else if (args[1] === "apply") {
+        await v2Apply(args.slice(2));
+      } else if (args[1] === "resume") {
+        await v2Resume(args.slice(2));
+      } else if (args[1] === "recover") {
+        await v2Recover(args.slice(2));
+      } else if (args[1] === "validate") {
+        await v2Validate(args.slice(2));
+      } else if (args[1] === "validate-root") {
+        await v2ValidateRoot(args.slice(2));
+      } else if (args[1] === "capability") {
+        await v2Capability(args.slice(2));
+      } else {
+        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 remember|plan|apply|resume|recover|validate|validate-root|capability");
+      }
+    } catch (error) {
+      if (error instanceof CliError || error instanceof MemoryRuntimeError) throw error;
+      throw new CliError(6, "IO_FAILURE", `v2 ${args[1] || "command"} failed`);
     }
     return;
   }
@@ -201,6 +248,145 @@ async function createPlan(args) {
     l2: snapshotTarget(fixture.targetPaths[1])
   };
   process.stdout.write(`${JSON.stringify(planCreate(request, snapshot, targets))}\n`);
+}
+
+async function v2Plan(args) {
+  if (args.length > 0) {
+    throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 plan");
+  }
+  const request = parseJsonInput(await readStdin());
+  process.stdout.write(`${JSON.stringify(planMemoryOperation(request))}\n`);
+}
+
+async function v2Remember(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 remember");
+  const input = parseJsonInput(await readStdin());
+  const producerProvenance = currentEntrypointProvenance();
+  const receipt = await rememberMemory(input, {
+    cwd: process.cwd(),
+    execute_route: (route, candidate, routeOptions) => executeMemoryRoute(route, candidate, {
+      ...routeOptions,
+      producer_provenance: producerProvenance
+    })
+  });
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (receipt.status !== "COMMITTED") process.exitCode = 5;
+}
+
+async function v2Apply(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 apply");
+  const request = parseJsonInput(await readStdin());
+  requireExactKeys(request, ["candidate", "contract", "request"], "v2 apply request");
+  if (request.contract !== "dex.memory.apply.request.v2") {
+    throw new CliError(2, "INVALID_SCHEMA", "v2 apply request is invalid");
+  }
+  const producerProvenance = currentEntrypointProvenance();
+  const execute = (route) => executeMemoryRoute(route, request.candidate, { producer_provenance: producerProvenance });
+  const receipt = await coordinateMemoryOperation(planMemoryOperation(request.request), execute);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (receipt.status !== "COMMITTED") process.exitCode = 5;
+}
+
+async function v2Resume(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 resume");
+  const request = parseJsonInput(await readStdin());
+  requireExactKeys(request, ["candidate", "contract", "receipt", "request"], "v2 resume request");
+  if (request.contract !== "dex.memory.resume.request.v2") {
+    throw new CliError(2, "INVALID_SCHEMA", "v2 resume request is invalid");
+  }
+  const plan = planMemoryOperation(request.request);
+  assertCoordinatorReceiptMatchesPlan(request.receipt, plan);
+  const producerProvenance = currentEntrypointProvenance();
+  const receipt = await resumePendingSibling(
+    request.receipt,
+    (route) => executeMemoryRoute(route, request.candidate, { producer_provenance: producerProvenance })
+  );
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (receipt.status !== "COMMITTED") process.exitCode = 5;
+}
+
+function currentEntrypointProvenance() {
+  const entrypointRealpath = fs.realpathSync.native(process.argv[1]);
+  return Object.freeze({
+    entrypoint_realpath: entrypointRealpath,
+    entrypoint_sha256: createHash("sha256").update(fs.readFileSync(entrypointRealpath)).digest("hex")
+  });
+}
+
+async function v2Recover(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 recover");
+  const request = parseJsonInput(await readStdin());
+  requireExactKeys(request, ["contract", "request", "scope"], "v2 recover request");
+  if (request.contract !== "dex.memory.recover.request.v2") {
+    throw new CliError(2, "INVALID_SCHEMA", "v2 recover request is invalid");
+  }
+  const plan = planMemoryOperation(request.request);
+  const route = plan.routes.find((candidateRoute) => candidateRoute.scope === request.scope);
+  if (!route) {
+    throw new CliError(2, "INVALID_SCOPE", "v2 recover scope does not belong to the canonical operation plan");
+  }
+  const receipt = await recoverMemoryRoute(route);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (receipt.status === "FAILED") process.exitCode = 5;
+}
+
+async function v2Validate(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 validate");
+  const request = parseJsonInput(await readStdin());
+  requireExactKeys(request, ["capability", "require_obsidian", "root", "touched_paths"], "v2 validate request");
+  if (!Array.isArray(request.touched_paths)) {
+    throw new CliError(2, "INVALID_SCHEMA", "v2 validate requires one explicit write unit in touched_paths");
+  }
+  const receipt = await validateMemoryCapabilityUnit(request);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (!receipt.ok) process.exitCode = 5;
+}
+
+async function v2ValidateRoot(args) {
+  if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 validate-root");
+  const request = parseJsonInput(await readStdin());
+  requireExactKeys(request, ["capability", "require_obsidian", "root"], "v2 validate-root request");
+  const receipt = await validateMemoryCapabilityRoot(request);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (!receipt.ok) process.exitCode = 5;
+}
+
+async function v2Capability(args) {
+  if (args.length > 0) {
+    throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 capability");
+  }
+  const request = parseJsonInput(await readStdin());
+  rejectUnknownKeys(request, [
+    "capability",
+    "require_obsidian",
+    "block_ids",
+    "markdown_links",
+    "wikilinks",
+    "backlinks",
+    "unresolved_markdown_links",
+    "unresolved_wikilinks"
+  ], "v2 capability request");
+  const receipt = validateMemoryCapability(request);
+  process.stdout.write(`${JSON.stringify(receipt)}\n`);
+  if (!receipt.ok) process.exitCode = 5;
+}
+
+function rejectUnknownKeys(value, allowed, label) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    invalidSchema(`${label} must be an object`);
+  }
+  const allowedKeys = new Set(allowed);
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    invalidSchema(`${label} contains unknown fields`);
+  }
+}
+
+function parseJsonInput(input) {
+  try {
+    return JSON.parse(input);
+  } catch (error) {
+    throw new CliError(2, "INVALID_JSON", "stdin must contain exactly one valid JSON document");
+  }
 }
 
 async function routesInspect(args) {
@@ -592,6 +778,14 @@ Uso:
   dex-memoria create apply --fixture <fixture-root>
   dex-memoria create recover --fixture <fixture-root>
   dex-memoria routes inspect --fixture <fixture-root>
+  dex-memoria v2 remember
+  dex-memoria v2 plan
+  dex-memoria v2 apply
+  dex-memoria v2 resume
+  dex-memoria v2 recover
+  dex-memoria v2 validate
+  dex-memoria v2 validate-root
+  dex-memoria v2 capability
   dex-memoria version
 
 Padrao de instalacao do redirecionador global:
@@ -604,23 +798,39 @@ Raiz padrao de memoria cross-project:
   ${memoryHomeInfo().path}
 
 Observacao:
-  Este pacote distribui o contrato documental dex-memoria. Ele nao instala
-  runtime, hooks, inbox, ledger, tokens ou automacao do Dex Agent.`);
+  Este pacote inclui o writer V2 explicito pela CLI. Ele nao instala hooks,
+  captura em background, inbox, ledger, tokens ou automacao do Dex Agent.`);
 }
 
 function doctor() {
-  const required = ["SKILL.md", "SPEC.md", "README.md", "docs/usage.md", REDIRECTOR_ENTRY];
+  const required = [
+    "SKILL.md",
+    "SPEC.md",
+    "README.md",
+    "docs/usage.md",
+    "bin/memory-v2-runtime-core.js",
+    "bin/memory-v2-route-executor.js",
+    "bin/memory-v2-remember.js",
+    "contracts/schemas/dex.memory.operation.request.v2.schema.json",
+    REDIRECTOR_ENTRY,
+    REDIRECTOR_INTERFACE
+  ];
   const missing = required.filter((entry) => !fs.existsSync(path.join(PACKAGE_ROOT, entry)));
 
   if (missing.length > 0) {
     fail(`Pacote incompleto. Ausentes: ${missing.join(", ")}`);
   }
+  assertCanonicalPackageRoot({ allowVerifiedCheckout: true });
 
   console.log(`dex-memoria ${readVersion()} ok`);
   console.log(`Pacote: ${PACKAGE_ROOT}`);
+  console.log("Implementation version: v2");
+  console.log("Writer selector: v2");
+  console.log("V1 compatibility: reader/restore");
+  console.log(`Canonical skill: ${CANONICAL_SKILL_PATH}`);
+  console.log(`Entrypoint: ${path.resolve(__filename)}`);
   console.log(`Memoria home: ${memoryHomeInfo().path}`);
   console.log(`Memoria home source: ${memoryHomeInfo().source}`);
-  console.log("Modo: contrato documental, sem runtime proprio");
 }
 
 function printMemoryHome() {
@@ -635,14 +845,25 @@ function printMemoryHome() {
 function install(args) {
   const options = parseInstallArgs(args);
   const registryTarget = path.resolve(options.registryTarget || defaultRegistryTarget());
-  const redirector = {
-    from: path.join(PACKAGE_ROOT, REDIRECTOR_ENTRY),
-    to: path.join(registryTarget, "SKILL.md")
-  };
+  assertCanonicalRegistryTarget(registryTarget);
+  const redirectorFiles = [
+    {
+      label: "redirecionador global",
+      entry: REDIRECTOR_ENTRY,
+      from: path.join(PACKAGE_ROOT, REDIRECTOR_ENTRY),
+      to: path.join(registryTarget, "SKILL.md")
+    },
+    {
+      label: "interface do redirecionador",
+      entry: REDIRECTOR_INTERFACE,
+      from: path.join(PACKAGE_ROOT, REDIRECTOR_INTERFACE),
+      to: path.join(registryTarget, "agents", "openai.yaml")
+    }
+  ];
 
-  const missing = [redirector].filter((item) => !fs.existsSync(item.from));
+  const missing = redirectorFiles.filter((item) => !fs.existsSync(item.from));
   if (missing.length > 0) {
-    fail(`Pacote incompleto. Ausentes: ${missing.map((item) => path.relative(PACKAGE_ROOT, item.from)).join(", ")}`);
+    fail(`Pacote incompleto. Ausentes: ${missing.map((item) => item.entry).join(", ")}`);
   }
   let canonicalSkillReady = false;
   try {
@@ -656,26 +877,201 @@ function install(args) {
   if (!canonicalSkillReady) {
     fail(`Fonte canonica indisponivel: ${CANONICAL_SKILL_PATH}`);
   }
+  assertCanonicalPackageRoot();
+
+  if (fs.existsSync(registryTarget) && !options.force) {
+    fail(`Destino ja contem o redirecionador dex-memoria. Use --force para atualizar: ${redirectorFiles[0].to}`);
+  }
+
+  if (fs.existsSync(registryTarget)) {
+    const allowedEntries = new Set(["SKILL.md", "agents", path.join("agents", "openai.yaml")]);
+    const unexpectedEntries = listRegistryEntries(registryTarget)
+      .filter((entry) => !allowedEntries.has(entry));
+    if (unexpectedEntries.length > 0) {
+      fail(`Destino contem residuos legacy (${unexpectedEntries.length}). Crie backup e use o pacote de upgrade para migrar antes de instalar: ${registryTarget}`);
+    }
+  }
 
   if (options.dryRun) {
-    console.log(`Instalaria redirecionador global em: ${redirector.to}`);
-    if (fs.existsSync(redirector.to)) {
+    console.log(`Instalaria redirecionador global em: ${redirectorFiles[0].to}`);
+    console.log(`Instalaria interface do redirecionador em: ${redirectorFiles[1].to}`);
+    if (fs.existsSync(redirectorFiles[0].to)) {
       console.log("Redirecionador existente: sim");
     }
     console.log(`Fonte canonica: ${CANONICAL_SKILL_PATH}`);
-    console.log(`- ${path.relative(PACKAGE_ROOT, redirector.from)}`);
+    for (const item of redirectorFiles) {
+      console.log(`- ${item.entry}`);
+    }
     return;
   }
 
-  if (fs.existsSync(redirector.to) && !options.force) {
-    fail(`Destino ja contem o redirecionador dex-memoria. Use --force para atualizar: ${redirector.to}`);
+  const registryParent = path.dirname(registryTarget);
+  const stagePath = path.join(registryParent, `.dex-memoria-stage-${process.pid}-${Date.now()}`);
+  const backupRoot = path.join(path.dirname(registryParent), "backups");
+  const backupPath = path.join(backupRoot, `dex-memoria-registry-${new Date().toISOString().replace(/[:.]/g, "-")}`);
+  const hadExistingRegistry = fs.existsSync(registryTarget);
+  let backupCreated = false;
+
+  try {
+    fs.mkdirSync(registryParent, { recursive: true });
+    fs.mkdirSync(stagePath, { recursive: false });
+    for (const item of redirectorFiles) {
+      const stagedFile = path.join(stagePath, path.relative(registryTarget, item.to));
+      fs.mkdirSync(path.dirname(stagedFile), { recursive: true });
+      fs.copyFileSync(item.from, stagedFile);
+      assertSameSha256(item.from, stagedFile);
+    }
+
+    if (hadExistingRegistry) {
+      fs.mkdirSync(backupRoot, { recursive: true });
+      fs.renameSync(registryTarget, backupPath);
+      backupCreated = true;
+    }
+
+    fs.renameSync(stagePath, registryTarget);
+    for (const item of redirectorFiles) {
+      assertSameSha256(item.from, item.to);
+    }
+  } catch (error) {
+    if (fs.existsSync(stagePath)) {
+      fs.rmSync(stagePath, { recursive: true, force: true });
+    }
+    if (backupCreated) {
+      if (fs.existsSync(registryTarget)) {
+        fs.rmSync(registryTarget, { recursive: true, force: true });
+      }
+      fs.renameSync(backupPath, registryTarget);
+    } else if (fs.existsSync(registryTarget)) {
+      fs.rmSync(registryTarget, { recursive: true, force: true });
+    }
+    fail(`Instalacao recuperavel do redirecionador falhou; estado anterior restaurado ou destino novo removido: ${error.message}`);
   }
 
-  fs.mkdirSync(path.dirname(redirector.to), { recursive: true });
-  fs.copyFileSync(redirector.from, redirector.to);
-
-  console.log(`redirecionador global instalado em: ${redirector.to}`);
+  console.log(`redirecionador global instalado em: ${redirectorFiles[0].to}`);
+  console.log(`interface do redirecionador instalada em: ${redirectorFiles[1].to}`);
+  if (backupCreated) {
+    console.log(`backup do redirecionador: ${backupPath}`);
+  }
+  console.log("SHA-256 verificado para todos os arquivos instalados");
   console.log(`fonte canonica: ${CANONICAL_SKILL_PATH}`);
+}
+
+function assertCanonicalRegistryTarget(registryTarget) {
+  const registryName = path.basename(registryTarget).toLowerCase();
+  const skillsName = path.basename(path.dirname(registryTarget)).toLowerCase();
+  const agentsName = path.basename(path.dirname(path.dirname(registryTarget))).toLowerCase();
+  if (registryName !== "dex-memoria" || skillsName !== "skills" || agentsName !== ".agents") {
+    fail(`Destino de registry invalido. Use somente <USERPROFILE>\\.agents\\skills\\dex-memoria: ${registryTarget}`);
+  }
+  const expectedTarget = path.resolve(defaultRegistryTarget());
+  if (registryTarget.toLowerCase() !== expectedTarget.toLowerCase()) {
+    fail(`Destino de registry fora do USERPROFILE/home ativo. Esperado: ${expectedTarget}`);
+  }
+}
+
+function assertCanonicalPackageRoot({ allowVerifiedCheckout = false } = {}) {
+  const canonicalRoot = path.dirname(CANONICAL_SKILL_PATH);
+  let packageRealpath;
+  let canonicalRealpath;
+  try {
+    packageRealpath = fs.realpathSync.native(PACKAGE_ROOT);
+    canonicalRealpath = fs.realpathSync.native(canonicalRoot);
+  } catch {
+    fail(`Pacote canonico indisponivel: ${canonicalRoot}`);
+  }
+
+  if (packageRealpath.toLowerCase() === canonicalRealpath.toLowerCase()) {
+    return;
+  }
+
+  if (
+    allowVerifiedCheckout &&
+    isVerifiedSourceCheckout(packageRealpath, canonicalRealpath)
+  ) {
+    return;
+  }
+
+  fail(
+    `Este comando deve executar pelo pacote canonico: ${canonicalRoot}. ` +
+    `Checkouts Git de verificacao exigem ${SOURCE_CHECKOUT_ROOT_ENV}=<raiz-do-checkout>.`
+  );
+}
+
+function isVerifiedSourceCheckout(packageRealpath, canonicalRealpath) {
+  const declaredRoot = process.env[SOURCE_CHECKOUT_ROOT_ENV];
+  if (!declaredRoot || !String(declaredRoot).trim()) return false;
+
+  let declaredRealpath;
+  try {
+    declaredRealpath = fs.realpathSync.native(path.resolve(String(declaredRoot)));
+  } catch {
+    return false;
+  }
+  if (declaredRealpath.toLowerCase() !== packageRealpath.toLowerCase()) return false;
+
+  const packageJsonPath = path.join(packageRealpath, "package.json");
+  const skillPath = path.join(packageRealpath, "SKILL.md");
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    if (
+      packageJson.name !== "dex-memoria" ||
+      packageJson.repository?.url !== "git+https://github.com/dex-agent/dex-memoria.git"
+    ) {
+      return false;
+    }
+    if (!fs.statSync(skillPath).isFile()) return false;
+
+    const checkoutTopLevel = execFileSync(
+      "git",
+      ["-C", packageRealpath, "rev-parse", "--show-toplevel"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+    ).trim();
+    if (fs.realpathSync.native(checkoutTopLevel).toLowerCase() !== packageRealpath.toLowerCase()) {
+      return false;
+    }
+
+    const checkoutHead = execFileSync(
+      "git",
+      ["-C", packageRealpath, "rev-parse", "--verify", "HEAD"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+    ).trim();
+    const canonicalHead = execFileSync(
+      "git",
+      ["-C", canonicalRealpath, "rev-parse", "--verify", "HEAD"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+    ).trim();
+    if (checkoutHead !== canonicalHead) return false;
+
+    const checkoutStatus = execFileSync(
+      "git",
+      ["-C", packageRealpath, "status", "--porcelain", "--untracked-files=all"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+    ).trim();
+    return checkoutStatus === "";
+  } catch {
+    return false;
+  }
+}
+
+function assertSameSha256(sourcePath, destinationPath) {
+  const sourceSha256 = createHash("sha256").update(fs.readFileSync(sourcePath)).digest("hex");
+  const destinationSha256 = createHash("sha256").update(fs.readFileSync(destinationPath)).digest("hex");
+  if (sourceSha256 !== destinationSha256) {
+    throw new Error(`SHA-256 divergente para ${destinationPath}`);
+  }
+}
+
+function listRegistryEntries(root, relativeRoot = "") {
+  const absoluteRoot = path.join(root, relativeRoot);
+  const entries = [];
+  for (const item of fs.readdirSync(absoluteRoot, { withFileTypes: true })) {
+    const relativePath = path.join(relativeRoot, item.name);
+    entries.push(relativePath);
+    if (item.isDirectory()) {
+      entries.push(...listRegistryEntries(root, relativePath));
+    }
+  }
+  return entries;
 }
 
 function parseInstallArgs(args) {
@@ -753,7 +1149,7 @@ function fail(message) {
 }
 
 main().catch((error) => {
-  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError || error instanceof RouteInspectionError) {
+  if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError || error instanceof RouteInspectionError || error instanceof MemoryRuntimeError) {
     process.stderr.write(`${JSON.stringify({
       contract: "dex.memory.error.v0",
       code: error.code,

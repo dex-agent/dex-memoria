@@ -12,6 +12,10 @@ const repoRoot = resolve(testRoot, "..");
 const cliPath = join(repoRoot, "bin", "dex-memoria.js");
 const fixtureSourceRoot = join(testRoot, "fixtures", "legacy-create-l1-l2-v1");
 
+function registryTargetFor(root) {
+  return join(root, ".agents", "skills", "dex-memoria");
+}
+
 const request = {
   contract: "dex.memory.create.request.v0",
   operation: "create",
@@ -133,12 +137,12 @@ test("preserves exact V1 version output", async () => {
   assert.deepEqual(result, { stdout: "0.1.6\n", stderr: "", exitCode: 0 });
 });
 
-test("preserves exact V1 doctor output under a controlled environment", async (t) => {
+test("doctor reports the active V2 runtime contract under a controlled environment", async (t) => {
   const memoryRoot = await mkdtemp(join(tmpdir(), "dex-memoria-doctor-"));
   t.after(() => rm(memoryRoot, { recursive: true, force: true }));
   const result = await runCli(["doctor"], "", { ...process.env, DEX_MEMORIA_HOME: memoryRoot });
   assert.deepEqual(result, {
-    stdout: `dex-memoria 0.1.6 ok\nPacote: ${repoRoot}\nMemoria home: ${resolve(memoryRoot)}\nMemoria home source: DEX_MEMORIA_HOME\nModo: contrato documental, sem runtime proprio\n`,
+    stdout: `dex-memoria 0.1.6 ok\nPacote: ${repoRoot}\nImplementation version: v2\nWriter selector: v2\nV1 compatibility: reader/restore\nCanonical skill: C:\\CodexProjetos\\dex-memoria\\SKILL.md\nEntrypoint: ${cliPath}\nMemoria home: ${resolve(memoryRoot)}\nMemoria home source: DEX_MEMORIA_HOME\n`,
     stderr: "",
     exitCode: 0
   });
@@ -158,7 +162,7 @@ test("preserves exact V1 memory-home output", async (t) => {
 test("install dry-run is registry-only and names the canonical source", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "dex-memoria-install-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const registryTarget = join(root, "registry");
+  const registryTarget = registryTargetFor(root);
   const result = await runCli(["install", "--registry-target", registryTarget, "--dry-run"], "", {
     ...process.env,
     HOME: root,
@@ -167,8 +171,10 @@ test("install dry-run is registry-only and names the canonical source", async (t
   assert.deepEqual(result, {
     stdout: [
       `Instalaria redirecionador global em: ${join(registryTarget, "SKILL.md")}`,
+      `Instalaria interface do redirecionador em: ${join(registryTarget, "agents", "openai.yaml")}`,
       "Fonte canonica: C:\\CodexProjetos\\dex-memoria\\SKILL.md",
       "- registry\\agents-skills\\dex-memoria\\SKILL.md",
+      "- registry\\agents-skills\\dex-memoria\\agents\\openai.yaml",
       ""
     ].join("\n"),
     stderr: "",
@@ -176,10 +182,10 @@ test("install dry-run is registry-only and names the canonical source", async (t
   });
 });
 
-test("install writes only the global redirector and leaves the legacy install root absent", async (t) => {
+test("install writes only the global redirector package and leaves the legacy install root absent", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-only-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const registryTarget = join(root, "registry");
+  const registryTarget = registryTargetFor(root);
   const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
     ...process.env,
     HOME: root,
@@ -192,7 +198,194 @@ test("install writes only the global redirector and leaves the legacy install ro
     await readFile(join(registryTarget, "SKILL.md"), "utf8"),
     await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"), "utf8")
   );
+  assert.equal(
+    await readFile(join(registryTarget, "agents", "openai.yaml"), "utf8"),
+    await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "agents", "openai.yaml"), "utf8")
+  );
+  assert.deepEqual((await readdir(registryTarget)).sort(), ["SKILL.md", "agents"]);
+  assert.deepEqual(await readdir(join(registryTarget, "agents")), ["openai.yaml"]);
   await assert.rejects(readdir(join(root, ".dex-agent")), { code: "ENOENT" });
+});
+
+test("install rejects a registry target outside .agents/skills/dex-memoria", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-boundary-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = join(root, "arbitrary", "dex-memoria");
+
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /\.agents[\\/]skills[\\/]dex-memoria/i);
+  await assert.rejects(readdir(registryTarget), { code: "ENOENT" });
+});
+
+test("install rejects a canonical-looking registry outside the active user home", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-home-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = registryTargetFor(join(root, "other-user"));
+
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /USERPROFILE|home/i);
+  await assert.rejects(readdir(registryTarget), { code: "ENOENT" });
+});
+
+test("install updates an existing clean bridge through an external backup and verified replacement", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-update-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = registryTargetFor(root);
+  await mkdir(join(registryTarget, "agents"), { recursive: true });
+  await writeFile(join(registryTarget, "SKILL.md"), "old-bridge", "utf8");
+  await writeFile(join(registryTarget, "agents", "openai.yaml"), "old-interface", "utf8");
+
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, "");
+  assert.match(result.stdout, /backup do redirecionador:/i);
+  assert.match(result.stdout, /sha-256 verificado/i);
+  const backupRoot = join(root, ".agents", "backups");
+  const backupEntries = await readdir(backupRoot);
+  assert.equal(backupEntries.length, 1);
+  const backupPath = join(backupRoot, backupEntries[0]);
+  assert.equal(await readFile(join(backupPath, "SKILL.md"), "utf8"), "old-bridge");
+  assert.equal(await readFile(join(backupPath, "agents", "openai.yaml"), "utf8"), "old-interface");
+  assert.equal(
+    await readFile(join(registryTarget, "SKILL.md"), "utf8"),
+    await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"), "utf8")
+  );
+});
+
+test("install refuses a legacy-contaminated registry before overwriting bytes", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-residue-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = registryTargetFor(root);
+  const installedSkill = join(registryTarget, "SKILL.md");
+  await mkdir(join(registryTarget, "bin"), { recursive: true });
+  await writeFile(installedSkill, "legacy-skill-bytes", "utf8");
+  await writeFile(join(registryTarget, "bin", "dex-memoria.js"), "legacy-runtime-bytes", "utf8");
+
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /residuos legacy/i);
+  assert.match(result.stderr, /backup/i);
+  assert.equal(await readFile(installedSkill, "utf8"), "legacy-skill-bytes");
+  assert.equal(await readFile(join(registryTarget, "bin", "dex-memoria.js"), "utf8"), "legacy-runtime-bytes");
+});
+
+test("install dry-run fails on legacy residue exactly as apply would", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-registry-dry-residue-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const registryTarget = registryTargetFor(root);
+  await mkdir(join(registryTarget, "docs"), { recursive: true });
+  await writeFile(join(registryTarget, "SKILL.md"), "legacy-skill-bytes", "utf8");
+  await writeFile(join(registryTarget, "docs", "usage.md"), "legacy-doc-bytes", "utf8");
+
+  const result = await runCli(["install", "--registry-target", registryTarget, "--force", "--dry-run"], "", {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /residuos legacy/i);
+  assert.equal(await readFile(join(registryTarget, "SKILL.md"), "utf8"), "legacy-skill-bytes");
+  assert.equal(await readFile(join(registryTarget, "docs", "usage.md"), "utf8"), "legacy-doc-bytes");
+});
+
+test("install refuses a copied CLI even when the canonical skill is readable", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-noncanonical-cli-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const copiedRoot = join(root, "copied-package");
+  const copiedCli = join(copiedRoot, "bin", "dex-memoria.js");
+  await cp(join(repoRoot, "bin"), join(copiedRoot, "bin"), { recursive: true });
+  await cp(join(repoRoot, "registry"), join(copiedRoot, "registry"), { recursive: true });
+
+  const result = await runCliFile(copiedCli, copiedRoot, [
+    "install",
+    "--registry-target",
+    registryTargetFor(root),
+    "--force"
+  ], { ...process.env, HOME: root, USERPROFILE: root });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /pacote canonico|fonte canonica/i);
+  await assert.rejects(readdir(registryTargetFor(root)), { code: "ENOENT" });
+});
+
+test("the V2 operational CLI refuses a copied package before parsing a request", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-v2-noncanonical-cli-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const copiedRoot = join(root, "copied-package");
+  const copiedCli = join(copiedRoot, "bin", "dex-memoria.js");
+  await cp(join(repoRoot, "bin"), join(copiedRoot, "bin"), { recursive: true });
+
+  const result = await runCliFile(copiedCli, copiedRoot, ["v2", "plan"], {
+    ...process.env,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /pacote canonico/i);
+});
+
+test("a fabricated Git marker cannot authorize a copied package", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memoria-source-checkout-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const checkoutRoot = join(root, "checkout");
+  const checkoutCli = join(checkoutRoot, "bin", "dex-memoria.js");
+
+  await cp(join(repoRoot, "bin"), join(checkoutRoot, "bin"), { recursive: true });
+  await cp(join(repoRoot, "registry"), join(checkoutRoot, "registry"), { recursive: true });
+  await cp(join(repoRoot, "contracts"), join(checkoutRoot, "contracts"), { recursive: true });
+  await mkdir(join(checkoutRoot, "docs"), { recursive: true });
+  for (const relativePath of [
+    "package.json",
+    "VERSION",
+    "SKILL.md",
+    "SPEC.md",
+    "README.md",
+    "docs/usage.md"
+  ]) {
+    await cp(join(repoRoot, relativePath), join(checkoutRoot, relativePath));
+  }
+  await mkdir(join(checkoutRoot, ".git"), { recursive: true });
+
+  const result = await runCliFile(checkoutCli, checkoutRoot, ["doctor"], {
+    ...process.env,
+    DEX_MEMORIA_HOME: join(root, "memories"),
+    DEX_MEMORIA_SOURCE_CHECKOUT_ROOT: checkoutRoot,
+    HOME: root,
+    USERPROFILE: root
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /pacote canonico|checkouts Git de verificacao/i);
 });
 
 test("install rejects the removed --target option instead of ignoring it", async (t) => {
@@ -203,7 +396,7 @@ test("install rejects the removed --target option instead of ignoring it", async
     "--target",
     join(root, "forbidden"),
     "--registry-target",
-    join(root, "registry"),
+    registryTargetFor(root),
     "--dry-run"
   ], "", { ...process.env, HOME: root, USERPROFILE: root });
 
@@ -222,10 +415,12 @@ test("install blocks explicitly before writing when the canonical source is abse
     const scenarioRoot = join(root, scenario);
     const sandboxCli = join(scenarioRoot, "bin", "dex-memoria.js");
     const sandboxRedirector = join(scenarioRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md");
+    const sandboxRedirectorInterface = join(scenarioRoot, "registry", "agents-skills", "dex-memoria", "agents", "openai.yaml");
     const invalidCanonical = join(scenarioRoot, "canonical", "SKILL.md");
-    const registryTarget = join(scenarioRoot, "installed-registry");
+    const registryTarget = registryTargetFor(scenarioRoot);
     await cp(join(repoRoot, "bin"), join(scenarioRoot, "bin"), { recursive: true });
     await mkdir(dirname(sandboxRedirector), { recursive: true });
+    await mkdir(dirname(sandboxRedirectorInterface), { recursive: true });
     if (scenario === "directory") {
       await mkdir(invalidCanonical, { recursive: true });
     }
@@ -239,6 +434,10 @@ test("install blocks explicitly before writing when the canonical source is abse
     await writeFile(
       sandboxRedirector,
       await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "SKILL.md"))
+    );
+    await writeFile(
+      sandboxRedirectorInterface,
+      await readFile(join(repoRoot, "registry", "agents-skills", "dex-memoria", "agents", "openai.yaml"))
     );
 
     const result = await runCliFile(sandboxCli, scenarioRoot, [
@@ -269,6 +468,7 @@ test("help advertises the fixture-only create apply command", async () => {
   assert.equal(result.exitCode, 0);
   assert.equal(result.stderr, "");
   assert.match(result.stdout, /dex-memoria create apply --fixture <fixture-root>/);
+  assert.match(result.stdout, /dex-memoria v2 validate-root/);
 });
 
 test("the internal planner source has no filesystem, clock, random or environment capability", async () => {

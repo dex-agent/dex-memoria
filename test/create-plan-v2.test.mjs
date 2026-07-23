@@ -305,6 +305,9 @@ test("V2 public layout and payload contracts are separate closed schemas", async
       assert.equal(document.contract, contract);
       assert.equal(document.profile, "governed-theme-v2");
       assert.equal(document.status, "approved_not_active");
+      assert.equal(document.artifact_role, "historical_fixture_contract");
+      assert.equal(document.runtime_authority, false);
+      assert.equal(document.superseded_by, "v2");
       assert.equal(document.active_write_profile, "legacy-v1");
     }
   }

@@ -1,532 +1,197 @@
 ---
 name: dex-memoria
-description: Use quando for preciso criar, revisar, resolver, arquivar ou superseder memória operacional de projetos Dex Agent com contrato de ciclo de vida, distinguindo legacy-v1 ativo de governed-theme-v2 fixture/SHADOW. Esta é a única fonte operacional completa desta instalação.
+description: Use para gravar, recuperar, revisar, mover, arquivar ou superseder memória Dex. A escrita cotidiana usa Dex Memoria V2; o corpus V1 permanece legível e restaurável.
 ---
 
-# Dex Memoria
+# Dex Memoria V2
 
-`dex-memoria` e o ponto de entrada pratico para operar memoria com ciclo de vida.
+`Implementation-Version: v2`
 
-Dentro deste pacote, `memorizador` e o nome operacional do contrato de
-memorizacao: o metodo que define como, quando, quanto, por que, por quanto tempo
-e quando nao lembrar. Memoria global nao e somente leitura: quando uma lembranca
-tiver valor cross-project, o mecanismo de escrita disponivel deve gravar um
-ponteiro curto, intuitivo e indexavel em `MEMORY.md`, apontando para a fonte viva
-completa. O contrato `dex-memoria` nao pode ser usado para negar escrita global;
-ele apenas orienta formato, criterios, fonte viva, conflito e revisao. O
-registro global nao deve virar tutorial, copia de contrato, historico grande ou
-dump de contexto.
+`Scope: project | global | theme | dual`
 
-Nao confunda esse `memorizador` contratual com a skill/pacote experimental antigo
-que foi arquivado. O pacote antigo nao e rota viva; o contrato de memorizacao
-continua vivo dentro de `dex-memoria`.
+Implementation, scope e root são dimensões independentes.
+Selecionar um root não define nem congela o layout interno.
+Writer/selector ativo: v2.
+`legacy-v1`: reader/restore; o V1 histórico continua recuperável.
 
-## Fonte Publicavel Completa
-
-Este `SKILL.md` e a versao operacional completa do contrato `dex-memoria`.
-Ele é a única fonte operacional completa desta instalação:
+Esta é a fonte canônica única da skill:
 
 ```text
 C:\CodexProjetos\dex-memoria\SKILL.md
 ```
 
-O redirecionador do registry global fica em:
+O arquivo global em `$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md`
+é apenas um redirecionador. Não procure nem escolha cópias locais, `.dex-agent`,
+backups ou worktrees como fonte operacional.
+
+## Entrada cotidiana
+
+Quando o usuário disser `Use $dex-memoria para gravar...`, use V2 por padrão.
+Não é necessário ele informar `V2`. V1 é somente recall e restauração.
+
+Para gravar, execute uma única operação:
 
 ```text
-$env:USERPROFILE\.agents\skills\dex-memoria\SKILL.md
+dex-memoria v2 remember
 ```
 
-A fonte versionada desse redirecionador fica neste repositorio:
+A escrita é explícita pela CLI. Esta skill não instala hook automático nem
+captura em background.
+
+```powershell
+@'
+{
+  "scope": "project",
+  "title": "Título curto",
+  "trigger": "Quando esta memória deve ser recuperada",
+  "body": "Conteúdo estável e operacional",
+  "tags": ["#dominio/assunto"]
+}
+'@ | node "C:\CodexProjetos\dex-memoria\bin\dex-memoria.js" v2 remember
+```
+
+O payload cotidiano é fechado:
+
+- `scope`: obrigatório; `project`, `global`, `theme` ou `dual`;
+- `title` (até 256) e `trigger` (até 512): obrigatórios e sem quebra de linha/NUL;
+- `body`: obrigatório, até 65536 caracteres; `tags`: lista não vazia;
+- `target_layer`: opcional; default seguro `L2`;
+- `theme`: obrigatório somente quando `scope=theme`;
+- `owner_skill`: obrigatório somente quando `target_layer=L3`;
+- `slug` e `operation_id`: opcionais; o helper gera valores determinísticos.
+
+Não invente o escopo. Se o pedido não distingue projeto, global, tema ou ambos,
+pergunte somente essa decisão humana. O classificador de intenção pertence ao
+consumidor; esta skill governa e executa a memória já roteada.
+
+Roots são portáveis:
+
+- projeto: diretório de trabalho atual + `.agents`;
+- global: `DEX_MEMORIA_HOME\global`;
+- tema: `DEX_MEMORIA_HOME\temas\<tema>`;
+- `DEX_MEMORIA_HOME`: variável de ambiente ou fallback
+  `$env:USERPROFILE\.agents\memories`.
 
 ```text
-registry\agents-skills\dex-memoria\SKILL.md
+project/local -> <WORKSPACE>/.agents
+global -> <DEX_MEMORIA_HOME>/global
+theme -> <DEX_MEMORIA_HOME>/temas/<tema>
+dual-scope -> dois destinos e dois recibos
 ```
 
-Esse redirecionador aponta diretamente para esta fonte. Ele não procura skill
-local, `.codex`, `skills/dex-agent`, `.dex-agent`, backup ou cópia irmã. Se esta
-fonte estiver ausente ou ilegível, a resolução bloqueia explicitamente; não há
-fallback.
+Para `dual`, são duas operações físicas independentes: projeto e global. Exija
+dois route receipts e duas validações; nunca aceite um único recibo compartilhado.
 
-## Sincronizacao Canonica 2026-06-22
+## Como comprovar a gravação
 
-Esta fonte completa preserva o contrato operacional e deve expor os marcadores
-canonicos publicados pelo pacote `dex-memoria`:
+Aceite sucesso somente quando o JSON retornar:
 
-- `memory-write-route-v1`: escrita, movimento, consolidacao, arquivamento ou
-  supersedencia de memoria exige preflight read-only, decisao de escopo/camada,
-  validacao por `consciencia-memorias` e prova de recuperacao.
-- `consciencia-memorias`: gate de qualidade para L1/L2/L3, tagnames, anchors,
-  block ids, backlinks, indices L3, backups externos e achabilidade.
-- `MEMORIA-GRADUADA-COM-ANTI-GATILHO`: classificar memoria como simples,
-  operacional ou robusta; anti-gatilho entra apenas quando ha risco real de
-  confusao.
-- `DESBLOQUEIO-MANUAL-CONTROLADO`: permite continuar sob ressalva explicita,
-  sem promover memoria ativa nem apagar evidencia bloqueante.
-- Anti-gatilho nao e obrigatorio em toda memoria.
-- Graphify e mapa, nao prova. Hits de Graphify so viram memoria quando a fonte
-  citada e aberta ou confirmada por `rg`, codigo, docs, teste ou evidencia
-  runtime.
+- `contract=dex.memory.remember.receipt.v2`;
+- `implementation_version=v2`;
+- `status=COMMITTED`;
+- uma rota por destino solicitado;
+- cada `route_receipts.<scope>.status=COMMITTED`;
+- cada `validations.<scope>.ok=true`;
+- `request_fingerprint` SHA-256;
+- `candidate_id` e `content_hash` SHA-256 quando ao menos uma rota comprometeu;
+- em `FAILED` sem commit, `candidate_id=null` e `content_hash=null`;
+- arquivos e validation receipts distintos em `dual`.
 
-Use esta skill quando uma captura, achado ou decisao precisar ser classificada antes de virar:
+O receipt público não deve ecoar `body`, `title`, `trigger` ou payload privado.
+Ele prova o vínculo por hashes, rotas e recibos independentes. Depois abra os
+arquivos gravados e faça recall por gatilho, tag e frase. Auto-relato do writer
+não é o único oracle.
 
-- memoria viva;
-- ledger historico;
-- arquivo resolvido;
-- handoff entre projetos;
-- skill-candidate;
-- estacionamento;
-- descarte.
+Retry do mesmo pedido comprometido deve manter `operation_id` e retornar
+`deduplicated=true`, sem duplicar L1 ou destino. Sempre que `recovery` não for
+`null` — inclusive em `FAILED` — siga-o: journal não terminal exige `recover`; journal já
+`ROLLED_BACK` exige repetir `remember` com o `next_operation_id` fornecido.
+Execute todas as entradas de `recovery.actions`, uma por rota pendente, antes
+do `then_command`. Não reutilize silenciosamente uma transação terminal.
 
-## Regra Central
+## Camadas
 
-### Trio Operacional Com Garimpeiro E Estacionamento
+- L1 `lembranca.md`: gatilho curto e recuperável;
+- L2 `memorias/<slug>.md`: regra operacional estável;
+- L3 `conhecimento/<slug>/README.md`: conhecimento profundo sob demanda.
 
-`garimpeiro`, `dex-memoria` e `estacionamento` operam juntos:
+V2 grava `L1↔L2` ou `L1↔L3`; não cria L2 artificial para uma memória L3.
+L3 exige `owner_skill`. Não grave L2 sem L1 nem L3 sem L1.
 
-- `garimpeiro` qualifica o achado e aplica o limiar de evidencia/reuso;
-- `dex-memoria` decide e governa a gravacao automatica no padrao canonico de
-  todo achado forte, memoravel, seguro, nao duplicado e com destino L1/L2 claro;
-  a escrita fisica e executada somente por mecanismo fisico ja autorizado do
-  ambiente, sem pedir permissao adicional quando autorizacao, escopo e destino
-  resolvido ja existirem;
-- `estacionamento` segura apenas residuo vivo, imaturo, lateral ou pendente,
-  sempre com garimpo vinculado e `quando`;
-- `consciencia-memorias` valida as conexoes bidirecionais L1↔L2↔L3,
-  tagnames, anchors, block ids, backlinks e achabilidade depois da escrita.
+## Escolha do escopo
 
-Itens fracos, ambiguos, sensiveis, duplicados, stale ou sem destino L1/L2 nao
-entram automaticamente em memoria viva. Eles ficam como candidato,
-estacionamento ou descarte justificado.
+- `project`: aprendizado específico do repositório atual;
+- `global`: regra reutilizável entre projetos;
+- `theme`: conhecimento pertencente a um tema governado;
+- `dual`: o mesmo aprendizado tem valor independente local e global.
 
-A prestacao de contas nao interrompe cada achado. Somente no fim do bloco atual,
-informar brevemente quantos memoraveis fortes foram gravados, quantos tropecos
-novos foram catalogados, apenas os gatilhos L1 quentes usados e perguntar se o
-usuario deseja editar alguma memoria.
+Dual não é atalho para “talvez global”. Cada destino precisa justificar valor e
+produzir recibo próprio. Conteúdo fraco, sensível, duplicado, ambíguo, stale ou
+sem gatilho recuperável não deve ser promovido.
 
-Memoria operacional nao e apenas anotacao. Ela precisa responder:
+## Recall V1 e V2
 
-- como entra;
-- quando deve ser lembrada;
-- quanto deve ser lembrada;
-- por que deve ser lembrada;
-- por quanto tempo deve ser lembrada;
-- como deve ser usada;
-- quando nao deve ser lembrada;
-- como sai do estado vivo.
+Ao ouvir `recarregue as memórias locais e globais`, recupere V1 histórico e V2
+novo sem pedir versão. Use Finder por pelo menos duas formas — gatilho/tag,
+frase, filename, anchor ou block id — e confirme abrindo a fonte viva ou com
+`rg`. Graphify acelera relações, mas não substitui a fonte.
 
-Quando o problema for recuperacao recorrente de conhecimento, aplique tambem a
-arquitetura:
+Escala de recall:
+
+1. Abra o L1/L2/L3 conhecido quando o gatilho for claro.
+2. Use `obsidian-memory-finder`/`find-memory.ps1` por duas formas.
+3. Use `rg` se Finder não localizar.
+4. Para relações, use Graphify e confirme a fonte citada.
+
+Memória sem recuperação é arquivo morto.
+
+## Qualidade e ciclo de vida
+
+Antes de gravar:
+
+- confirme valor futuro, segurança, novidade e destino;
+- mantenha L1 curto e L2/L3 como fonte viva;
+- qualquer promessa futura precisa de owner e `quando`;
+- use `garimpeiro` antes de descartar ouro;
+- use `estacionamento` somente para resíduo vivo com condição de retomada;
+- use `consciencia-memorias` para revisão pós-escrita quando aplicável.
+
+Para conhecimento reutilizável profundo, L3 precisa de objetivo, escopo,
+exemplos, anti-exemplos, modelo operacional, validação, fontes, riscos de
+obsolescência e comando de achabilidade.
+
+Ao final, informe os arquivos/rotas escritos e seus receipts para que o usuário
+possa editar, mover, superseder ou remover a memória.
+
+## Manutenção e troubleshooting
+
+O uso cotidiano termina aqui. Não abra documentação de desenvolvimento para
+uma gravação normal.
+
+Somente quando estiver mantendo o produto, investigando falha, alterando
+contrato ou executando recovery manual, consulte sob demanda:
+
+- `SPEC.md`: contrato de ciclo de vida;
+- `docs/usage.md`: exemplos e referência CLI;
+- `docs/runtime-boundary.md`: fronteira do pacote;
+- `docs/memory-home.md`: resolução de roots;
+- `contracts/schemas/`: schemas públicos;
+- `bin/dex-memoria.js help`: primitivas avançadas.
+
+Primitivas avançadas preservadas:
 
 ```text
-L1 lembranca -> L2 memoria -> L3 conhecimento
+dex-memoria v2 plan
+dex-memoria v2 apply
+dex-memoria v2 resume
+dex-memoria v2 recover
+dex-memoria v2 validate
+dex-memoria v2 validate-root
+dex-memoria v2 capability
 ```
 
-- `L1 lembranca`: gatilhos curtos, sem conteudo longo, apontando para L2.
-- `L2 memoria`: detalhe operacional com ancoras estaveis.
-- `L3 conhecimento`: documentacao, tutoriais, modelos e exemplos sob demanda.
-
-`lembranca.md`, `memoria.md` e `conhecimento/` sao nomes canonicos para memoria
-local de repositorio.
-
-Convenção de caixa para arquivos de memoria:
-
-- `lembranca.md` e `memoria.md` em minusculo indicam memoria local do repo,
-  normalmente em `<WORKSPACE>/.agents/`.
-- `LEMBRANCA.md` e `MEMORIA.md` em maiusculo indicam memoria ou acao global,
-  cross-project ou governada fora do repo local.
-- documentos com nome todo em maiusculo devem ser tratados como sinal de acao
-  global/governada antes de escrever, mover, consolidar ou apagar.
-- em Windows, trate diferenca de caixa como o mesmo destino fisico. Nao crie
-  duplicatas como `.agents\lembranca.md` e `.agents\LEMBRANCA.md` no mesmo
-  diretorio; respeite o arquivo existente e proponha migracao/renomeacao apenas
-  com plano explicito, backup e validacao de links.
-- ao criar memoria nova, escolha o casing pelo escopo: minusculo para repo
-  local, maiusculo para global/governado.
-
-Tags e links Obsidian sao infraestrutura auxiliar de consulta rapida, nao fonte
-de verdade. Use tags curtas e governadas para recuperar memoria de forma
-transversal por finder, bibliotecario, pesquisador, Obsidian, Graphify, MCP e
-scripts de auditoria, mas mantenha a verdade operacional em L1 -> L2 -> L3.
-
-Regra de tags:
-
-- skills procuradoras consultam tags; elas nao inserem, espalham, renomeiam ou
-  normalizam tags automaticamente;
-- L1 pode receber poucas tags canonicas no fim da linha somente durante
-  curadoria de memoria, quando isso aumentar recuperacao real, por exemplo
-  dominio, tipo, risco ou acao;
-- tags nao substituem gatilho L1, ancora L2, fonte viva, validacao por `rg` ou
-  `validate-memory-links.ps1`;
-- evite tag decorativa, sinonimos demais e vocabulario inventado para uma unica
-  memoria;
-- quando uma skill procurar memoria por tag, ela deve usar ou apontar para
-  `obsidian-memory-finder` como contrato read-only canonico; os scripts vivem
-  em `obsidian-memoria-cli` como implementacao/compatibilidade. Para saida de
-  maquina, usar `DEX-MEMORY-RECALL-JSON` / `dex.memory.recall.v1`;
-- qualquer funcao de escrever, editar, criar, apagar, renomear, normalizar tag
-  ou gravar memoria deve viver em skill separada de writer/recorder, com pedido
-  explicito, backup, L1/L2/L3 e validacao propria;
-- se uma busca revelar tag ausente ou baguncada, registre proposta de curadoria
-  com fonte e motivo; nao edite tags como efeito colateral da busca;
-- para busca relacional, Graphify pode acelerar descoberta, mas todo hit segue
-  `source: graphify` ate confirmacao em fonte viva.
-
-O carregamento automatico e responsabilidade do ambiente consumidor.
-
-Ao criar ou revisar memoria em camadas, valide por busca:
-
-- L1: o gatilho curto aparece e aponta para a ancora L2;
-- L2: a ancora existe e aponta para a fonte L3 quando houver;
-- L3: a fonte longa existe apenas sob demanda, sem substituir L1/L2.
-
-Gate anti L2 solta e backup vivo:
-
-- conteudo vindo de `parking_lot`, flow PPIRTV, racional/veredito automatico,
-  achado de reuniao ou classificador automatico nao entra direto em L2 vivo;
-  ele precisa virar L1 + L2 completos ou ficar estacionado com `quando`;
-- L2 completo exige heading com `{#ancora}`, linha `^block-id`,
-  `Localizador`, `Tags`, `Aliases`, `Obsidian: L1`, fonte viva ou origem
-  verificavel, quando usar e quando nao usar quando houver risco de falso
-  gatilho;
-- L1 vivo exige bullet recuperavel, tag especifica, link para a ancora L2 e
-  block id estavel; linha solta sem `- ` nao conta como gatilho;
-- tags devem estar normalizadas antes da escrita: lowercase, kebab-case,
-  nested quando fizer sentido, sem acentos, underscore ou casing misto;
-- `.backup-*`, `.bak`, `.truncated`, logs e saidas longas nao ficam em
-  `global/` nem `temas/`; backup governado fica fora do vault vivo em
-  `$env:USERPROFILE\.agents\memories-backups`;
-- se qualquer item acima falhar, o estado correto e `nao pronto`, mesmo que o
-  texto pareca util.
-
-Regra de caminho:
-
-- global roteia com gatilhos e ponteiros curtos;
-- tema reutiliza conhecimento de dominio;
-- projeto opera estado vivo e retomada.
-
-Raiz canonica:
-
-- `DEX_MEMORIA_HOME` e a raiz de memoria cross-project;
-- se `$env:DEX_MEMORIA_HOME` existir, use esse caminho;
-- se nao existir, use `$HOME/.agents/memories`;
-- `global` grava em `<DEX_MEMORIA_HOME>/global`;
-- `tema` grava em `<DEX_MEMORIA_HOME>/temas/<tema>`;
-- `projeto` grava em `<WORKSPACE>/.agents`;
-- nao crie `<WORKSPACE>/global` nem `<WORKSPACE>/temas` para memoria global ou
-  de tema;
-- nao use `$HOME/.codex/memories` ou `%CODEX_HOME%/memories` como destino
-  padrao, salvo configuracao explicita em `DEX_MEMORIA_HOME`.
-
-Taxonomia de temas:
-
-- tema e dominio reutilizavel, nao apelido de projeto, conversa, sprint ou
-  combinacao projeto-ferramenta;
-- prefira tema raiz quando o dominio ja for claro, como `deepseek`, `delphi`,
-  `php` ou `codex`;
-- use `temas/<area>/<tema>` somente quando a area for uma familia real e
-  repetida;
-- se o conteudo mistura projeto e ferramenta, separe estado de projeto em
-  `<WORKSPACE>/.agents` e aprendizado reutilizavel em
-  `<DEX_MEMORIA_HOME>/temas/<dominio>`;
-- revise nomes compostos como `pythia-deepseek` antes de gravar.
-
-Nada entra em L2 sem gatilho L1 ou fonte viva equivalente. Nada entra em L3 sem
-ancora L2. Nada entra no global se so serve para um projeto.
-
-## Memoria Graduada Com Anti-Gatilho
-
-Frase-guia:
-
-```text
-Memoria boa nao so lembra quando usar; ela impede usar no caso errado.
-```
-
-Use `MEMORIA-GRADUADA-COM-ANTI-GATILHO` como padrao oficial para escolher o
-peso certo da memoria. A regra e graduar pelo risco, nao transformar toda nota
-em burocracia.
-
-### Nivel 1 - Memoria Simples
-
-Use para notas pequenas, baixo risco e baixa chance de confusao.
-
-Campos:
-
-- L1 gatilho curto;
-- L2 ancora operacional;
-- fonte viva;
-- quando lembrar;
-- quando nao lembrar, se for obvio.
-
-Nao exija exemplos longos, anti-exemplo ou anti-gatilho quando o risco de falso
-encaixe for baixo.
-
-### Nivel 2 - Memoria Operacional
-
-Use para procedimento recorrente, skill, validacao, erro plausivel ou decisao
-tecnica reutilizavel.
-
-Campos:
-
-- L1 gatilho curto;
-- aliases;
-- L2 ancora;
-- problema, mecanismo, verificacao e prevencao;
-- quando lembrar e quando nao lembrar;
-- fonte viva;
-- evidencia minima;
-- comando `rg de achabilidade`.
-
-Exija pelo menos 1 exemplo correto ou 1 anti-exemplo quando houver risco real
-de confusao.
-
-### Nivel 3 - Memoria Robusta
-
-Use para erro recorrente, falso pronto, incidente caro, skill nova, contrato de
-validacao, seguranca, automacao, MCP, Graphify, PPIRTV, Delphi/WebView2/build,
-encoding ou qualquer coisa que ja gerou retrabalho.
-
-Campos adicionais:
-
-- aliases de busca;
-- anti-aliases ou termos que confundem;
-- L3 conhecimento sob demanda quando houver detalhe rico;
-- exemplos corretos e anti-exemplos;
-- gatilhos fortes e anti-gatilhos;
-- força da evidência;
-- rotas alternativas;
-- obsolescencia ou risco de envelhecer;
-- se Graphify participou, query, graph, hits confirmados e hits nao promovidos.
-
-Anti-gatilho nao e obrigatorio em toda memoria. Ele se torna obrigatorio quando:
-
-- existe memoria parecida;
-- a regra pode ser aplicada cedo demais;
-- ha erro recorrente ou falso pronto;
-- o termo e ambiguo;
-- ha clones ou projetos parecidos;
-- a ferramenta pode provar a coisa errada;
-- existe rota alternativa mais correta.
-
-Anti-exemplo entra quando evita erro real. Nao escreva anti-exemplo decorativo.
-
-Escala de força da evidência:
-
-- `fraca`: arquivo existe, PNG existe, status textual, `rg` isolado ou Graphify
-  sem fonte aberta;
-- `boa`: fonte aberta, metadado confirmado, comando executado ou imagem
-  inspecionada;
-- `forte`: teste no processo real, DOM/console/handle corretos, build certo ou
-  resultado repetivel;
-- `bloqueante`: evidencia contraria, alvo errado, payload privado, processo
-  errado, fonte nao aberta ou teste que nao reproduz o caminho real.
-
-Graphify e mapa, nao prova. Use para localizar relacoes, comunidades, gatilhos
-esquecidos e memorias proximas. Marque todo achado como `source: graphify` ate
-abrir a fonte citada ou confirmar por `rg`, codigo, teste, doc viva ou
-evidencia runtime. Nunca promova memoria diretamente a partir de no Graphify.
-
-### Desbloqueio Manual Controlado
-
-Bloqueios automaticos existem para impedir falso pronto, mas tambem podem gerar
-falso impedimento. Quando o usuario pedir explicitamente para desbloquear uma
-trava, aplique `DESBLOQUEIO-MANUAL-CONTROLADO`.
-
-Desbloqueio manual permite continuar trabalhando com escopo limitado; ele nao
-transforma evidencia `bloqueante` em prova, nao promove memoria ativa por si so
-e nao apaga o motivo original do bloqueio.
-
-Antes de desbloquear, registre:
-
-- pedido explicito do usuario;
-- bloqueio acionado e por que parece falso positivo ou aceitavel continuar;
-- escopo exato do desbloqueio;
-- quem aceitou o risco;
-- validade ou `quando` o desbloqueio expira;
-- proxima validacao minima;
-- evidencia original preservada;
-- confirmacao de que isso nao vira regra global.
-
-Nao desbloqueie manualmente quando houver segredo, token, cookie, Authorization,
-`.env`, `config.toml`, payload privado, acao destrutiva sem autorizacao,
-permissao ausente, alvo errado com risco material, ou evidencia contraria que
-torne o resultado declarado falso.
-
-Pontes obrigatorias:
-
-```text
-L1 -> L2: [GATILHO-CURTO] frase curta -> [memoria.md#ancora-l2]
-L2 -> L3: Conhecimento sob demanda: conhecimento/<slug>.md
-L3 -> L2: L2 relacionada: memoria.md#ancora-l2
-Graphify -> fonte: source: graphify -> confirmado em <arquivo>:<linha ou secao>
-```
-
-## Checklist De L3 Robusto
-
-Use este gate quando o aprendizado tiver alta chance de reuso, resolver falha
-recorrente, virar referencia de tema ou nascer de Graphify, Bibliotecario,
-pesquisa, diagnostico, bug real ou decisao tecnica repetivel.
-
-Um L3 robusto so deve ser considerado pronto quando tiver:
-
-- gatilhos curtos no L1 apontando para uma ancora L2 estavel;
-- L2 com contexto operacional, quando usar, quando nao usar, fonte viva e link
-  direto para o L3;
-- L3 com objetivo, escopo, exemplos, anti-exemplos, modelo operacional,
-  comandos ou scripts de validacao, referencias e riscos de obsolescencia;
-- fontes separadas entre `confirmado`, `inferido` e `lacuna`;
-- comando `rg de achabilidade` cobrindo gatilho, alias humano e termo tecnico;
-- indicacao clara de escopo: `projeto`, `tema`, `global dos agentes`,
-  `Codex principal` ou `Codex notas citaveis`;
-- regra de revisao: quando o conteudo deve ser revalidado, supersedido,
-  movido, arquivado ou descartado.
-
-Quando o achado vier do Graphify, use Graphify API como acelerador semantico,
-nao como prova final:
-
-```text
-Graphify API -> abrir fonte citada ou cruzar com rg/codigo/docs -> promover
-para L1/L2/L3 somente depois da confirmacao direta.
-```
-
-Enquanto a fonte citada nao for aberta ou cruzada, registre como
-`source: graphify`, nao como confirmado.
-
-Modelo minimo para L3 rico:
-
-```text
-# <titulo>
-
-Localizador: <GATILHO-CURTO>
-Escopo: <projeto|tema|global|codex-principal|codex-notas-citaveis>
-Status: confirmado | parcial | candidato
-
-## Quando Usar
-## Quando Nao Usar
-## Contrato Operacional
-## Exemplos
-## Anti-Exemplos
-## Modelo De Validacao
-## Fontes Confirmadas
-## Inferencias E Lacunas
-## Riscos De Obsolescencia
-## Achabilidade
-rg -n "<gatilho>|<alias>|<termo-tecnico>" <L1> <L2> <L3>
-```
-
-## Fonte Única E Perfis Operacionais
-
-Não resolva outra cópia de `dex-memoria`. Cópias repo-locais, `.codex`,
-`skills/dex-agent`, `.dex-agent`, backups e lixeira são resíduos sem autoridade.
-Elas podem ser inventariadas, mas não governam o turno e não devem ser
-sincronizadas ou apagadas sem Trilho próprio.
-
-| Perfil | Estado | Uso autorizado agora | Escrita live |
-| --- | --- | --- | --- |
-| `legacy-v1` | `active` | memória diária, escopo projeto/global/tema, L1/L2/L3 e rotas documentais vigentes | sim, pelo writer autorizado do ambiente |
-| `governed-theme-v2` | `approved_not_active` | fixtures descartáveis e SHADOW com corpus sintético | não |
-
-Regras:
-
-- `legacy-v1` continua sendo o único decisor de escrita live;
-- V2 pode executar apenas os comandos fixture-only e probes SHADOW descritos
-  neste repositório;
-- `shadow-ready` não significa `live-ready`;
-- ativar V2 exige Trilho de cutover separado, writer/leitores/validadores
-  compatíveis, no-shrink V1, backup/rollback, recibos independentes e aceite
-  humano explícito;
-- pedido de memorização diária sem cutover usa V1, nunca V2 por inferência;
-- para próximo passo operacional, `HANDOFF.md` vence `.agents/MEMORY.ndjson`;
-- `.agents/MEMORY.ndjson` é ledger, não fila viva.
-
-## Fronteira De Escrita
-
-Esta skill nao deve gerar uma regra ampla de memoria somente leitura.
-
-Quando esta skill disser que a V1 "nao grava memoria", leia isso como: `dex-memoria` nao possui runtime proprio, hook automatico, comando `add` ou escritor de ledger embutido.
-
-Isso nao bloqueia memorizar por outro mecanismo autorizado do ambiente. Quando
-houver valor de lembranca/indexacao, use `dex-memoria` para classificar, decidir
-o destino e preparar ou executar o ponteiro global conciso conforme o contrato
-daquela camada.
-
-Se o ambiente atual bloquear escrita em uma pasta de memorias, declare o bloqueio
-como permissao do ambiente/ferramenta ativa, nao veto de `dex-memoria`, e
-entregue um candidato de memoria ou o patch operacional apropriado. Assim que
-houver caminho autorizado de escrita, grave o ponteiro global conciso.
-
-Antes de escrever qualquer L1/L2/L3, mostre o escopo, o `DEX_MEMORIA_HOME`
-resolvido quando aplicavel, o caminho absoluto de destino e o motivo do escopo.
-Bloqueie a escrita se `global` ou `tema` apontarem para dentro do workspace.
-
-## Fonte Completa
-
-Leia primeiro:
-
-- `SPEC.md`
-- `docs/usage.md`
-- `docs/runtime-boundary.md`
-
-Use os templates quando precisar criar ou fechar uma memoria:
-
-- `templates/memory-contract.md`
-- `templates/memory-resolution-checklist.md`
-- `templates/child-usage-prompt.md`
-- `templates/l1-lembranca.md`
-- `templates/l2-memoria.md`
-- `templates/l3-conhecimento-index.md`
-- `templates/layered-memory-checklist.md`
-
-Use os exemplos como referencia de formato:
-
-- `examples/active-operational-memory.md`
-- `examples/resolved-operational-finding.md`
-- `examples/ledger-only-memory.md`
-- `examples/child-to-child-handoff.md`
-- `examples/layered-memory/`
-
-## Prioridade Entre Fontes
-
-Para proximo passo vivo, a prioridade recomendada e:
-
-1. `INDEX.md`
-2. `.agents/HANDOFF.md`
-3. `.agents/ACTIVE.md`
-4. sprint ou artefato ativo
-5. `.agents/MEMORY.ndjson`
-6. arquivo resolvido ou arquivado
-
-Regra pratica:
-
-- `HANDOFF.md` manda no proximo passo seguro;
-- `ACTIVE.md` manda no objetivo vivo e loops abertos;
-- `.agents/MEMORY.ndjson` e ledger duravel, nao fila viva;
-- arquivo resolvido ou arquivado nao reabre trabalho sozinho.
-
-## Limite Da V1
-
-Esta V1 e contrato, template e exemplo.
-
-### Excecao Executavel V0 Fixture-Only
-
-A V1 documental preservada inclui uma excecao executavel V0 estritamente
-fixture-only: `create plan|apply|recover` opera somente sobre a fixture
-descartavel marcada e os dois destinos fixos descritos em
-[docs/cli-create-fixture-v0.md](docs/cli-create-fixture-v0.md). Essa excecao
-nao autoriza vault vivo, writer geral, segredos, hooks ou runtime Dex Agent.
-
-Ela nao executa comandos `add`, `resolve`, `archive`, `status` ou `audit`.
-Ela tambem nao e hook automatico e nao roda sozinha ao abrir ou fechar uma janela de contexto.
-
-Scripts so entram numa V2 depois de uso real repetido com baixa ambiguidade.
-
-## Limite Da V2
-
-O suporte V2 atual é `fixture_only_experimental` e `SHADOW`. Ele compreende:
-
-- `L1 -> L2 OU L1 -> L3` por densidade;
-- create, retry, recovery e recall somente nas bancadas marcadas;
-- leitura/validação, policy e limites somente em fixtures ou corpus sintético;
-- preservação `legacy_no_shrink=true` e `live_vault_touched=false`.
-
-Ele não autoriza caminho live, migração, cutover, troca de perfil ou escrita no
-vault vivo. Na dúvida, bloquear V2 e continuar a memória diária em `legacy-v1`.
+As bancadas V0 e o identificador histórico `governed-theme-v2` existem apenas
+para fixtures e arqueologia. Não são o produto, o perfil ativo nem fallback.
+
+Se a fonte canônica estiver ausente ou ilegível, bloqueie explicitamente. Não
+improvise outra versão da skill.

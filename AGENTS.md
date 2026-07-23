@@ -38,20 +38,21 @@ this file or a higher authority explicitly says otherwise.
 
 ### Memory architecture status
 
-- Active write profile: `legacy-v1`.
-- Approved target: `governed-theme-v2`.
-- Target status: `approved_not_active`.
-- Runtime support: `fixture_only_experimental`.
+- Product identity: `Dex Memoria V2`.
+- Implementation version: `v2`.
+- Public scopes: `project`, `global`, `theme`; dual-scope means two operations
+  and two independent receipts.
+- Active writer/selector: `v2`; `legacy-v1` is reader/restore compatibility only.
 
-The V2 decision does not authorize live V2 paths, writing, reading, validation,
-or migration. V2 writes are permitted only inside explicitly marked disposable
-transaction fixtures; every live operational surface remains on `legacy-v1`.
-Only a future cutover Trilho with compatible writer, readers and validators,
-shadow/no-shrink, recovery/rollback, and an explicit human receipt may change
-the active profile. The public documentary map is
+Implementation, scope and root are independent. Preserve the existing roots
+for project/local, global and theme; root selection does not freeze the V2
+internal layout. Readers, Finder and validators must keep the historical V1
+corpus recallable together with new V2 memory. `governed-theme-v2` is a
+historical fixture identifier, not the product, an umbrella or an active
+profile. The public transition map is
 [`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
 
-`dex-memoria` is versioned as a public V1 package for:
+`dex-memoria` is versioned as the public Dex Memoria V2 contract package for:
 
 - documenting the Dex memory lifecycle contract;
 - defining the L1/L2/L3 recovery model;
@@ -62,6 +63,8 @@ the active profile. The public documentary map is
   disposable L1+L2 fixtures;
 - shipping an experimental V2 fixture-only transaction tracer for
   `L1 -> L2 OU L1 -> L3`, without live activation;
+- shipping the live `v2 plan|apply|resume|recover|validate|capability` CLI for
+  explicit project, global, theme and dual-scope operations;
 - validating the public package structure.
 
 Current public package line: `0.1.x`.
@@ -113,10 +116,9 @@ changes the package boundary:
 
 - Dex Agent runtime;
 - Telegram bot runtime;
-- general or production automatic memory writer; the V0 and experimental V2
-  fixture-only exceptions are limited to the disposable boundaries in
-  `docs/cli-create-fixture-v0.md` and
-  `docs/cli-create-theme-v2-transaction-v0.md`;
+- background or implicit automatic memory writer; live writes are explicit V2
+  CLI operations, while the historical V0/V2 fixture commands remain limited
+  to their disposable boundaries;
 - hook runner;
 - `/inbox` or `/memory` command implementation;
 - production ledger, inbox, session store, or recall engine;

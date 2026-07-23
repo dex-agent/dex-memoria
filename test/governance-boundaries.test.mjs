@@ -13,15 +13,18 @@ async function readRepoFile(file) {
   return readFile(join(repoRoot, file), "utf8");
 }
 
-test("automatic memory governance requires an already-authorized physical mechanism", async () => {
+test("daily memory governance uses the explicit V2 CLI without hidden automation", async () => {
   const skill = await readRepoFile("SKILL.md");
-  const trio = skill.match(/### Trio Operacional[\s\S]*?(?=\n## |\n### )/)?.[0] ?? "";
-  const boundary = skill.match(/## Fronteira De Escrita[\s\S]*?(?=\n## )/)?.[0] ?? "";
+  const daily = skill.match(/## Entrada cotidiana[\s\S]*?(?=\n## )/)?.[0] ?? "";
+  const maintenance = skill.match(/## Manutenção e troubleshooting[\s\S]*$/)?.[0] ?? "";
 
-  assert.match(trio, /mecanismo fisico ja autorizado/i);
-  assert.match(trio, /sem pedir permissao adicional/i);
-  assert.match(boundary, /nao possui runtime proprio/i);
-  assert.match(boundary, /mecanismo autorizado do ambiente/i);
+  assert.match(daily, /dex-memoria v2 remember/i);
+  assert.match(daily, /escrita é explícita pela CLI/i);
+  assert.match(daily, /não instala hook automático/i);
+  assert.match(daily, /captura em background/i);
+  assert.match(daily, /Não invente o escopo/i);
+  assert.match(maintenance, /Não abra documentação de desenvolvimento para[\s\S]*uma gravação normal/i);
+  assert.doesNotMatch(daily, /mecanismo fisico ja autorizado|sem pedir permissao adicional/i);
 });
 
 test("public tests stay self-contained while consciencia remains an explicit local integration", async () => {

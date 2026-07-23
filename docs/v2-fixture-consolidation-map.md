@@ -1,5 +1,11 @@
 # Dex Memoria V2 consolidation and SHADOW map
 
+> Historical snapshot, superseded for operational authority. This document
+> records the fixture/SHADOW state observed on 2026-07-16. The current writer
+> and selector are V2; `legacy-v1` is reader/restore only. Use
+> `docs/memory-architecture-profiles.md`, `SKILL.md` and `docs/usage.md` for the
+> living contract.
+
 This document is the portable product map for the V2 experimental surfaces
 consolidated and exercised in SHADOW on 2026-07-16. It does not activate V2,
 change the active write profile, install a global skill, or authorize a

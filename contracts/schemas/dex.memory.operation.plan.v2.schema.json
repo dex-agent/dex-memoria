@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.operation.plan.v2.schema.json",
+  "title": "dex.memory.operation.plan.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "resolved_root", "operation_id", "idempotency_key", "transaction_id", "receipt_id"],
+      "properties": {
+        "scope": { "enum": ["project", "global", "theme"] },
+        "theme": { "type": "string" },
+        "resolved_root": { "type": "string", "minLength": 1 },
+        "operation_id": { "type": "string", "minLength": 1 },
+        "idempotency_key": { "type": "string", "minLength": 1 },
+        "transaction_id": { "type": "string", "minLength": 1 },
+        "receipt_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "required": ["contract", "implementation_version", "requested_scope", "operation_id", "routes"],
+  "properties": {
+    "contract": { "const": "dex.memory.operation.plan.v2" },
+    "implementation_version": { "const": "v2" },
+    "compatibility_profile": { "enum": ["legacy-v1"] },
+    "requested_scope": { "enum": ["project", "global", "theme", "dual"] },
+    "operation_id": { "type": "string", "minLength": 1 },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "resolved_root", "operation_id", "idempotency_key", "transaction_id", "receipt_id"],
+        "properties": {
+          "scope": { "enum": ["project", "global", "theme"] },
+          "theme": { "type": "string" },
+          "resolved_root": { "type": "string", "minLength": 1 },
+          "operation_id": { "type": "string", "minLength": 1 },
+          "idempotency_key": { "type": "string", "minLength": 1 },
+          "transaction_id": { "type": "string", "minLength": 1 },
+          "receipt_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

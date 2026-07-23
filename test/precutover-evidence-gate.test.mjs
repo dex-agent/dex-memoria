@@ -51,7 +51,7 @@ test("pre-cutover evidence gate rejects private fields and path-like values fail
     warnings_count: 0,
     no_shrink: true,
     snippet: "private payload",
-    source_path: "C:\\Users\\Administrator\\.agents\\memories\\private.md"
+    source_path: join(process.env.USERPROFILE ?? process.cwd(), ".agents", "memories", "private.md")
   });
 
   assert.equal(result.exitCode, 4);

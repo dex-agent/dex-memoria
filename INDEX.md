@@ -35,50 +35,21 @@ depender do historico da conversa.
 ## Estado atual
 
 - Trilho ativo:
-  `.agents/PLAN-TASKS/2026-07-17-proveniencia-versionamento-unidade-candidata-v2.md`.
-- Estado: `VALIDADO_AGUARDA_ACEITE_GOAL_START`; fingerprint
-  `42d22f21fbf5f8f0e22dc6d1ba07bf8c809624f4c45ca67ce61353a49a72b2cc`.
-- Objetivo: provar proveniência e reprodução da unidade candidata por manifest,
-  pathspec e duas reconstruções independentes.
-- Teto: `candidate_provenance_prepared_not_versioned` ou `NO-GO`; nenhum
-  `goal_start`, stage, commit, branch, push ou cutover foi autorizado.
-- Próximo gate: aceite humano explícito ligado ao fingerprint para executar
-  somente a auditoria; preservação Git exige Trilho e aceite separados.
+  `.agents/PLAN-TASKS/2026-07-22-entrada-cotidiana-v2-para-modelos-menores.md`.
+- Gate de retomada: `.agents/REPORTS/2026-07-22-mapa-missao-v2-modelos-menores.md`.
+- Dependência imediata: Trilho RED-first no dex-PPIRTV para autoclassificação,
+  workspace, capability real e compatibilidade `written[]`.
+- Estado operacional: selector/writer V2 ativo; ausência de configuração no
+  `dex-PPIRTV` é `unconfigured`, nunca fallback writer V1.
+- `legacy-v1` permanece somente reader/restore quando explícito; rotas novas
+  aceitam `L1↔L2` ou `L1↔L3`.
+- Recall, rotas estruturais e a entrada cotidiana `v2 remember` passaram pela
+  prova independente em contexto limpo. A consolidação Git local preserva o
+  estado anterior e não autoriza push, release ou SemVer.
 
-Último planejamento encerrado:
-
-- Trilho: `.agents/PLAN-TASKS/2026-07-17-planejar-preparar-cutover-real-memoria-v2.md`.
-- Estado: `ENCERRADO_PLANEJAMENTO_NO_GO_SEM_CUTOVER`; o objetivo planning-only
-  foi concluído, mas não autorizou qualquer parte live ou do cutover.
-- SPT v2 válido, fingerprint
-  `d312652d3d0fda7deedb7f95a555ca76f2553859f7a16219bb425214ad5bc14c`.
-- Flow `flow_20260717100107508_0177_0125` completo; veredito
-  `vrd_20260717101543581_0211_0170`: planning-only pronto com ressalvas e
-  cutover `NO-GO` por sete dependências P1.
-- Recibo: `.agents/RECEIPTS/2026-07-17-planejamento-cutover-real-v2-no-go.md`,
-  SHA-256 `B4F335B3247A7910574BF4F788AF1C9F86B3B1EF243D24D968C586EDA1C8E243`.
-- `execution_authorized=false` mantém futuro executor, mutação live e cutover
-  bloqueados.
-- Autoridade: `legacy-v1` continua ativo; `governed-theme-v2` permanece
-  `approved_not_active`; nenhum backup live ou cutover ocorreu.
-- Próximo gate: abrir primeiro o Trilho de proveniência/versionamento da unidade
-  candidata; reavaliar GO-candidate somente após sete provas independentes.
-
-Último Trilho encerrado:
-
-- Trilho: `.agents/PLAN-TASKS/2026-07-16-ensaio-pre-cutover-v2-em-clone-isolado.md`.
-- Flow oficial final: `flow_20260716230036632_0123_0049`, completo; veredito
-  `vrd_20260717001034285_0176_0123`; o flow inicial
-  `flow_20260716225532482_0121_0046` permanece supersedido.
-- SPT final: `valid=true`, fingerprint
-  `22a7cc8a555be5eb12a1db7f8bd7d1262596e50173b340d90002b801e9c19af1`;
-  execução concluída, Mesa P0=0/P1=0, regressão 258/0/1.
-- Recibo final:
-  `.agents/RECEIPTS/2026-07-16-ensaio-precutover-v2-clone-isolado-final.md`.
-- Veredito: `shadow-ready com ensaio pré-cutover aprovado`, não live-ready.
-- Próximo gate: aceite humano explícito para abrir Trilho separado de cutover.
-- Limites: vault vivo e backup original read-only; nenhuma ativação V2,
-  alteração de `legacy-v1`, skill/config global, cutover ou ação Git externa.
+Os Trilhos, flows, recibos e snapshots anteriores permanecem preservados na
+superficie local `.agents/`. Eles são arqueologia de execução, não contrato
+público, selector, default ou instrução de retomada.
 
 ## Canonical Source And Sync
 
@@ -101,7 +72,8 @@ depender do historico da conversa.
 ## Package And Validation
 
 - `package.json` - metadados, binario e scripts npm.
-- `bin/dex-memoria.js` - CLI documental da V1.
+- `bin/dex-memoria.js` - CLI canônica do Dex Memoria V2; também preserva os
+  comandos históricos de fixture e compatibilidade explicitamente rotulados.
 - `registry/agents-skills/dex-memoria/SKILL.md` - conteudo que o `install`
   copia para o registry global `.agents/skills`.
 - `scripts/validate-public.js` - validacao da estrutura publica.

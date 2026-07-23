@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.operation.request.v2.schema.json",
+  "title": "dex.memory.operation.request.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "implementation_version",
+    "scope",
+    "workspace_root",
+    "memory_home",
+    "operation_id"
+  ],
+  "properties": {
+    "contract": { "const": "dex.memory.operation.request.v2" },
+    "implementation_version": { "const": "v2" },
+    "profile": { "enum": ["legacy-v1"] },
+    "scope": { "enum": ["project", "global", "theme", "dual"] },
+    "workspace_root": { "type": "string", "minLength": 1 },
+    "memory_home": { "type": "string", "minLength": 1 },
+    "operation_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "theme": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "scope": { "const": "theme" } }, "required": ["scope"] },
+      "then": { "required": ["theme"] }
+    }
+  ]
+}

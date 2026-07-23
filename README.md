@@ -2,22 +2,22 @@
 
 Versao atual: `0.1.6`
 
-> Arquitetura alvo: `governed-theme-v2`, status `approved_not_active`.
-> O unico perfil de escrita ativo continua sendo `legacy-v1`. O suporte V2 e
-> `fixture_only_experimental`: existe apenas uma bancada transacional descartavel,
-> sem runtime vivo, migracao ou cutover. Veja
-> [Memory Architecture Profiles](docs/memory-architecture-profiles.md) e a
-> [CLI create V2 transacional em fixture](docs/cli-create-theme-v2-transaction-v0.md),
-> acompanhada pelo [leitor-validador V2 fixture-only](docs/cli-routes-inspect-v2-v0.md)
-> e pelo [mapa consolidado V2 fixture-only](docs/v2-fixture-consolidation-map.md).
+> Dex Memoria V2 e a identidade da implementacao multi-rota. Projeto/local,
+> global e tema preservam seus roots; dual-scope produz dois recibos. O writer
+> e o selector ativos sao `v2`; `legacy-v1` permanece somente para leitura e
+> restauracao do corpus historico. Bancadas V2 anteriores sao evidencia
+> historica, nao default ou autoridade live. Veja
+> [Memory Architecture Profiles](docs/memory-architecture-profiles.md).
 
-`dex-memoria` preserva a V1 documental do ciclo de vida de memoria operacional
-e oferece CLIs fixture-only para caracterizar `legacy-v1` e experimentar o
-roteamento V2 `L1 -> L2 OU L1 -> L3`, sempre em fixtures descartaveis marcadas.
+`dex-memoria` preserva o corpus e o ciclo de vida V1 para leitura/restauracao e
+opera o writer V2 explicito para `L1 -> L2 OU L1 -> L3` nos escopos projeto,
+global, tema e dual. As CLIs fixture-only antigas continuam como bancadas
+historicas isoladas.
 
 Ele nasceu a partir da skill `skills/dex-memoria` do repo `dex-agent`, mas nao
-carrega o runtime do bot, nao executa hooks e nao e um writer geral. As excecoes
-executaveis deste corte sao as bancadas fixture-only V0 e V2 experimental,
+carrega o runtime do bot, nao executa hooks e nao e um writer automatico. O
+writer transacional V2 explicito e a superficie live; as bancadas fixture-only
+V0 e V2 experimental sao superficies historicas,
 descritas em [`docs/cli-create-fixture-v0.md`](docs/cli-create-fixture-v0.md) e
 [`docs/cli-create-theme-v2-transaction-v0.md`](docs/cli-create-theme-v2-transaction-v0.md);
 o leitor-validador read-only fica em
@@ -96,12 +96,26 @@ e nada entra no global se so serve para um projeto.
 - Nao e o runtime de memoria do Dex Agent.
 - Nao substitui `/inbox`, `/memory`, recall, ledger ou proposals do bot.
 - Nao contem `.agents/` reais, inbox, ledger, screenshots, logs, tokens ou secrets.
-- Nao promete runtime V2 vivo, Finder instalado ou validacao do vault real;
-  as capacidades V2 existentes permanecem fixture-only.
-- Nao e writer automatico geral e nao aceita vault ou workspace vivo como
-  destino dos comandos `create`.
+- Nao promete hooks, captura automatica ou Finder instalado; o writer V2 e uma
+  operacao CLI explicita e seus recalls/validadores sao consumidores separados.
+- Os comandos historicos `create` continuam proibidos contra vault ou workspace
+  vivo; `v2 remember|apply|resume|recover` usam as roots publicas resolvidas.
 - Instala o redirecionador global `dex-memoria` em `.agents/skills` quando o
   comando `install` for executado.
+
+## Entrada cotidiana V2
+
+Use `dex-memoria v2 remember` com um JSON curto por stdin. `scope` permanece
+explícito; L2 é o default seguro. O helper deriva cwd, `DEX_MEMORIA_HOME`, slug
+e operation id, compõe planner + writer + validator existentes e retorna
+`dex.memory.remember.receipt.v2`. O receipt público não ecoa o payload: vincula
+o pedido às rotas e validações por SHA-256. As primitivas `plan`, `apply`,
+`resume`, `recover`, `validate` e `capability` continuam disponíveis para
+manutenção e recovery.
+
+Se uma rota terminar `ROLLED_BACK`, o receipt orienta novo `remember` com um
+`operation_id` determinístico; não manda `resume` para journal terminal. Em
+falha total sem commit, hashes pertencentes ao writer permanecem `null`.
 
 ## CLI V0 fixture-only
 
@@ -129,11 +143,10 @@ separado somente quando `--bundle` e `--receipt` forem informados juntos.
 O mapa unico de writers, readers, validators, consumidores externos, comandos,
 backup e rollback esta em
 [`docs/v2-fixture-consolidation-map.md`](docs/v2-fixture-consolidation-map.md).
-O SHADOW com corpus sintetico e consumidores externos terminou `PASS`, portanto
-o veredito local atual e `shadow-ready`. Isso nao autoriza cutover, instalacao
-global, migracao, remocao de fallbacks nem escrita V2 no vault vivo.
-O marco anterior da consolidacao isolada permanece registrado como
-`fixture-ready`.
+Esse mapa preserva evidencia historica dos marcos `fixture-ready` e
+`shadow-ready`; ele nao define selector, default, fallback ou autoridade live.
+O estado normativo atual esta em
+[`docs/memory-architecture-profiles.md`](docs/memory-architecture-profiles.md).
 
 ## Estrutura
 
@@ -166,12 +179,21 @@ O marco anterior da consolidacao isolada permanece registrado como
 
 ## Instalacao Rapida
 
-Via npm/npx a partir do GitHub:
+Instale primeiro o repositorio no caminho canonico e execute o CLI por essa
+fonte. `doctor` e `install` recusam copias, caches npx e clones alternativos:
 
-```bash
-npx github:dex-agent/dex-memoria doctor
-npx github:dex-agent/dex-memoria memory-home
-npx github:dex-agent/dex-memoria install
+```powershell
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js doctor
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js memory-home
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install
+```
+
+Para atualizar um redirecionador limpo já existente, faça o preflight e depois
+a troca recuperável com backup:
+
+```powershell
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --force --dry-run
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --force
 ```
 
 `install` copia somente o redirecionador global para
@@ -179,13 +201,15 @@ npx github:dex-agent/dex-memoria install
 fonte completa e unica em `C:\CodexProjetos\dex-memoria\SKILL.md`. O comando nao
 instala uma segunda skill completa e nao aceita `--target`.
 
-Para instalar o redirecionador em outro registry de skills:
+O unico destino aceito e o registry global do `USERPROFILE` ativo:
 
 ```powershell
-npx github:dex-agent/dex-memoria install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force --dry-run
+node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install --registry-target "$env:USERPROFILE\.agents\skills\dex-memoria" --force
 ```
 
-Depois de publicar no npm registry, use `npx dex-memoria@latest ...`.
+O tarball npm continua artefato de transporte e auditoria, mas nao e autoridade
+operacional para `doctor` ou `install`.
 
 Em outra maquina, clone este repo:
 
@@ -201,10 +225,9 @@ git clone https://github.com/dex-agent/dex-memoria.git
 Set-Location dex-memoria
 ```
 
-O pacote npm e um distribuidor dos arquivos documentais. Ele nao instala runtime
-do bot, nao executa hooks, nao grava ledger e nao cria automacao do Dex Agent.
-Instalar significa deixar o contrato disponivel para consulta, referencia ou
-copia controlada em outro projeto.
+O pacote inclui o writer V2 explicito pela CLI. Ele nao instala runtime do bot,
+hooks, captura em background, inbox, ledger nem automacao do Dex Agent. O
+tarball serve para transporte e verificacao; a operacao usa o clone canonico.
 
 ## Usar Em Outro Projeto
 
@@ -241,8 +264,9 @@ aplique o contrato de ciclo de vida de memoria de:
 <caminho-ou-url-do-dex-memoria>
 
 Nao trate este pacote como runtime.
-Nao prometa hooks, comandos gerais ou automacao que nao existem nesta V1
-documental e na excecao V0 fixture-only.
+Nao prometa hooks, comandos gerais ou automacao que nao existem no contrato
+operacional V2. As bancadas V0 permanecem apenas como fixtures historicas
+explicitamente delimitadas.
 Quando houver memoria reutilizavel, grave apenas ponteiro curto para a fonte viva.
 ```
 
@@ -253,13 +277,14 @@ Instale dex-memoria neste projeto.
 
 Contexto:
 - dex-memoria e um pacote documental/skill de contrato de memoria.
-- Ele nao e runtime do Dex Agent, nao executa hooks e nao grava vault ou ledger
-  vivo. As excecoes executaveis sao as CLIs fixture-only V0 e V2 experimental.
+- Ele nao e runtime do Dex Agent e nao executa hooks ou captura automatica. O
+  writer V2 CLI explicito grava nas roots publicas resolvidas; as CLIs V0/V2
+  fixture-only sao bancadas historicas e nunca recebem o vault vivo.
 - Repo oficial: https://github.com/dex-agent/dex-memoria
 
 Tarefa:
 1. Confirme que a fonte canonica existe em C:\CodexProjetos\dex-memoria\SKILL.md.
-2. Execute `dex-memoria install` para atualizar somente o redirecionador em
+2. Execute `node C:\CodexProjetos\dex-memoria\bin\dex-memoria.js install` para atualizar somente o redirecionador em
    ~/.agents/skills/dex-memoria/SKILL.md.
 3. Configure este projeto consumidor para referenciar a fonte canonica; nao
    copie a skill completa para o workspace.
@@ -274,7 +299,7 @@ Tarefa:
 Criterio de pronto:
 - O projeto aponta para a fonte canonica unica do contrato de memoria.
 - Nenhum segredo ou estado real foi copiado.
-- A IA nao prometeu automacoes que a V1 nao entrega.
+- A IA nao prometeu hooks ou automacoes que o writer V2 explicito nao entrega.
 ```
 
 ## Guia Completo
@@ -298,9 +323,9 @@ Fonte de extracao:
 
 Este repo preserva a linha documental `0.1.6`, a arquitetura L1/L2/L3, a raiz
 canonica `DEX_MEMORIA_HOME` e a taxonomia de temas reutilizaveis. O V0
-executavel fica restrito a fixture descartavel; versionamento/release,
-integracao de producao e remocao de fallback ou writer existente continuam
-fora deste corte.
+executavel fica restrito a fixture descartavel; o writer/selector V2 explicito
+esta ativo nas roots publicas. Versionamento, release e SemVer continuam fora
+deste corte; V1 permanece reader/restore sem fallback writer.
 
 ## Camada Publica
 

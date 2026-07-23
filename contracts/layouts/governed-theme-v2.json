@@ -2,6 +2,9 @@
   "contract": "dex.memory.layout.v1",
   "profile": "governed-theme-v2",
   "status": "approved_not_active",
+  "artifact_role": "historical_fixture_contract",
+  "runtime_authority": false,
+  "superseded_by": "v2",
   "owner": "dex-memoria",
   "active_write_profile": "legacy-v1",
   "theme_layout": {
