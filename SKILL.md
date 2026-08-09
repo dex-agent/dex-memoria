@@ -38,6 +38,15 @@ dex-memoria v2 remember
 A escrita é explícita pela CLI. Esta skill não instala hook automático nem
 captura em background.
 
+Quando `garimpeiro` qualificar, durante o bloco atual, um achado como forte,
+memorável, não sensível, não duplicado e com escopo e destino canônicos claros,
+isso já autoriza a operação explícita `v2 remember`: não peça uma segunda
+permissão ao usuário. Grave durante o bloco e deixe o aviso para o fechamento.
+Se escopo, destino ou segurança permanecerem ambíguos, não invente a rota nem
+grave; mantenha o item no `estacionamento` com owner e `quando` recuperáveis.
+Depois de cada gravação automática, use `consciencia-memorias` para validar a
+conexão bidirecional efetivamente escolhida, `L1↔L2` ou `L1↔L3`.
+
 ```powershell
 @'
 {
@@ -160,8 +169,12 @@ Para conhecimento reutilizável profundo, L3 precisa de objetivo, escopo,
 exemplos, anti-exemplos, modelo operacional, validação, fontes, riscos de
 obsolescência e comando de achabilidade.
 
-Ao final, informe os arquivos/rotas escritos e seus receipts para que o usuário
-possa editar, mover, superseder ou remover a memória.
+Ao final do bloco, informe brevemente somente a quantidade de achados fortes
+memoráveis gravados, a quantidade de tropeços novos catalogados e os gatilhos
+L1 quentes realmente usados; então pergunte se o usuário deseja editar alguma
+memória. Arquivos, rotas e receipts permanecem disponíveis como evidência e
+devem ser apresentados quando necessários para diagnosticar falha ou quando o
+usuário os pedir.
 
 ## Manutenção e troubleshooting
 

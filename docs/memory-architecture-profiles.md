@@ -21,8 +21,12 @@ dual-scope -> dois destinos e dois recibos
 ```
 
 Selecionar o root nao define nem congela o layout interno. O V1 historico
-continua read-only, restauravel e recuperavel junto do V2 novo, sem o usuario
-precisar informar profile. Existe um tracer transacional historico, documentado em
+continua read-only, restauravel e recuperavel junto do V2 novo. O campo
+`profile` e opcional no request V2: quando presente, aceita `v2` para declarar
+explicitamente o writer ativo, `legacy-v1` como marcador de compatibilidade ou
+`governed-theme-v2` como alias historico tolerado;
+quando ausente, o fluxo continua V2 por `implementation_version: v2`. Profile
+nao redefine scope, root ou layout. Existe um tracer transacional historico, documentado em
 [`cli-create-theme-v2-transaction-v0.md`](cli-create-theme-v2-transaction-v0.md),
 mas `governed-theme-v2` e somente identificador historico de fixture: nao e o
 produto, umbrella ou perfil ativo. O SPT 04 trocou o selector live para V2;
@@ -34,9 +38,9 @@ nao uma mudanca nessas superficies vivas.
 
 | Identidade | Estado | Rota | Uso atual |
 | --- | --- | --- | --- |
-| `legacy-v1` | `read_restore_only` | `L1 -> L2 -> L3` | corpus historico recuperavel, nunca fallback writer |
-| Dex Memoria V2 | `active_write_profile` | `L1 -> L2` OU `L1 -> L3` | writer/selector unico para todos os escopos |
-| `governed-theme-v2` | `historical_only` | prova do roteamento V2 | fixture historica; nunca identidade do produto |
+| `legacy-v1` | `read_restore_only` | `L1 -> L2 -> L3` | profile aceito como marcador de compatibilidade; corpus historico recuperavel, nunca fallback writer |
+| `v2` / Dex Memoria V2 | `active_write_profile` | `L1 -> L2` OU `L1 -> L3` | profile explicito aceito; writer/selector unico para todos os escopos |
+| `governed-theme-v2` | `historical_only` | prova do roteamento V2 | alias aceito por compatibilidade; nao aciona a fixture automaticamente nem vira identidade do produto |
 
 ## Topologia alvo
 

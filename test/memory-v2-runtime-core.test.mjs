@@ -204,25 +204,36 @@ test("PARTIAL_PENDING resumes only the pending sibling and rejects cross-scope c
 test("implementation_version stays separate from profile, scope and resolved root", async (t) => {
   const roots = await portableRoots(t);
   const livePlan = planMemoryOperation(operationRequest(roots, { scope: "project" }));
+  const explicitV2ProfilePlan = planMemoryOperation(operationRequest(roots, {
+    scope: "project",
+    profile: "v2"
+  }));
   const legacyCompatibilityPlan = planMemoryOperation(operationRequest(roots, {
     scope: "project",
     profile: "legacy-v1"
+  }));
+  const governedThemeCompatibilityPlan = planMemoryOperation(operationRequest(roots, {
+    scope: "project",
+    profile: "governed-theme-v2"
   }));
 
   assert.equal(livePlan.implementation_version, "v2");
   assert.equal("profile" in livePlan, false);
   assert.equal("compatibility_profile" in livePlan, false);
+  assert.equal(explicitV2ProfilePlan.compatibility_profile, "v2");
   assert.equal(legacyCompatibilityPlan.compatibility_profile, "legacy-v1");
+  assert.equal(governedThemeCompatibilityPlan.compatibility_profile, "governed-theme-v2");
+  assert.equal(livePlan.routes[0].resolved_root, explicitV2ProfilePlan.routes[0].resolved_root);
   assert.equal(livePlan.routes[0].resolved_root, legacyCompatibilityPlan.routes[0].resolved_root);
+  assert.equal(livePlan.routes[0].resolved_root, governedThemeCompatibilityPlan.routes[0].resolved_root);
   assert.equal("implementation_version" in livePlan.routes[0], false);
   assert.equal("profile" in livePlan.routes[0], false);
   assert.throws(
     () => planMemoryOperation(operationRequest(roots, {
       scope: "project",
-      profile: "governed-theme-v2",
-      fixture_mode: true
+      profile: "unknown-profile"
     })),
-    (error) => error?.code === "HISTORICAL_WRAPPER_ONLY"
+    (error) => error?.code === "INVALID_PROFILE"
   );
 });
 
@@ -355,6 +366,16 @@ test("CLI exposes V2 planning and capability validation without touching either 
   assert.equal(plan.contract, "dex.memory.operation.plan.v2");
   assert.equal(plan.routes[0].resolved_root, resolve(roots.memory_home, "temas", "arquitetura"));
 
+  for (const profile of ["v2", "legacy-v1", "governed-theme-v2"]) {
+    const profiledResult = await runCli(["v2", "plan"], JSON.stringify(operationRequest(roots, {
+      scope: "project",
+      operation_id: `op-profile-${profile}`,
+      profile
+    })));
+    assert.equal(profiledResult.exitCode, 0, profiledResult.stderr);
+    assert.equal(JSON.parse(profiledResult.stdout).compatibility_profile, profile);
+  }
+
   const capabilityResult = await runCli(["v2", "capability"], JSON.stringify({
     capability: "v2-markdown",
     require_obsidian: true,
@@ -390,7 +411,9 @@ test("public V2 operation and capability schemas keep implementation, scope, roo
 
   assert.deepEqual(request.properties.implementation_version, { const: "v2" });
   assert.equal(request.required.includes("profile"), false);
-  assert.deepEqual(request.properties.profile.enum, ["legacy-v1"]);
+  assert.deepEqual(request.properties.profile.enum, ["v2", "legacy-v1", "governed-theme-v2"]);
+  assert.deepEqual(plan.properties.compatibility_profile.enum, ["v2", "legacy-v1", "governed-theme-v2"]);
+  assert.deepEqual(receipt.properties.compatibility_profile.enum, ["v2", "legacy-v1", "governed-theme-v2"]);
   assert.deepEqual(request.properties.scope.enum, ["project", "global", "theme", "dual"]);
   assert.equal(plan.required.includes("profile"), false);
   assert.equal(plan.properties.routes.items.properties.resolved_root.type, "string");

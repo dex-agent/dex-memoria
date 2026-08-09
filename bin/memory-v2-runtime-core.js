@@ -5,7 +5,7 @@ const { createHash } = require("crypto");
 
 const SCOPES = Object.freeze(["project", "global", "theme", "dual"]);
 const ROUTE_SCOPES = Object.freeze(["project", "global", "theme"]);
-const PROFILES = Object.freeze(["legacy-v1"]);
+const PROFILES = Object.freeze(["v2", "legacy-v1", "governed-theme-v2"]);
 
 class MemoryRuntimeError extends Error {
   constructor(code, message) {
@@ -226,9 +226,6 @@ function validateOperationRequest(request) {
   }
   if (!SCOPES.includes(request.scope)) {
     throw new MemoryRuntimeError("INVALID_SCOPE", "scope must be project, global, theme or dual");
-  }
-  if (request.profile === "governed-theme-v2") {
-    throw new MemoryRuntimeError("HISTORICAL_WRAPPER_ONLY", "governed-theme-v2 is owned by the preserved historical fixture wrappers");
   }
   if (request.profile !== undefined && !PROFILES.includes(request.profile)) {
     throw new MemoryRuntimeError("INVALID_PROFILE", "profile is not recognized");

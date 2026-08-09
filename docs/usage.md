@@ -710,6 +710,14 @@ Superficies live, todas com JSON por stdin:
 | `dex-memoria v2 validate-root` | root completo | colisões de block id e links entre unidades |
 | `dex-memoria v2 capability` | matriz de capacidade | compatibilidade observavel |
 
+Nos requests `dex.memory.operation.request.v2`, `profile` e opcional e aceita
+`v2`, `legacy-v1` ou `governed-theme-v2`. Use `profile: "v2"` quando o caller precisar declarar o
+perfil ativo explicitamente; omitir o campo preserva o mesmo fluxo V2.
+`legacy-v1` continua disponivel como marcador de compatibilidade e
+`governed-theme-v2` como alias historico tolerado, sem acionar automaticamente
+a fixture de mesmo nome. O profile nao
+substitui `implementation_version: "v2"` nem altera `scope` ou o root resolvido.
+
 No caminho cotidiano, o caller informa escopo e conteúdo. `remember` usa o cwd
 como workspace, `DEX_MEMORIA_HOME` ou o fallback portátil como memory home, L2
 como camada default e deriva slug/operation id. `theme` exige tema e L3 exige

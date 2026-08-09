@@ -9,6 +9,11 @@ Versao atual: `0.1.6`
 > historica, nao default ou autoridade live. Veja
 > [Memory Architecture Profiles](docs/memory-architecture-profiles.md).
 
+O request V2 aceita `profile: "v2"`, `profile: "legacy-v1"` e
+`profile: "governed-theme-v2"`. O terceiro valor e um alias historico
+tolerado e nao aciona automaticamente a fixture de mesmo nome. O campo continua opcional;
+`implementation_version: "v2"` permanece obrigatorio.
+
 `dex-memoria` preserva o corpus e o ciclo de vida V1 para leitura/restauracao e
 opera o writer V2 explicito para `L1 -> L2 OU L1 -> L3` nos escopos projeto,
 global, tema e dual. As CLIs fixture-only antigas continuam como bancadas
