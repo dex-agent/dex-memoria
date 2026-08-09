@@ -25,7 +25,9 @@ const SCHEMA_FILES = [
   "dex.memory.error.v0.schema.json",
   "dex.memory.disposable-run.v1.schema.json",
   "dex.memory.fixture.legacy-create-l1-l2.v1.schema.json",
-  "dex.memory.create.checkpoint.internal.v0.schema.json"
+  "dex.memory.create.checkpoint.internal.v0.schema.json",
+  "dex.memory.validate-root.request.v2.schema.json",
+  "dex.memory.capability.receipt.v2.schema.json"
 ];
 
 const idempotencyKey = stringSchema({ minLength: 1, maxLength: 256, pattern: "\\S" });
@@ -33,6 +35,27 @@ const relativePath = stringSchema({ minLength: 1, maxLength: 256, pattern: "\\S"
 const hash64 = stringSchema({ pattern: HASH_64 });
 const transactionId = stringSchema({ pattern: TRANSACTION_ID });
 const base64 = stringSchema({ pattern: BASE64 });
+const stringListSchema = { type: "array", items: { type: "string", minLength: 1 } };
+const capabilityErrorItem = closedObject({
+  code: stringSchema({ minLength: 1 }),
+  message: stringSchema({ minLength: 1 })
+});
+const capabilityFileItem = closedObject({
+  path: stringSchema({ minLength: 1 }),
+  sha256: hash64,
+  tags: { type: "array", items: { type: "string", minLength: 1 } }
+});
+const capabilityEvidence = closedObject({
+  root: stringSchema({ minLength: 1 }),
+  files: { type: "array", items: capabilityFileItem },
+  block_ids: stringListSchema,
+  markdown_links: stringListSchema,
+  wikilinks: stringListSchema,
+  backlinks: stringListSchema,
+  required_backlinks: stringListSchema,
+  unresolved_markdown_links: stringListSchema,
+  unresolved_wikilinks: stringListSchema
+});
 
 const planTargetFields = {
   slot: null,
@@ -235,6 +258,33 @@ const EXPECTED = {
         checkpointVariant("COMMITTED", { transaction_id: transactionId, plan_hash: hash64 }),
         checkpointVariant("ROLLED_BACK", { transaction_id: transactionId })
       ]
+    }
+  },
+  "dex.memory.validate-root.request.v2.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: closedObject({
+      capability: { enum: ["legacy-obsidian", "v2-markdown", "v2-obsidian"] },
+      require_obsidian: { type: "boolean" },
+      root: stringSchema({ minLength: 1 })
+    })
+  },
+  "dex.memory.capability.receipt.v2.schema.json": {
+    allowedKeys: ["$schema", "$id", "title", "type", "additionalProperties", "required", "properties"],
+    structure: {
+      type: "object",
+      additionalProperties: false,
+      required: ["contract", "capability", "require_obsidian", "ok", "errors"],
+      properties: {
+        contract: { const: "dex.memory.capability.receipt.v2" },
+        capability: { enum: ["legacy-obsidian", "v2-markdown", "v2-obsidian"] },
+        require_obsidian: { type: "boolean" },
+        expected_require_obsidian: { type: "boolean" },
+        ok: { type: "boolean" },
+        errors: { type: "array", items: capabilityErrorItem },
+        resolved_root: stringSchema({ minLength: 1 }),
+        touched_files: { type: "array", items: capabilityFileItem },
+        evidence: capabilityEvidence
+      }
     }
   }
 };

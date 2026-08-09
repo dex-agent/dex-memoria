@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-08-08 - Formalizar schema do v2 validate-root
+
+- Decisao: formalizar o contrato do `dex-memoria v2 validate-root` com dois
+  schemas novos e separados: `dex.memory.validate-root.request.v2.schema.json`
+  (request com `capability`, `require_obsidian` e `root`) e
+  `dex.memory.capability.receipt.v2.schema.json` (receipt emitido pelo
+  runtime, com campos opcionais `resolved_root`/`touched_files`/`evidence`
+  para as variantes de root).
+- `dex.memory.capability.v2.schema.json` e o CLI permanecem intocados.
+- A auditoria `scripts/validate-create-contracts.js` passa a cobrir os dois
+  schemas em `SCHEMA_FILES` e `EXPECTED`.
+- Quando: revisao em 2026-08-15 (janela sugerida pela origem; owner pode
+  ajustar) e antes de qualquer commit/push/release.
+
 ## 2026-07-16 - Fonte unica e instalador registry-only
 
 - A fonte completa e unica da skill e

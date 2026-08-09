@@ -190,6 +190,27 @@ test("CLI exposes independent root-wide V2 validation and reports cross-unit blo
   assert.ok(receipt.touched_files.length >= 2);
 });
 
+test("validate-root request and receipt contracts are formalized and audited (F-04)", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const schemaRoot = join(resolve("."), "contracts", "schemas");
+  const requestSchema = JSON.parse(
+    await readFile(join(schemaRoot, "dex.memory.validate-root.request.v2.schema.json"), "utf8")
+  );
+  assert.equal(requestSchema.additionalProperties, false);
+  assert.deepEqual(
+    [...requestSchema.required].sort(),
+    ["capability", "require_obsidian", "root"].sort()
+  );
+  const receiptSchema = JSON.parse(
+    await readFile(join(schemaRoot, "dex.memory.capability.receipt.v2.schema.json"), "utf8")
+  );
+  assert.equal(receiptSchema.properties.contract.const, "dex.memory.capability.receipt.v2");
+  const { default: createContractValidator } = await import("../scripts/validate-create-contracts.js");
+  const { SCHEMA_FILES } = createContractValidator;
+  assert.ok(SCHEMA_FILES.includes("dex.memory.validate-root.request.v2.schema.json"));
+  assert.ok(SCHEMA_FILES.includes("dex.memory.capability.receipt.v2.schema.json"));
+});
+
 test("filesystem-owned validator observes unresolved Markdown and wikilinks", async (t) => {
   const root = await createCapabilityRoot(t, {
     "memorias/topic.md": "# Memoria\n\n[L1](../lembranca.md#^trigger-topic) [[lembranca#^trigger-topic|Trigger]]\n[Missing](../conhecimento/missing/README.md) [[conhecimento/missing/README|Missing]]\n^memory-topic\n"

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.capability.receipt.v2.schema.json",
+  "title": "dex.memory.capability.receipt.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "capability", "require_obsidian", "ok", "errors"],
+  "properties": {
+    "contract": { "const": "dex.memory.capability.receipt.v2" },
+    "capability": { "enum": ["legacy-obsidian", "v2-markdown", "v2-obsidian"] },
+    "require_obsidian": { "type": "boolean" },
+    "expected_require_obsidian": { "type": "boolean" },
+    "ok": { "type": "boolean" },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "resolved_root": { "type": "string", "minLength": 1 },
+    "touched_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "tags"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "tags": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "files", "block_ids", "markdown_links", "wikilinks", "backlinks", "required_backlinks", "unresolved_markdown_links", "unresolved_wikilinks"],
+      "properties": {
+        "root": { "type": "string", "minLength": 1 },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "tags"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "tags": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        },
+        "block_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "markdown_links": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "wikilinks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "backlinks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required_backlinks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "unresolved_markdown_links": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "unresolved_wikilinks": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  }
+}

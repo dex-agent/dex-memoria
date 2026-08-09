@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dex-agent.github.io/dex-memoria/contracts/schemas/dex.memory.validate-root.request.v2.schema.json",
+  "title": "dex.memory.validate-root.request.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability", "require_obsidian", "root"],
+  "properties": {
+    "capability": { "enum": ["legacy-obsidian", "v2-markdown", "v2-obsidian"] },
+    "require_obsidian": { "type": "boolean" },
+    "root": { "type": "string", "minLength": 1 }
+  }
+}
