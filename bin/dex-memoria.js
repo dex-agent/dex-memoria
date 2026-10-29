@@ -25,6 +25,7 @@ const {
 } = require("./memory-v2-runtime-core");
 const { executeMemoryRoute, recoverMemoryRoute } = require("./memory-v2-route-executor");
 const { rememberMemory } = require("./memory-v2-remember");
+const { handleDocFlags } = require("./cli-doc");
 const {
   validateMemoryCapability,
   validateMemoryCapabilityRoot,
@@ -49,6 +50,9 @@ class CliError extends Error {
 
 async function main() {
   const args = process.argv.slice(2);
+  if (handleDocFlags(args)) {
+    return;
+  }
   const command = args[0] || "help";
 
   if (command === "help" || command === "--help" || command === "-h") {
