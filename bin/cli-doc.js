@@ -290,9 +290,18 @@ function handleDocFlags(args) {
   return true;
 }
 
+// Guardrail da casa: comando ou parametro inexistente NUNCA morre sem
+// caminho de descoberta — o erro sempre aponta a rota do indice (--help).
+function helpHint(args) {
+  const key = commandKey(args || []);
+  const base = key ? `dex-memoria ${key}` : "dex-memoria";
+  return ` — comando ou parâmetro inexistente; use ${base} --help para as opções válidas (--schema expõe o contrato; --usage expõe exemplos)`;
+}
+
 module.exports = {
   COMMAND_DOC,
   detectDocKind,
   commandKey,
-  handleDocFlags
+  handleDocFlags,
+  helpHint
 };

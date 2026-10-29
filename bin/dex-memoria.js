@@ -25,7 +25,7 @@ const {
 } = require("./memory-v2-runtime-core");
 const { executeMemoryRoute, recoverMemoryRoute } = require("./memory-v2-route-executor");
 const { rememberMemory } = require("./memory-v2-remember");
-const { handleDocFlags } = require("./cli-doc");
+const { handleDocFlags, helpHint } = require("./cli-doc");
 const {
   validateMemoryCapability,
   validateMemoryCapabilityRoot,
@@ -83,7 +83,7 @@ async function main() {
   if (command === "routes") {
     try {
       if (args[1] !== "inspect") {
-        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria routes inspect --fixture <fixture-root>");
+        throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria routes inspect --fixture <fixture-root>${helpHint(["routes"])}`);
       }
       await routesInspect(args.slice(2));
     } catch (error) {
@@ -113,7 +113,7 @@ async function main() {
       } else if (args[1] === "capability") {
         await v2Capability(args.slice(2));
       } else {
-        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 remember|plan|apply|resume|recover|validate|validate-root|capability");
+        throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria v2 remember|plan|apply|resume|recover|validate|validate-root|capability${helpHint(["v2"])}`);
       }
     } catch (error) {
       if (error instanceof CliError || error instanceof MemoryRuntimeError) throw error;
@@ -131,7 +131,7 @@ async function main() {
       } else if (args[1] === "recover") {
         await createRecover(args.slice(2));
       } else {
-        throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria create plan|apply|recover --fixture <fixture-root>");
+        throw new CliError(2, "INVALID_USAGE", `usage: dex-memoria create plan|apply|recover --fixture <fixture-root>${helpHint(["create"])}`);
       }
     } catch (error) {
       if (error instanceof CliError || error instanceof ApplyError || error instanceof RecoverError || error instanceof ThemeV2TransactionError) {
@@ -142,7 +142,7 @@ async function main() {
     return;
   }
 
-  fail(`Comando desconhecido: ${command}`);
+  fail(`Comando desconhecido: ${command}${helpHint([])}`);
 }
 
 async function createApply(args) {

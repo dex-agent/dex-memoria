@@ -66,6 +66,20 @@ test("C-05: o usage e o schema exibidos derivam da tabela COMMAND_DOC", () => {
   assert.deepEqual(JSON.parse(schema.stdout), entry.schema);
 });
 
+test("C-08: parametro inexistente aponta a rota de descoberta (--help) no erro", () => {
+  const root = run("comando-inexistente");
+  assert.notEqual(root.status, 0);
+  assert.match(root.stderr + root.stdout, /--help/, "erro de comando desconhecido deve indicar --help");
+
+  const sub = run("v2", "subcomando-inexistente");
+  assert.notEqual(sub.status, 0);
+  assert.match(sub.stderr + sub.stdout, /--help/, "erro de subcomando deve indicar --help");
+
+  const flag = run("--parametro-inexistente");
+  assert.notEqual(flag.status, 0);
+  assert.match(flag.stderr + flag.stdout, /--help/, "erro de flag desconhecida deve indicar --help");
+});
+
 test("grupos e raiz: v2 --help, create plan --help e --help raiz respondem exit 0", () => {
   const group = run("v2", "--help");
   assert.equal(group.status, 0, `stdout=${group.stdout}\nstderr=${group.stderr}`);
