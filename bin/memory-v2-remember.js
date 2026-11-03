@@ -134,7 +134,12 @@ function recoveryGuidance(normalized, pendingReceipts) {
 function normalizeRememberRequest(input, options = {}) {
   requireObject(input);
   const unknown = Object.keys(input).filter((key) => !INPUT_KEYS.has(key));
-  if (unknown.length > 0) invalid(`unknown fields: ${unknown.join(", ")}`);
+  if (unknown.length > 0) {
+    invalid(
+      `unknown fields: ${unknown.join(", ")} — campos validos: ${[...INPUT_KEYS].join(", ")}` +
+      `; contrato completo dos campos: dex-memoria v2 remember --schema`
+    );
+  }
   if (input.contract !== undefined && input.contract !== "dex.memory.remember.request.v2") {
     invalid("contract must be dex.memory.remember.request.v2");
   }

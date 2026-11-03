@@ -80,6 +80,12 @@ test("C-08: parametro inexistente aponta a rota de descoberta (--help) no erro",
   assert.match(flag.stderr + flag.stdout, /--help/, "erro de flag desconhecida deve indicar --help");
 });
 
+test("P4 erro-que-ensina: --help ponteia o contrato completo via --schema", () => {
+  const proc = run("v2", "remember", "--help");
+  assert.equal(proc.status, 0, `stdout=${proc.stdout}\nstderr=${proc.stderr}`);
+  assert.match(proc.stdout, /Contrato completo dos campos: dex-memoria v2 remember --schema/);
+});
+
 test("grupos e raiz: v2 --help, create plan --help e --help raiz respondem exit 0", () => {
   const group = run("v2", "--help");
   assert.equal(group.status, 0, `stdout=${group.stdout}\nstderr=${group.stderr}`);

@@ -304,6 +304,17 @@ test("v2 remember rejects unsafe implicit choices instead of guessing", async (t
   assert.match(missingOwner.stderr, /INVALID_REMEMBER_REQUEST.*owner_skill/i);
 });
 
+test("v2 remember: campo desconhecido ensina campos validos e aponta --schema", async (t) => {
+  const roots = await disposableRoots(t);
+  const badField = await runRemember(roots.workspace, roots.memoryHome, dailyRequest({ campo_desconhecido: 1 }));
+
+  assert.equal(badField.exitCode, 2);
+  assert.match(badField.stderr, /INVALID_REMEMBER_REQUEST/);
+  assert.match(badField.stderr, /unknown fields: campo_desconhecido/);
+  assert.match(badField.stderr, /campos validos:/);
+  assert.match(badField.stderr, /--schema/);
+});
+
 test("v2 remember reuses canonical candidate limits before any route executes", async (t) => {
   const roots = await disposableRoots(t);
   let calls = 0;

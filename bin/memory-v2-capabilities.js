@@ -255,6 +255,7 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
     for (const match of content.matchAll(/(?<!!)\[[^\]]*\]\(([^)]+)\)/g)) {
       const target = match[1].trim();
       if (unitDestination && !isUnitRelation(sourcePath, target, unitDestination)) continue;
+      if (unitDestination === null && isLegacyV1LinkTarget(sourcePath, target)) continue;
       const label = `${sourcePath} -> ${target}`;
       markdownLinks.push(label);
       const resolvedTarget = resolveMemoryLink(root, sourcePath, target, false, documents);
@@ -264,6 +265,7 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
     for (const match of content.matchAll(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g)) {
       const target = match[1].trim();
       if (unitDestination && !isUnitRelation(sourcePath, target, unitDestination)) continue;
+      if (unitDestination === null && isLegacyV1LinkTarget(sourcePath, target)) continue;
       const label = `${sourcePath} -> [[${target}]]`;
       wikilinks.push(label);
       const resolvedTarget = resolveMemoryLink(root, sourcePath, target, true, documents);
@@ -299,6 +301,25 @@ function isUnitRelation(sourcePath, rawTarget, unitDestination) {
     return normalizedTarget === unitDestination.replace(/\.md$/i, "").toLowerCase();
   }
   return /(?:^|\/)lembranca$/.test(normalizedTarget.replace(/^\.\.\//, "").replace(/^\.\.\//, ""));
+}
+
+function isLegacyV1LinkTarget(sourcePath, rawTarget) {
+  const clean = rawTarget
+    .split("#", 1)[0]
+    .replace(/\\/g, "/")
+    .replace(/\.md$/i, "")
+    .replace(/^(?:\.\.\/)+/, "")
+    .replace(/^\.\//, "");
+  const segments = clean.split("/").filter(Boolean);
+  const last = segments[segments.length - 1]?.toLowerCase();
+  if (!last) return false;
+  if (last === "memoria") return true;
+  if (last === "lembranca" && segments.length > 1) return true;
+  if (segments[0]?.toLowerCase() === "conhecimento" && segments.length === 2) return true;
+  if (portablePath(sourcePath).toLowerCase() === "conhecimento/index.md" && segments.length === 1) {
+    return true;
+  }
+  return false;
 }
 
 async function collectV2MarkdownFiles(root) {

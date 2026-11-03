@@ -153,6 +153,52 @@ test("root-wide V2 validation ignores neighboring project and V1 Markdown surfac
   );
 });
 
+test("root-wide V2 validation ignores legacy V1 links inside mixed L1 and INDEX", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "dex-memory-capability-legacy-mixed-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFixtureFile(root, "lembranca.md", [
+    "# Lembrancas",
+    "",
+    "- [Legado V1](MEMORIA.md#^legado-v1) [[MEMORIA#^legado-v1|Legado]] ^legado-v1",
+    "- [Topic](memorias/topic.md#^memory-topic) [[memorias/topic#^memory-topic|Topic]] ^trigger-topic",
+    ""
+  ].join("\n"));
+  await writeFixtureFile(root, "memorias/topic.md", [
+    "# Memoria",
+    "",
+    "[L1](../lembranca.md#^trigger-topic) [[lembranca#^trigger-topic|Trigger]]",
+    "[L3](../conhecimento/topic/README.md#^knowledge-topic) [[conhecimento/topic/README#^knowledge-topic|Knowledge]]",
+    "^memory-topic",
+    ""
+  ].join("\n"));
+  await writeFixtureFile(root, "conhecimento/topic/README.md", [
+    "# Conhecimento",
+    "",
+    "[L2](../../memorias/topic.md#^memory-topic) [[memorias/topic#^memory-topic|Memory]]",
+    "^knowledge-topic",
+    ""
+  ].join("\n"));
+  await writeFixtureFile(root, "conhecimento/INDEX.md", [
+    "# Indice",
+    "",
+    "[Legado flat](legado-flat.md)",
+    "[Memoria V1](../MEMORIA.md#^legado-v1)",
+    "[[temas/ppirtv/MEMORIA#^legado-v1]]",
+    "[Topic](topic/README.md#^knowledge-topic) [[conhecimento/topic/README#^knowledge-topic|Topic]]",
+    ""
+  ].join("\n"));
+
+  const receipt = await validateMemoryCapabilityRoot({
+    root,
+    capability: "v2-obsidian",
+    require_obsidian: true
+  });
+
+  assert.equal(receipt.ok, true, JSON.stringify(receipt.errors));
+  assert.deepEqual(receipt.evidence.unresolved_markdown_links, []);
+  assert.deepEqual(receipt.evidence.unresolved_wikilinks, []);
+});
+
 test("filesystem-owned validator observes duplicate block ids", async (t) => {
   const root = await createCapabilityRoot(t, {
     "conhecimento/topic/README.md": "# Conhecimento\n\n[L2](../../memorias/topic.md#^memory-topic) [[memorias/topic#^memory-topic|Memory]]\n^memory-topic\n"

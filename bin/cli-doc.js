@@ -275,7 +275,12 @@ function emitDoc(kind, args) {
     printLines([entry.description, "", "Exemplos:", ...entry.examples]);
     return;
   }
-  printLines([entry.description, "", "Uso:", ...entry.usage]);
+  const lines = [entry.description, "", "Uso:", ...entry.usage];
+  if (entry.schema) {
+    const key = commandKey(args);
+    lines.push("", `Contrato completo dos campos: dex-memoria${key ? ` ${key}` : ""} --schema`);
+  }
+  printLines(lines);
 }
 
 // Guard documental: intercepta --help/-h/--schema/--usage em qualquer nivel

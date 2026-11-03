@@ -710,6 +710,13 @@ Superficies live, todas com JSON por stdin:
 | `dex-memoria v2 validate-root` | root completo | colisões de block id e links entre unidades |
 | `dex-memoria v2 capability` | matriz de capacidade | compatibilidade observavel |
 
+No `validate-root`, links de superfícies V2 que apontam para o corpus V1
+(`MEMORIA.md`, `LEMBRANCA.md` com prefixo de caminho ou arquivos planos de
+`conhecimento/`) são ignorados como herança legada; a auditoria valida apenas
+unidades V2 do root (`lembranca.md`, `memorias/*.md` e
+`conhecimento/<slug>/README.md`). Root sem unidades V2 retorna
+`MISSING_OBSIDIAN_EVIDENCE` (fora do gate V2, não erro de links).
+
 Nos requests `dex.memory.operation.request.v2`, `profile` e opcional e aceita
 `v2`, `legacy-v1` ou `governed-theme-v2`. Use `profile: "v2"` quando o caller precisar declarar o
 perfil ativo explicitamente; omitir o campo preserva o mesmo fluxo V2.
