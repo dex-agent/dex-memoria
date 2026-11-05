@@ -583,7 +583,10 @@ async function snapshot(fileSystem, filePath) {
 }
 
 function fileIdentity(stat) {
-  return `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeMs}`;
+  // win32/VirtualBox: ino é instável por open (SAFETY_BOUNDARY falso); usar dev:size:mtimeMs
+  return process.platform === "win32"
+    ? `${stat.dev}:${stat.size}:${stat.mtimeMs}`
+    : `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeMs}`;
 }
 
 async function exists(fileSystem, filePath) {

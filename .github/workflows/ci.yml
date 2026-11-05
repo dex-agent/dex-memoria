@@ -31,3 +31,31 @@ jobs:
 
       - name: Check package contents
         run: npm run pack:check
+
+  test:
+    name: Run test suite (win32)
+    runs-on: windows-latest
+
+    steps:
+      # O CLI recusa rodar fora de C:\CodexProjetos\dex-memoria (guard de pacote
+      # canonico em bin/dex-memoria.js). O runner do Actions e admin, entao o
+      # invariante e SATISFEITO em vez de contornado: clonamos no path canonico.
+      # Nao usamos DEX_MEMORIA_SOURCE_CHECKOUT_ROOT porque aquele escape exige
+      # allowVerifiedCheckout, que as operacoes v2 nao passam.
+      - name: Checkout into the canonical development path
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\CodexProjetos | Out-Null
+          git clone --quiet "https://github.com/${{ github.repository }}.git" C:\CodexProjetos\dex-memoria
+          git -C C:\CodexProjetos\dex-memoria checkout --quiet "${{ github.event.pull_request.head.sha || github.sha }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # A suite roda em win32 porque o guard do fileIdentity so existe la; o
+      # teste correspondente e skip fora do Windows por design.
+      - name: Run tests
+        working-directory: C:\CodexProjetos\dex-memoria
+        run: npm test

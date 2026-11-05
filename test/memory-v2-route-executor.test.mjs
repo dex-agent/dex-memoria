@@ -208,7 +208,7 @@ test("equivalent candidate keeps stable identities across flows and never append
   const first = await executeMemoryRoute(firstRoute, candidate);
   const beforeL1 = await readFile(join(firstRoute.resolved_root, "lembranca.md"), "utf8");
   const second = await executeMemoryRoute(secondRoute, candidate);
-  const afterL1 = await readFile(secondRoute.resolved_root + "\\lembranca.md", "utf8");
+  const afterL1 = await readFile(join(secondRoute.resolved_root, "lembranca.md"), "utf8");
 
   assert.equal(first.status, "COMMITTED");
   assert.equal(second.status, "COMMITTED");
@@ -952,4 +952,53 @@ test("CLI resume and recover reject forged roots instead of trusting caller rout
   assert.equal(recoverResult.exitCode, 2);
   assert.equal(JSON.parse(recoverResult.stderr).code, "INVALID_SCHEMA");
   await assert.rejects(() => readFile(join(forgedRoot, "lembranca.md")), { code: "ENOENT" });
+});
+
+test("fileIdentity on win32 ignores an unstable ino from a VirtualBox share", {
+  // O guard so existe no win32; em Linux o ino E usado de proposito (SPEC do safety boundary).
+  skip: process.platform !== "win32" && "guard win32 nao se aplica fora do Windows"
+}, async (t) => {
+  // Evidencia real medida em Z: (\VBoxSvr\C_DRIVE) em 2026-11-05: 19 valores de
+  // ino distintos em 25 lstat do MESMO arquivo, com size e mtimeMs identicos.
+  // O guard dev:ino gerava SAFETY_BOUNDARY falso e bloqueava a gravacao; o patch
+  // de 2026-09-28 nunca foi commitado e o sintoma voltou em 2026-11-04.
+  // Este teste trava a regressao: ino oscilante NAO pode gerar SAFETY_BOUNDARY.
+  const testRoots = await roots(t);
+  const route = planFor(testRoots, { operation_id: "op-ino-unstable-001" }).routes[0];
+  const l1Path = join(route.resolved_root, "lembranca.md");
+
+  // O snapshot so compara identidade quando o L1 ja existe; sem isto o caminho
+  // ENOENT aborta a checagem e o teste passaria sem exercitar o guard.
+  await mkdir(route.resolved_root, { recursive: true });
+  await writeFile(l1Path, "# Lembranças\n\n- Memoria previa -> [previa](memorias/previa.md) #previa/unidade ^previa\n", "utf8");
+
+  let lstatCalls = 0;
+  const unstableInoFileSystem = {
+    ...fsPromises,
+    async lstat(target, options) {
+      const info = await fsPromises.lstat(target, options);
+      if (!info.isFile()) return info;
+      lstatCalls += 1;
+      // ino falso ALTERNADO, nao somado ao real: neste host o ino passa de 2^53
+      // e "ino + 1 === ino" em double, o que faria o teste passar sem discriminar.
+      const fakeIno = lstatCalls % 2 === 0 ? 424242 : 999999;
+      // Proxy delega tudo ao Stats real, trocando apenas o ino desta leitura.
+      return new Proxy(info, {
+        get(object, property, receiver) {
+          if (property === "ino") return fakeIno;
+          return Reflect.get(object, property, receiver);
+        }
+      });
+    }
+  };
+
+  const receipt = await executeMemoryRoute(route, l2Candidate(), { file_system: unstableInoFileSystem });
+
+  assert.ok(lstatCalls >= 2, `teste precisa exercitar um snapshot antes/depois (calls=${lstatCalls})`);
+  assert.notEqual(
+    receipt.code,
+    "SAFETY_BOUNDARY",
+    `ino oscilante nao pode gerar SAFETY_BOUNDARY falso: ${JSON.stringify(receipt)}`
+  );
+  assert.equal(receipt.status, "COMMITTED", JSON.stringify(receipt));
 });
