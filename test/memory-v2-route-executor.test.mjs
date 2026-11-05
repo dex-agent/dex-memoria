@@ -954,7 +954,10 @@ test("CLI resume and recover reject forged roots instead of trusting caller rout
   await assert.rejects(() => readFile(join(forgedRoot, "lembranca.md")), { code: "ENOENT" });
 });
 
-test("fileIdentity on win32 ignores an unstable ino from a VirtualBox share", async (t) => {
+test("fileIdentity on win32 ignores an unstable ino from a VirtualBox share", {
+  // O guard so existe no win32; em Linux o ino E usado de proposito (SPEC do safety boundary).
+  skip: process.platform !== "win32" && "guard win32 nao se aplica fora do Windows"
+}, async (t) => {
   // Evidencia real medida em Z: (\VBoxSvr\C_DRIVE) em 2026-11-05: 19 valores de
   // ino distintos em 25 lstat do MESMO arquivo, com size e mtimeMs identicos.
   // O guard dev:ino gerava SAFETY_BOUNDARY falso e bloqueava a gravacao; o patch
@@ -976,16 +979,13 @@ test("fileIdentity on win32 ignores an unstable ino from a VirtualBox share", as
       const info = await fsPromises.lstat(target, options);
       if (!info.isFile()) return info;
       lstatCalls += 1;
-      // O offset e capturado NA CRIACAO: se fosse lido no get, os dois lados do
-      // snapshot veriam o mesmo valor e o teste nao discriminaria nada.
-      const offset = lstatCalls;
-      const baseIno = info.ino;
+      // ino falso ALTERNADO, nao somado ao real: neste host o ino passa de 2^53
+      // e "ino + 1 === ino" em double, o que faria o teste passar sem discriminar.
+      const fakeIno = lstatCalls % 2 === 0 ? 424242 : 999999;
       // Proxy delega tudo ao Stats real, trocando apenas o ino desta leitura.
       return new Proxy(info, {
         get(object, property, receiver) {
-          if (property === "ino") {
-            return typeof baseIno === "bigint" ? baseIno + BigInt(offset) : baseIno + offset;
-          }
+          if (property === "ino") return fakeIno;
           return Reflect.get(object, property, receiver);
         }
       });
