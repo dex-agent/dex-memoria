@@ -28,6 +28,12 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          # O CLI recusa rodar fora do caminho canonico de desenvolvimento. O
+          # escape hatch oficial declara a raiz do checkout verificado; sem isto
+          # os testes de install/remember falham com "Este comando deve executar
+          # pelo pacote canonico" (15 testes, medido 2026-11-05).
+          DEX_MEMORIA_SOURCE_CHECKOUT_ROOT: ${{ github.workspace }}
 
       - name: Run doctor
         run: npm run doctor

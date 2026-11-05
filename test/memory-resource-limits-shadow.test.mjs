@@ -35,7 +35,10 @@ function runNodeReader(root) {
 }
 
 function runPowerShellReader(root) {
-  return JSON.parse(execFileSync("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psReader, "-BundlePath", root], { cwd: repoRoot, encoding: "utf8" }));
+  // Mesma convencao de test/precutover-clone-v2.test.mjs: no Windows o binario e
+  // powershell.exe; fora dele e pwsh (pre-instalado no ubuntu-latest do Actions).
+  const shell = process.platform === "win32" ? "powershell.exe" : "pwsh";
+  return JSON.parse(execFileSync(shell, ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psReader, "-BundlePath", root], { cwd: repoRoot, encoding: "utf8" }));
 }
 
 async function copyBundle() {
