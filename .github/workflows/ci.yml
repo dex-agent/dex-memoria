@@ -26,6 +26,9 @@ jobs:
       - name: Validate structure
         run: npm run check
 
+      - name: Run tests
+        run: npm test
+
       - name: Run doctor
         run: npm run doctor
 

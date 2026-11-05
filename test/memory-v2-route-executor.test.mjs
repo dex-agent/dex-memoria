@@ -208,7 +208,7 @@ test("equivalent candidate keeps stable identities across flows and never append
   const first = await executeMemoryRoute(firstRoute, candidate);
   const beforeL1 = await readFile(join(firstRoute.resolved_root, "lembranca.md"), "utf8");
   const second = await executeMemoryRoute(secondRoute, candidate);
-  const afterL1 = await readFile(secondRoute.resolved_root + "\\lembranca.md", "utf8");
+  const afterL1 = await readFile(join(secondRoute.resolved_root, "lembranca.md"), "utf8");
 
   assert.equal(first.status, "COMMITTED");
   assert.equal(second.status, "COMMITTED");
