@@ -117,13 +117,13 @@ async function executeMemoryRoute(route, candidate, options = {}) {
         journal.state = "ROLLED_BACK";
         journal.failure_code = error.code || "ROUTE_IO_FAILURE";
         await writeJsonAtomic(fileSystem, paths.journal, journal, route.transaction_id, route.resolved_root);
-        return failed(route, "TRANSACTION_ROLLED_BACK", "route write failed and was rolled back; retry with a new operation_id", false, journal.failure_code);
+        return failed(route, "TRANSACTION_ROLLED_BACK", "route write failed and was rolled back; retry with a new operation_id", false, journal.failure_code, error.validation_detail);
       } catch (rollbackError) {
         return failed(route, "ROLLBACK_REQUIRED", "route write failed and requires recover", true);
       }
     }
   } catch (error) {
-    return failed(route, error.code || "ROUTE_EXECUTION_FAILED", error.message || "route execution failed", Boolean(error.recoverable));
+    return failed(route, error.code || "ROUTE_EXECUTION_FAILED", error.message || "route execution failed", Boolean(error.recoverable), null, error.validation_detail);
   } finally {
     if (mutex) await releaseRouteMutex(fileSystem, mutex);
   }
@@ -439,7 +439,18 @@ async function validateWrittenUnit(route, paths) {
       path.relative(route.resolved_root, paths.destination).split(path.sep).join("/")
     ]
   });
-  if (!validationReceipt.ok) invalid("CAPABILITY_VALIDATION_FAILED", "written V2 unit failed Obsidian validation");
+  if (!validationReceipt.ok) {
+    const error = new Error("written V2 unit failed Obsidian validation");
+    error.code = "CAPABILITY_VALIDATION_FAILED";
+    error.validation_detail = {
+      validation_errors: validationReceipt.errors ?? [],
+      touched_paths: [
+        paths.l1_name,
+        path.relative(route.resolved_root, paths.destination).split(path.sep).join("/")
+      ]
+    };
+    throw error;
+  }
   return validationReceipt;
 }
 
@@ -694,7 +705,7 @@ function recoveryReceipt(route, journalPath, recoveryStatus) {
   };
 }
 
-function failed(route, code, message, recoverable = false, causeCode = null) {
+function failed(route, code, message, recoverable = false, causeCode = null, validationDetail = null) {
   return {
     contract: "dex.memory.route.failure.v2",
     status: "FAILED",
@@ -706,7 +717,8 @@ function failed(route, code, message, recoverable = false, causeCode = null) {
     code,
     message,
     recoverable,
-    ...(typeof causeCode === "string" ? { cause_code: causeCode } : {})
+    ...(typeof causeCode === "string" ? { cause_code: causeCode } : {}),
+    ...(validationDetail ? { failure: { detail: validationDetail } } : {})
   };
 }
 

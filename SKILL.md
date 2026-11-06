@@ -185,7 +185,10 @@ Somente quando estiver mantendo o produto, investigando falha, alterando
 contrato ou executando recovery manual, consulte sob demanda:
 
 - `SPEC.md`: contrato de ciclo de vida;
-- `docs/usage.md`: exemplos e referência CLI;
+- `docs/usage.md`: exemplos e referência CLI, incluindo a seção
+  `Contrato De Tags Do V2` (regras de tags/validação com exemplo e
+  anti-exemplo, códigos `MISSING_NESTED_TAG`/`DIVERGENT_TAG_SET`/`ORPHAN_L1_LINE`
+  e o `failure.detail.validation_errors` do receipt `FAILED`);
 - `docs/runtime-boundary.md`: fronteira do pacote;
 - `docs/memory-home.md`: resolução de roots;
 - `contracts/schemas/`: schemas públicos;

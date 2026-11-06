@@ -87,3 +87,14 @@
 - Define contrato de ciclo de vida para memoria operacional.
 - Inclui templates, exemplos sanitizados e fronteira com o runtime do Dex Agent.
 - Nao inclui runtime, hooks, inbox, ledger real, logs, screenshots ou secrets.
+- Faz o receipt `FAILED` do `v2 remember` ecoar a causa real de validação:
+  `route_receipts.<scope>.failure.detail.validation_errors` (códigos reais como
+  `DIVERGENT_TAG_SET` e os `touched_paths` validados), além de `failure_code` e
+  `failure_cause` — fecha o diagnóstico mudo de `CAPABILITY_VALIDATION_FAILED`
+  (issue #3).
+- Adiciona `ORPHAN_L1_LINE` ao `v2 validate-root`: linha do L1 apontando para
+  `memorias/<slug>.md` inexistente agora é acusada com o destino citado
+  (issue #2).
+- Documenta o contrato de tags do V2 em `docs/usage.md` (seção `Contrato De
+  Tags Do V2`: tags aninhadas, conjunto idêntico L1×L2, corpo varrido inteiro,
+  destino resolvível) com exemplo e anti-exemplo, apontada pelo `SKILL.md`.
