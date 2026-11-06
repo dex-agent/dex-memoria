@@ -790,3 +790,45 @@ A V1 permanece contrato e corpus historico de leitura/restauracao. A excecao V0
 executa apenas `create plan|apply|recover` em fixture descartavel. Hooks,
 captura automatica e integracoes de bot continuam fora; a escrita real explicita
 pertence aos comandos `v2`.
+
+## Contrato De Tags Do V2
+
+O validador `v2 validate` aplica estas regras ao par L1 (indice) + destino
+(L2/L3). Elas cobrem a unidade escrita (`v2 validate` com `touched_paths`) e o
+root inteiro (`v2 validate-root`):
+
+1. **Tag aninhada obrigatoria**: cada unidade expoe ao menos uma tag aninhada
+   lowercase na forma `#tema/assunto` — sem tag o validador acusa
+   `MISSING_NESTED_TAG`.
+2. **Conjunto identico L1 x destino**: a linha do L1 e o arquivo de destino
+   expoem exatamente o mesmo conjunto de tags; uma tag a mais em qualquer lado
+   acusa `DIVERGENT_TAG_SET`.
+3. **O corpo e varrido inteiro**: a extracao de tags varre o corpo do destino
+   por completo. Citar uma hashtag de exemplo no corpo entra no conjunto real
+   e reprova a unidade. Citar com seguranca exige que a hashtag nao seja
+   capturada (por exemplo, espaco apos o `#`, como em `# tema/assunto`).
+4. **Destino resolvivel**: `v2 validate-root` acusa `ORPHAN_L1_LINE` quando uma
+   linha do L1 aponta (link ou wikilink) para `memorias/<slug>.md` que nao
+   existe no root.
+
+Exemplo valido (linha do L1 casando com o destino):
+
+```markdown
+- Titulo -> [md](memorias/slug.md) [[memorias/slug|Titulo]] #tema/assunto ^slug
+```
+
+```markdown
+# Titulo
+[Volar](../lembranca.md#^slug)
+#tema/assunto
+```
+
+Anti-exemplo (reprovado): o mesmo par com uma hashtag solta extra no corpo do
+destino (por exemplo `#tema/outro`) acusa `DIVERGENT_TAG_SET`; uma linha do L1
+apontando `memorias/slug.md` inexistente acusa `ORPHAN_L1_LINE`.
+
+Quando uma escrita e reprovada, o receipt `FAILED` de `v2 remember` ecoa a
+causa real em `route_receipts.<scope>.failure.detail.validation_errors` (com os
+codigos acima e os `touched_paths` validados), alem de `failure_code` e
+`failure_cause`; a recuperacao e reenviar com `operation_id` novo apos corrigir
+a entrada.

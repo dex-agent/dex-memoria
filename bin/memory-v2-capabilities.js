@@ -116,7 +116,23 @@ async function validateMemoryCapabilityRoot(input) {
     unresolved_wikilinks: evidence.unresolved_wikilinks,
     required_backlinks: evidence.required_backlinks
   });
-  return { ...receipt, resolved_root: evidence.root, touched_files: evidence.files, evidence };
+  const orphanL1Errors = [
+    ...evidence.unresolved_markdown_links,
+    ...evidence.unresolved_wikilinks
+  ]
+    .filter((label) => label.toLowerCase().startsWith("lembranca.md -> "))
+    .map((label) => ({
+      code: "ORPHAN_L1_LINE",
+      message: `L1 line points to a missing destination: ${label}`
+    }));
+  return {
+    ...receipt,
+    ok: receipt.ok && orphanL1Errors.length === 0,
+    errors: [...receipt.errors, ...orphanL1Errors],
+    resolved_root: evidence.root,
+    touched_files: evidence.files,
+    evidence
+  };
 }
 
 async function validateMemoryCapabilityUnit(input) {
