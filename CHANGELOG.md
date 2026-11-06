@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.7 - 2026-11-06
 
 - Adiciona `dex-memoria v2 remember` como entrada cotidiana única: payload
   fechado, L2 default, slug/operação determinísticos, composição dos owners V2

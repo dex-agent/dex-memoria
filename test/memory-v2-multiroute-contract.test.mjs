@@ -111,8 +111,9 @@ test("legacy examples are historical while the migrated L3 template is explicitl
     readFile(join(repoRoot, "docs", "usage.md"), "utf8"),
     readFile(join(repoRoot, "CHANGELOG.md"), "utf8")
   ]);
-  const unreleasedEnd = changelog.indexOf("\n## ", changelog.indexOf("## Unreleased") + 3);
-  const unreleased = changelog.slice(0, unreleasedEnd === -1 ? undefined : unreleasedEnd);
+  const currentSection = changelog.indexOf("## ");
+  const currentSectionEnd = changelog.indexOf("\n## ", currentSection + 3);
+  const unreleased = changelog.slice(0, currentSectionEnd === -1 ? undefined : currentSectionEnd);
 
   assert.match(templateIndex, /l3-conhecimento-file\.md[\s\S]{0,160}V2/i);
   assert.match(templateIndex, /demais templates[\s\S]{0,160}hist[oó]ric/i);

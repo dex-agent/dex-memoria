@@ -134,7 +134,7 @@ async function assertNoJournal(fixtureRoot) {
 
 test("preserves exact V1 version output", async () => {
   const result = await runCli(["version"]);
-  assert.deepEqual(result, { stdout: "0.1.6\n", stderr: "", exitCode: 0 });
+  assert.deepEqual(result, { stdout: "0.1.7\n", stderr: "", exitCode: 0 });
 });
 
 test("doctor reports the active V2 runtime contract under a controlled environment", async (t) => {
@@ -142,7 +142,7 @@ test("doctor reports the active V2 runtime contract under a controlled environme
   t.after(() => rm(memoryRoot, { recursive: true, force: true }));
   const result = await runCli(["doctor"], "", { ...process.env, DEX_MEMORIA_HOME: memoryRoot });
   assert.deepEqual(result, {
-    stdout: `dex-memoria 0.1.6 ok\nPacote: ${repoRoot}\nImplementation version: v2\nWriter selector: v2\nV1 compatibility: reader/restore\nCanonical skill: C:\\CodexProjetos\\dex-memoria\\SKILL.md\nEntrypoint: ${cliPath}\nMemoria home: ${resolve(memoryRoot)}\nMemoria home source: DEX_MEMORIA_HOME\n`,
+    stdout: `dex-memoria 0.1.7 ok\nPacote: ${repoRoot}\nImplementation version: v2\nWriter selector: v2\nV1 compatibility: reader/restore\nCanonical skill: C:\\CodexProjetos\\dex-memoria\\SKILL.md\nEntrypoint: ${cliPath}\nMemoria home: ${resolve(memoryRoot)}\nMemoria home source: DEX_MEMORIA_HOME\n`,
     stderr: "",
     exitCode: 0
   });
