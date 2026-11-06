@@ -313,6 +313,13 @@ explicitly asks and the public safety rules still pass.
 
 Use Node.js 18 or newer.
 
+Dependency policy (documented 2026-11-06): this package is zero-dependencies
+by design and ships **no lockfile** — `npm ci` is not applicable and `npm
+install` is unnecessary. The build proof is the owner's scripts (`npm test`,
+`npm run doctor`, `npm run pack:check`) plus `node --check` on production
+sources (local trigger `DEX-MEMORIA-PROVA-W6-ZERO-DEPS`). If a real
+dependency is ever added, versioning a lockfile becomes mandatory.
+
 Preferred checks:
 
 ```powershell
@@ -370,3 +377,48 @@ As of the 2026-06-06 context-structure pass:
   later edit unless verified with Git history.
 - `.agents/` and `.codex/napkin.md` may exist locally for continuation, but are
   intentionally ignored.
+
+## Bootstrap (toda janela nova, nesta ordem)
+
+1. Leia o AGENTS global: `$env:USERPROFILE\.agents\AGENTS.md` (PowerShell) /
+   `$USERPROFILE/.agents/AGENTS.md` (Git Bash); em trabalho não trivial, leia
+   também `PRINCIPLES.md` e o `operational-contract.json` quando um princípio
+   precisar virar gate.
+2. Leia este `AGENTS.md` inteiro.
+3. Leia o estado vivo, nesta ordem: `.agents\ACTIVE.md` → `.agents\HANDOFF.md`
+   → `.agents\PLAN-TASKS\ACTIVE.md` + `.agents\PLAN-TASKS\INDEX.md` →
+   `.agents\PENDENTES.md` → `.agents\napkin.md` (runbook tático de TROPEÇOS:
+   gotchas, comandos confiáveis e "Faça em vez disso" — leia SEMPRE antes de
+   operar) → `.agents\GATILHOS-VIVOS.md` (hub de gatilhos quentes de reuso).
+4. Gatilhos L1: `.agents\lembranca.md` — abra L2/L3 somente por gatilho
+   material (contrato `dex-memoria`).
+5. Se existir `PLAYBOOK.md` na raiz (projeção externa das regras de decisão,
+   instalada pelo `dex-playbook-entrada`), leia-o como parte do bootstrap:
+   é a superfície do destinatário externo e as regras valem para o envio.
+
+## Indexação (doutrina da casa)
+
+- A raiz mantém `INDEX.md` (mapa das seções do repo); todo diretório com
+  conteúdo curado (docs, fontes, auditorias) mantém o próprio `INDEX.md`.
+  Quem cria conteúdo atualiza o índice do diretório na mesma sessão —
+  descoberta barata por listagem, sem caçar arquivo por arquivo.
+
+## Envio a terceiros
+
+`PLAYBOOK.md` + `PLAYBOOK.index.json` (raiz) já nascem instalados pelo
+bootstrap via `$dex-playbook-entrada` (ferramentas em `tools\playbook\`, hook
+anti-drift). Regras: a projeção é GERADA — nunca editada à mão; regen após
+editar as fontes (`python -B tools\playbook\generate-playbook.py --repo . --write`);
+`.agents\` não viaja no envio — a projeção é a superfície do destinatário.
+
+<!-- playbook-pointer:start -->
+## Playbook (entrada externa)
+
+Este repo publica `PLAYBOOK.md` e `PLAYBOOK.index.json` na raiz: projecao GERADA
+das regras de decisao (fontes declaradas em `tools/playbook/playbook-sources.txt`).
+Nao editar a mao; a decisao completa mora na fonte citada.
+Regenerar apos editar fonte:
+`python -B tools/playbook/generate-playbook.py --repo . --write`.
+Verificar frescor: mesmo comando com `--check` (exit 0 limpo, exit 2 drift).
+Ativar trava de commit: `git config core.hooksPath tools/playbook/hooks`.
+<!-- playbook-pointer:end -->

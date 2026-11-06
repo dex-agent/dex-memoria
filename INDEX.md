@@ -99,6 +99,16 @@ npm run doctor
 npm run pack:check
 ```
 
+## Playbook (Envio a Terceiros)
+
+- `PLAYBOOK.md` + `PLAYBOOK.index.json` - projecao GERADA das regras de
+  decisao; nunca editar a mao. Regen apos editar fontes:
+  `python -B tools/playbook/generate-playbook.py --repo . --write`;
+  frescor: `--check` (exit 0). Hook anti-drift ativo via
+  `git config core.hooksPath tools/playbook/hooks`.
+- `tools/playbook/` - ferramentas da projecao (gerador, juiz, hook):
+  veja [tools/playbook/INDEX.md](tools/playbook/INDEX.md).
+
 ## Local Context Surface
 
 `.agents/`, `.ppirtv/`, `graphify-out/`, `.env`, logs e configuracoes locais

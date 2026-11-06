@@ -1,0 +1,111 @@
+{
+  "schema": "project.playbook.index.v1",
+  "generated_by": "tools/playbook/generate-playbook.py",
+  "authority": "derived_projection",
+  "repo_name": "dex-memoria",
+  "sources_revision": "sha256:4e552cec5efc7a7365b13637984d4219b94f1436657d8ecf3f386f7023712a3b",
+  "sent_revision": "sha256:4f810f10fc0b6d233fa993f6b721c56f13c6108dd55c86312bc173a0243b8a68",
+  "rules": [
+    {
+      "seal": "pb-7112c46e",
+      "locator": "DEX-MEMORIA-PROVA-W6-ZERO-DEPS",
+      "title": "Validation",
+      "gatilho": "ndeclarado",
+      "extrato": "Use Node.js 18 or newer.",
+      "rotas": [],
+      "fonte": "AGENTS.md#L312-L344"
+    }
+  ],
+  "mesa": {
+    "status": "",
+    "escopo": "",
+    "governance_version": "",
+    "secoes": [],
+    "total_derived": 0
+  },
+  "runbook": [
+    {
+      "data": "2026-11-05",
+      "localizador": "",
+      "titulo": "Gate textual da suite: Node 24 emite resumo com prefixo INFO, nao '# pass'",
+      "faca": "case os dois formatos — `grep -E \"^(#|ℹ) fail[[:space:]]\"` — e",
+      "ancora": ".agents/napkin.md#L16",
+      "local": true
+    }
+  ],
+  "nao_decodificadas": [
+    {
+      "titulo": "Authority And Bootstrap",
+      "ancora": "AGENTS.md#L10"
+    },
+    {
+      "titulo": "What This Repo Is",
+      "ancora": "AGENTS.md#L37"
+    },
+    {
+      "titulo": "What This Repo Is Not",
+      "ancora": "AGENTS.md#L112"
+    },
+    {
+      "titulo": "Local Load Order",
+      "ancora": "AGENTS.md#L132"
+    },
+    {
+      "titulo": "Local Context Surfaces",
+      "ancora": "AGENTS.md#L150"
+    },
+    {
+      "titulo": "Memory And Continuity Model",
+      "ancora": "AGENTS.md#L180"
+    },
+    {
+      "titulo": "Save Rules",
+      "ancora": "AGENTS.md#L227"
+    },
+    {
+      "titulo": "Public Repository Safety",
+      "ancora": "AGENTS.md#L253"
+    },
+    {
+      "titulo": "Editing Rules",
+      "ancora": "AGENTS.md#L273"
+    },
+    {
+      "titulo": "Execution Trails",
+      "ancora": "AGENTS.md#L345"
+    },
+    {
+      "titulo": "Known Current Local State",
+      "ancora": "AGENTS.md#L367"
+    },
+    {
+      "titulo": "Bootstrap (toda janela nova, nesta ordem)",
+      "ancora": "AGENTS.md#L381"
+    },
+    {
+      "titulo": "Indexação (doutrina da casa)",
+      "ancora": "AGENTS.md#L399"
+    },
+    {
+      "titulo": "Envio a terceiros",
+      "ancora": "AGENTS.md#L406"
+    }
+  ],
+  "fontes": [
+    {
+      "caminho": "AGENTS.md",
+      "sha256": "06afb15f2be8e611f100757b46fd2d35e15de6e50cbf7512210faa8f3a63e47b",
+      "enviado": true
+    },
+    {
+      "caminho": ".agents/napkin.md",
+      "sha256": "a2f18bbd63d7de057680779d03c3b3726300c1ed52ac5856a43a01c1f5a06524",
+      "enviado": false
+    },
+    {
+      "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
+      "sha256": "e179d3098f9b3d4245766c48876c20de224c91efed5d96504f0eabbf5de1bbfd",
+      "enviado": false
+    }
+  ]
+}
