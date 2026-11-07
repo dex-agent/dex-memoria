@@ -10,7 +10,7 @@
     "implementation_version": { "const": "v2" },
     "contract_revision": {
       "const": 2,
-      "$comment": "Discriminador de maquina da revisao do contrato (issue #16): rev2 = recovery.actions carrega cure (0.1.13+); rev1 = implicito antes. Mutacoes in-place do required passam a ser legiveis por consumidor."
+      "$comment": "Discriminador de maquina da revisao do contrato: rev2 = cure + contract_revision (0.1.14+); receipts 0.1.13 tem cure SEM este campo (nao validam contra este schema); rev1 = pre-cure. Mutacoes in-place do required sao legiveis por consumidor."
     },
     "status": { "enum": ["COMMITTED", "PARTIAL_PENDING", "FAILED"] },
     "operation_id": { "type": "string", "minLength": 1 },

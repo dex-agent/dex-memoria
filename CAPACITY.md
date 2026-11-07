@@ -34,7 +34,7 @@
 
 ```mermaid
 flowchart LR
-  subgraph pacote[dex-memoria 0.1.13]
+  subgraph pacote[dex-memoria]
     REM[v2 remember] --> VAL[v2 validate/validate-root]
     VAL --> VR[vault_root + cross_vault_links]
     VAL --> ER[EMPTY_ROOT]

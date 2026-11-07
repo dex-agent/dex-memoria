@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
 const { rememberMemory, FAILURE_CURES, CURE_PRECEDENCE, MODE_BY_BUCKET } = require("../bin/memory-v2-remember.js");
-const repoRoot = join(process.cwd());
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const schemaPath = join(repoRoot, "contracts", "schemas", "dex.memory.remember.receipt.v2.schema.json");
 
 async function disposableRoots(t) {
@@ -75,28 +76,34 @@ test("schema instance gate: emitted recovery receipts match the published schema
   }
   const declaredModes = schema.properties.recovery.oneOf
     .flatMap((node) => node.properties?.mode?.enum ?? []);
-  assert.deepEqual(
-    [...declaredModes].sort(),
-    [...expectedModes].sort(),
-    "enum do schema deve casar exatamente com MODE_BY_BUCKET + manual (duas verdades codigo x schema)"
-  );
-  // Vacinas do 0.1.14 (issue #16): as TRES tabelas da fonte unica vacinadas —
-  // bucket novo sem precedencia (ou duplicado) reprova aqui, nao em producao.
   const buckets = [...new Set(Object.values(FAILURE_CURES).map((cure) => cure.bucket))];
-  for (const bucket of buckets) {
-    assert.equal(
-      CURE_PRECEDENCE.filter((candidate) => candidate === bucket).length,
-      1,
-      `bucket "${bucket}" deve aparecer em CURE_PRECEDENCE exatamente 1x (probe WAIT do issue #16)`
-    );
-  }
   const declaredCures = schema.properties.recovery.oneOf
     .find((node) => node.type === "object")
     ?.properties?.actions?.items?.properties?.cure?.enum ?? [];
   assert.deepEqual(
     [...declaredCures].sort(),
     [...new Set([...buckets, "UNCLASSIFIED"])].sort(),
-    "enum cure do schema deve ser exatamente os buckets de FAILURE_CURES + UNCLASSIFIED"
+    "enum cure do schema deve ser exatamente os buckets de FAILURE_CURES + UNCLASSIFIED (issue #16)"
+  );
+  assert.deepEqual(
+    [...declaredModes].sort(),
+    [...expectedModes].sort(),
+    "enum do schema deve casar exatamente com MODE_BY_BUCKET + manual (duas verdades codigo x schema)"
+  );
+  // Bijeção BIDIRECIONAL (issue #18): os DOIS lados — entrada orfa na precedencia
+  // (probe GHOST_BUCKET) ou bucket de modo sem precedencia (probe WAIT/ARCHIVE)
+  // reprovam aqui, nao em producao.
+  for (const bucket of buckets) {
+    assert.equal(
+      CURE_PRECEDENCE.filter((candidate) => candidate === bucket).length,
+      1,
+      `bucket "${bucket}" deve aparecer em CURE_PRECEDENCE exatamente 1x (issue #16)`
+    );
+  }
+  assert.deepEqual(
+    [...CURE_PRECEDENCE].sort(),
+    [...Object.keys(MODE_BY_BUCKET)].sort(),
+    "bijeção bidirecional: CURE_PRECEDENCE e as chaves de MODE_BY_BUCKET devem ser o MESMO conjunto (issue #18)"
   );
   const MESSAGES = {
     recover_then_retry_new_operation: "transaction is DESTINATION_PUBLISHED; recover before retry",
@@ -105,6 +112,12 @@ test("schema instance gate: emitted recovery receipts match the published schema
     manual_resolution: "multiple case-equivalent L1 files"
   };
   const cases = expectedModes.map((mode) => ({ mode, route: { status: "FAILED", code: byMode.get(mode), message: MESSAGES[mode] ?? "synthetic failure" } }));
+
+  for (const [code, cure] of Object.entries(FAILURE_CURES)) {
+    const recovery = await emitRecovery(t, roots, { status: "FAILED", code, message: `synthetic ${code}` });
+    const action = recovery.actions.find((entry) => entry.scope === "global");
+    assert.equal(action.cure, cure.bucket, `${code} deve declarar cure=${cure.bucket} (instancia de TODOS os codes — issue #18)`);
+  }
 
   for (const testCase of cases) {
     const recovery = await emitRecovery(t, roots, testCase.route);
@@ -186,5 +199,10 @@ test("contract_revision no receipt root discrimina a revisao do contrato (issue 
   assert.ok(
     (schema.required ?? []).includes("contract_revision"),
     "contract_revision deve ser required no root do schema"
+  );
+  assert.equal(
+    schema.properties.contract_revision.const,
+    receipt.contract_revision,
+    "pino bin<->schema: o const do schema deve casar com o contract_revision emitido (bump unilateral reprova — issue #18)"
   );
 });
