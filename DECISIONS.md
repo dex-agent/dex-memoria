@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-11-06 - Canal de distribuicao: Git/GitHub; registro npm descontinuado
+
+- Decisao do dono: o pacote nao sera mais publicado no registro npm; o canal
+  oficial de distribuicao e consumo e o Git/GitHub (main + tags + releases).
+- O registro npm permanece com `0.1.5` como ultima versao publicada, por
+  historico; `npm install dex-memoria` nao e mais rota suportada.
+- Consumo pela frota: clone/pull do repo + `dex-memoria install` (redirector
+  registry-only apontando a fonte canonica).
+- A pendencia local NPM-PUBLISH-0.1.7 e consumida por esta decisao.
+
 ## 2026-08-08 - Formalizar schema do v2 validate-root
 
 - Decisao: formalizar o contrato do `dex-memoria v2 validate-root` com dois
