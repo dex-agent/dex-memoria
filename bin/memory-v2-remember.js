@@ -102,7 +102,15 @@ const FAILURE_CURES = Object.freeze({
   JOURNAL_CONFLICT: { bucket: "RECOVER" },
   TRANSACTION_ROLLED_BACK: { bucket: "RETRY_NEW" },
   IDEMPOTENCY_CONFLICT: { bucket: "RETRY_NEW" },
-  ROUTE_BUSY: { bucket: "RETRY_SAME" }
+  ROUTE_BUSY: { bucket: "RETRY_SAME" },
+  // Manuais DECLARADOS (issue #14: codigos do executor sem bucket curavel —
+  // antes caam no default mudo; a tabela agora classifica MANUAL explicito):
+  CASE_COLLISION: { bucket: "MANUAL" },
+  ROUTE_CONFLICT: { bucket: "MANUAL" },
+  SAFETY_BOUNDARY: { bucket: "MANUAL" },
+  RECEIPT_JOURNAL_DIVERGENCE: { bucket: "MANUAL" },
+  RECOVERY_CONFLICT: { bucket: "MANUAL" },
+  PRODUCER_PROVENANCE_REQUIRED: { bucket: "MANUAL" }
 });
 // Precedencia DECLARADA (antes morava na ordem dos ifs — P1 do issue #12):
 // MANUAL primeiro (decisao humana antes de curar Irma); depois RECOVER vence
@@ -115,6 +123,10 @@ const MODE_BY_BUCKET = Object.freeze({
   RETRY_SAME: "retry_same_operation"
 });
 const bucketOf = (failureCode) => FAILURE_CURES[failureCode]?.bucket ?? "MANUAL";
+// cure declara a classificacao NO receipt (issue #14 P2): codigo fora da
+// tabela devolve UNCLASSIFIED — o receipt denuncia a propria lacuna em vez
+// de degradar para manual mudo.
+const cureOf = (failureCode) => FAILURE_CURES[failureCode]?.bucket ?? "UNCLASSIFIED";
 
 function recoveryGuidance(normalized, pendingReceipts) {
   const actions = pendingReceipts.map((receipt) => {
@@ -123,6 +135,7 @@ function recoveryGuidance(normalized, pendingReceipts) {
     return {
       scope: receipt.scope,
       failure_code: receipt.failure_code,
+      cure: cureOf(receipt.failure_code),
       ...(receipt.failure_message ? { failure_message: receipt.failure_message } : {}),
       ...(receipt.failure_cause ? { failure_cause: receipt.failure_cause } : {}),
       command: recoverable ? "dex-memoria v2 recover" : null,

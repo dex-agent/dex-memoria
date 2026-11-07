@@ -123,6 +123,7 @@ test("v2 remember chooses recover before resume when the pending route requires 
     actions: [{
       scope: "global",
       failure_code: "RECOVERY_REQUIRED",
+      cure: "RECOVER",
       command: "dex-memoria v2 recover",
       command_input: recoveryAction.command_input
     }],
@@ -354,6 +355,7 @@ test("v2 remember does not fabricate writer identities when every route fails", 
     actions: [{
       scope: "project",
       failure_code: "ROUTE_CONFLICT",
+      cure: "MANUAL",
       command: null
     }]
   });
@@ -400,5 +402,5 @@ test("the public remember receipt schema closes nested output and excludes priva
   assert.equal(recoveryObject.properties.actions.minItems, 1);
   assert.equal(recoveryObject.properties.actions.maxItems, 2);
   assert.equal(recoveryObject.properties.actions.items.additionalProperties, false);
-  assert.deepEqual(recoveryObject.properties.actions.items.required, ["scope", "failure_code", "command"]);
+  assert.deepEqual(recoveryObject.properties.actions.items.required, ["scope", "failure_code", "cure", "command"]);
 });

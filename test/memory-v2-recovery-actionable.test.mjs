@@ -214,3 +214,53 @@ test("recover then retry commits after a non-terminal journal loop", async (t) =
   });
   assert.equal(committed.status, "COMMITTED", "retry com operation_id novo deve commitar — fim do loop do issue #7");
 });
+
+test("recovery actions expose the cure classification of the source of truth", async (t) => {
+  const expectations = [
+    ["RECOVERY_REQUIRED", "RECOVER"],
+    ["TRANSACTION_ROLLED_BACK", "RETRY_NEW"],
+    ["ROUTE_BUSY", "RETRY_SAME"],
+    ["CASE_COLLISION", "MANUAL"]
+  ];
+  for (const [code, bucket] of expectations) {
+    const roots = await disposableRoots(t);
+    const receipt = await rememberMemory(dailyRequest(), {
+      cwd: roots.workspace,
+      memory_home: roots.memoryHome,
+      execute_route() { return { status: "FAILED", code, message: `synthetic ${code}` }; }
+    });
+    const action = receipt.recovery.actions.find((entry) => entry.scope === "global");
+    assert.equal(action.cure, bucket, `${code} deve declarar cure=${bucket} derivado de FAILURE_CURES (consumidor nao reimplementa a tabela)`);
+  }
+});
+
+test("unmapped failure code is declared UNCLASSIFIED, never silent manual", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory(dailyRequest(), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route() { return { status: "FAILED", code: "FUTURE_UNMAPPED_CODE", message: "synthetic unmapped" }; }
+  });
+  const action = receipt.recovery.actions.find((entry) => entry.scope === "global");
+  assert.equal(action.cure, "UNCLASSIFIED", "codigo fora da tabela devolve cure UNCLASSIFIED — o receipt declara a propria lacuna (issue #14)");
+  assert.equal(receipt.recovery.mode, "manual_resolution");
+});
+
+test("dual retry new plus retry same resolves to retry_new_operation with next id", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory(dailyRequest({ scope: "dual" }), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route(route) {
+      return route.scope === "project"
+        ? { status: "FAILED", code: "ROUTE_BUSY", message: "route mutex is held by another writer" }
+        : { status: "FAILED", code: "TRANSACTION_ROLLED_BACK", message: "transaction rolled back; retry with new operation_id" };
+    }
+  });
+  assert.equal(
+    receipt.recovery.mode,
+    "retry_new_operation",
+    "caracterizacao do contrato 0.1.12: RETRY_NEW vence RETRY_SAME pela CURE_PRECEDENCE (antes do 0.1.12 era retry_same sem id — divergencia anunciada no CHANGELOG 0.1.13)"
+  );
+  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/, "a irma com transacao rollbackada precisa de operation_id novo");
+});
