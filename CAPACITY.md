@@ -5,7 +5,7 @@
 > em `.agents/GATILHOS-VIVOS.md` — fonte mudou condição de capacidade ⇒ regenere.
 
 - **Objeto**: pacote `dex-memoria` (contrato documental + CLI de memória operacional Dex).
-- **Fotografia**: `0.1.13` @ commit `corte 0.1.13 @ SHA-DO-MERGE` — 2026-11-07.
+- **Fotografia**: `0.1.13` @ commit `corte 0.1.13 @ 2a2f164` — 2026-11-07.
 - **Ambiente observado**: Windows (win32 x64), Node 24 (contrato exige ≥18), Git Bash.
 - **Fontes vivas**: `SKILL.md` (sha `8b6a11c8…`), `SPEC.md` (sha `77f19711…`),
   `bin/dex-memoria.js` (sha `1919c660…`), `bin/memory-v2-capabilities.js`

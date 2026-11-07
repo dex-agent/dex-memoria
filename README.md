@@ -1,6 +1,6 @@
 # Dex Memoria
 
-Versao atual: `0.1.12`
+Versao atual: `0.1.13`
 
 > Dex Memoria V2 e a identidade da implementacao multi-rota. Projeto/local,
 > global e tema preservam seus roots; dual-scope produz dois recibos. O writer
@@ -326,7 +326,7 @@ Fonte de extracao:
 
 ## Estado Atual
 
-Este repo preserva a linha documental `0.1.12`, a arquitetura L1/L2/L3, a raiz
+Este repo preserva a linha documental `0.1.13`, a arquitetura L1/L2/L3, a raiz
 canonica `DEX_MEMORIA_HOME` e a taxonomia de temas reutilizaveis. O V0
 executavel fica restrito a fixture descartavel; o writer/selector V2 explicito
 esta ativo nas roots publicas. Versionamento, release e SemVer continuam fora
@@ -351,6 +351,6 @@ npm run doctor
 npm run pack:check
 ```
 
-O CI executa as mesmas validacoes principais para garantir que a versao `0.1.12`,
+O CI executa as mesmas validacoes principais para garantir que a versao `0.1.13`,
 os metadados do pacote e a relacao documental com `dex-agent` continuem
 alinhados sem incluir segredos ou runtime.

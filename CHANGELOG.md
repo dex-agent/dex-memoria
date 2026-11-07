@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.1.13 - 2026-11-07
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Corte curativo da revisão adversarial do 0.1.12 (issue #14) — troca cópia
+por consulta nos resíduos da fonte única:
+
+- **`cure` por action**: toda action de `recovery` carrega a classificação da
+  fonte única (`MANUAL`/`RECOVER`/`RETRY_NEW`/`RETRY_SAME`); código de falha
+  fora de `FAILURE_CURES` devolve `cure: "UNCLASSIFIED"` — o receipt denuncia
+  a própria lacuna em vez de degradar para manual mudo. A tabela passa a
+  declarar os manuais do executor (`CASE_COLLISION`, `ROUTE_CONFLICT`,
+  `SAFETY_BOUNDARY`, `RECEIPT_JOURNAL_DIVERGENCE`, `RECOVERY_CONFLICT`,
+  `PRODUCER_PROVENANCE_REQUIRED`).
+- **Schema no mesmo PR do emissor** (checklist CONTRIBUTING):
+  `actions.items.cure` (enum fechado, agora `required`) e allOf de
+  `retry_same_operation` deduplicado (estava 2x byte-a-byte no 0.1.12).
+  ATENÇÃO a consumidores estritos: receipts emitidos antes do 0.1.13 não
+  validam contra o schema novo (ação sem `cure`).
+- **Gate de instância deriva os MODOS** de `MODE_BY_BUCKET` — nenhuma lista
+  literal; bucket sem mode reprova com mensagem útil; enum do schema ==
+  tabela (mata a meia-derivação apontada pela adversarial).
+- **Divergência de contrato anunciada**: o dual `ROUTE_BUSY +
+  TRANSACTION_ROLLED_BACK/IDEMPOTENCY_CONFLICT` resolve
+  `retry_new_operation` COM `next_operation_id` (comportamento introduzido
+  no 0.1.12 sem anúncio; agora caracterizado em teste e documentado).
+- **Mapas derivados regenerados com dados reais** (versão por feature,
+  contadores da suíte, SHAs reproduzíveis) e CONTRIBUTING ganha a regra:
+  bump-por-rótulo de projeção derivada é proibido (P1 do issue #14).
+- Suite: 365 testes / 355 pass / 0 fail (10 skipped).
+
 ## 0.1.12 - 2026-11-07
 
 - Tabela de cura unica `FAILURE_CURES` + `CURE_PRECEDENCE` declarada
