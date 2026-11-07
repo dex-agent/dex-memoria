@@ -17,9 +17,8 @@ const INPUT_KEYS = new Set([
   "tags", "target_layer", "theme", "title", "trigger"
 ]);
 
-async function rememberMemory(input, options = {}) {
-  const normalized = normalizeRememberRequest(input, options);
-  const operationRequest = {
+function buildOperationRequest(normalized) {
+  return {
     contract: "dex.memory.operation.request.v2",
     implementation_version: "v2",
     scope: normalized.scope,
@@ -28,6 +27,11 @@ async function rememberMemory(input, options = {}) {
     operation_id: normalized.operation_id,
     ...(normalized.theme ? { theme: normalized.theme } : {})
   };
+}
+
+async function rememberMemory(input, options = {}) {
+  const normalized = normalizeRememberRequest(input, options);
+  const operationRequest = buildOperationRequest(normalized);
   const candidate = {
     contract: "dex.memory.write.candidate.v2",
     target_layer: normalized.target_layer,
@@ -89,22 +93,32 @@ async function rememberMemory(input, options = {}) {
   };
 }
 
+const RECOVERABLE_FAILURE_CODES = ["RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "JOURNAL_CONFLICT"];
+
 function recoveryGuidance(normalized, pendingReceipts) {
-  const actions = pendingReceipts.map((receipt) => ({
-    scope: receipt.scope,
-    failure_code: receipt.failure_code,
-    ...(receipt.failure_cause ? { failure_cause: receipt.failure_cause } : {}),
-    command: ["RECOVERY_REQUIRED", "ROLLBACK_REQUIRED"].includes(receipt.failure_code)
-      ? "dex-memoria v2 recover"
-      : null
-  }));
+  const actions = pendingReceipts.map((receipt) => {
+    const recoverable = RECOVERABLE_FAILURE_CODES.includes(receipt.failure_code);
+    return {
+      scope: receipt.scope,
+      failure_code: receipt.failure_code,
+      ...(receipt.failure_cause ? { failure_cause: receipt.failure_cause } : {}),
+      command: recoverable ? "dex-memoria v2 recover" : null,
+      ...(recoverable ? {
+        command_input: {
+          contract: "dex.memory.recover.request.v2",
+          request: buildOperationRequest(normalized),
+          scope: receipt.scope
+        }
+      } : {})
+    };
+  });
   const hasManual = actions.some((action) => ![
-    "RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "TRANSACTION_ROLLED_BACK"
+    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK"
   ].includes(action.failure_code));
   const identity = actions.map((action) => `${action.scope}:${action.failure_code}`).join("|");
   const nextOperationId = `remember-retry-${digest(`${normalized.operation_id}:${identity}`).slice(0, 24)}`;
   const requiresNewOperation = actions.some((action) => [
-    "RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "TRANSACTION_ROLLED_BACK"
+    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK"
   ].includes(action.failure_code));
   if (hasManual) return {
     mode: "manual_resolution",
