@@ -188,7 +188,10 @@ contrato ou executando recovery manual, consulte sob demanda:
 - `docs/usage.md`: exemplos e referência CLI, incluindo a seção
   `Contrato De Tags Do V2` (regras de tags/validação com exemplo e
   anti-exemplo, códigos `MISSING_NESTED_TAG`/`DIVERGENT_TAG_SET`/`ORPHAN_L1_LINE`
-  e o `failure.detail.validation_errors` do receipt `FAILED`);
+  e o `failure.detail.validation_errors` do receipt `FAILED`) e a seção
+  `Semântica de Root do validate-root` (root self-contained vs vault composto,
+  campo opcional `vault_root` com `cross_vault_links`, `EMPTY_ROOT` anti
+  verde-vazio e a tabela de skips declarados do validador — issue #5);
 - `docs/runtime-boundary.md`: fronteira do pacote;
 - `docs/memory-home.md`: resolução de roots;
 - `contracts/schemas/`: schemas públicos;
