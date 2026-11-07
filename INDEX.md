@@ -28,6 +28,10 @@ depender do historico da conversa.
   consumidores, comandos, SHADOW, backup, rollback e gates de cutover.
 - `registry/agents-skills/dex-memoria/SKILL.md` - fonte versionada do
   redirecionador global instalado em `.agents/skills`.
+- `CAPACITY.md` - projecao de capacidades observaveis (corte 0.1.8; derivada —
+  regenere ao tocar release/fontes).
+- `DECISION-FLOW.md` - fluxo operacional de decisoes do validador/CLI (corte
+  0.1.8; derivada — regenere ao mudar condicao/ramo/owner).
 - `contracts/` - contratos operacionais complementares.
 - `templates/` - modelos copiaveis e sanitizados.
 - `examples/` - exemplos sanitizados; nunca estado real.
