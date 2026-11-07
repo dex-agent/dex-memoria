@@ -122,6 +122,28 @@ test("route busy yields retry_same_operation with then_command and no next_opera
   assert.equal(receipt.recovery.next_operation_id, undefined, "retry da mesma operacao nao oferta id novo");
 });
 
+test("dual mixed route busy plus journal conflict prioritizes recover over retry same", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory(dailyRequest({ scope: "dual" }), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route(route) {
+      return route.scope === "project"
+        ? { status: "FAILED", code: "ROUTE_BUSY", message: "route mutex is held by another writer" }
+        : { status: "FAILED", code: "JOURNAL_CONFLICT", message: "stored journal does not belong to this route" };
+    }
+  });
+  assert.equal(receipt.status, "FAILED");
+  assert.equal(
+    receipt.recovery.mode,
+    "recover_then_retry_new_operation",
+    "dual misto: a cura da irma que exige recover vence o retry-same da transiente (precedencia declarada — issue #12 P1)"
+  );
+  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/);
+  const busyAction = receipt.recovery.actions.find((entry) => entry.scope === "project");
+  assert.equal(busyAction.failure_code, "ROUTE_BUSY");
+});
+
 test("recover then retry commits after a non-terminal journal loop", async (t) => {
   const roots = await disposableRoots(t);
   const request = dailyRequest();

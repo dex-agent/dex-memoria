@@ -900,6 +900,21 @@ conteúdo (issue #10, item 4).
 
 ## Recuperacao De Rota Simples (v2 remember + v2 recover)
 
+Fonte unica da taxonomia: `FAILURE_CURES` + `CURE_PRECEDENCE` em
+`bin/memory-v2-remember.js` (o gate de instancia e esta tabela viajam juntos —
+mudou a fonte, atualize aqui no mesmo PR):
+
+| Modo do `recovery` | Códigos de falha | Cura |
+| --- | --- | --- |
+| `recover_then_retry_new_operation` | `RECOVERY_REQUIRED`, `ROLLBACK_REQUIRED`, `JOURNAL_CONFLICT` | `v2 recover` (com `command_input` da action) e retry com `next_operation_id` |
+| `retry_new_operation` | `TRANSACTION_ROLLED_BACK`, `IDEMPOTENCY_CONFLICT` | reemitir com `next_operation_id` |
+| `retry_same_operation` | `ROUTE_BUSY` | repetir a MESMA operação quando o mutex liberar (sem `next_operation_id`; sem pacing automático — aguarde entre tentativas) |
+| `manual_resolution` | demais códigos (ex.: `CASE_COLLISION`, `SAFETY_BOUNDARY`) | decisão humana; `failure_message` da action carrega o motivo do executor |
+
+Precedência declarada: `MANUAL > RECOVER > RETRY_NEW > RETRY_SAME` — em escopo
+dual misto, a ação de maior precedência presente define o modo (a action de
+cada rota continua carregando sua própria cura).
+
 Quando uma escrita de `v2 remember` falha no meio (validacao, transporte ou
 journal anterior nao-terminal), o receipt devolve `recovery` **acionavel por
 contrato** (issue #7): para `RECOVERY_REQUIRED`, `ROLLBACK_REQUIRED` e
