@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.12 - 2026-11-07
+
+- Tabela de cura unica `FAILURE_CURES` + `CURE_PRECEDENCE` declarada
+  (`MANUAL > RECOVER > RETRY_NEW > RETRY_SAME`) em um unico simbolo: o
+  guidance de recovery passa a LER a tabela — dual misto ROUTE_BUSY +
+  JOURNAL_CONFLICT agora sai `recover_then_retry_new_operation` (fecha o P1
+  de precedencia do issue #12; caracterizacao RED derivada do probe da
+  revisao adversarial).
+- Declara `failure_message` e `failure` no schema do operation receipt e
+  estende o gate de instancia ao nivel `route_receipts` (fecha o P1 do
+  schema-invalid; o gate tambem passa a DERIVAR os casos de teste da propia
+  tabela).
+- Adiciona `allOf` de `retry_same_operation` ao schema do remember receipt
+  (command null, sem next_operation_id) — a forma contraditoria deixa de ser
+  schema-legal.
+- Docs: tabela de modos com precedencia, declarando a fonte unica.
+- Instancia local `workflow/manutencao-iterativa-com-evidencia@1.3.0`
+  (receita de manutencao iterativa com evidencia; check-workflow
+  `--delivery repo` verde).
+- Contrato vigente inalterado: Dex Memoria V2 permanece o writer/selector
+  ativo; `legacy-v1` somente leitura/restauracao.
+
 ## 0.1.11 - 2026-11-07
 
 - Adiciona gate de instancia-vs-schema na suite: receipts reais dos modos de
