@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.10 - 2026-11-07
+
+- Declara `command_input` no schema público do receipt
+  (`dex.memory.remember.receipt.v2.schema.json`): o 0.1.9 emitia o campo que o
+  próprio schema fechado rejeitava — receipts "acionáveis" eram
+  schema-invalid (P1 unânime da revisão adversarial pós-merge).
+- `IDEMPOTENCY_CONFLICT` deixa de ser dead-end mudo: entra em
+  `retry_new_operation` com `then_command` + `next_operation_id` (mesma classe
+  do issue #7; achado convergente de 4/5 revisores).
+- Corrige assert tautológico do teste fim-a-fim do recover (agora confere
+  `status: ROLLED_BACK` direto) e typo `oferer`.
+- `SKILL.md` documenta o `command_input` executável e o retry de
+  `IDEMPOTENCY_CONFLICT`.
+- Contrato vigente inalterado: Dex Memoria V2 permanece o writer/selector
+  ativo; `legacy-v1` somente leitura/restauração.
+
 ## 0.1.9 - 2026-11-07
 
 - Torna o recovery do `v2 remember` acionável por contrato (issue #7):
