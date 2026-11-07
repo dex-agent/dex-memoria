@@ -80,7 +80,27 @@ test("journal conflict yields actionable recovery guidance instead of silent man
   assert.equal(action.command_input.scope, "global");
   assert.ok(action.command_input.request && action.command_input.request.operation_id, "command_input.request deve reproduzir o plano da operacao");
   assert.equal(receipt.recovery.mode, "recover_then_retry_new_operation");
-  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/, "deve oferer operation_id novo para o retry");
+  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/, "deve oferecer operation_id novo para o retry");
+});
+
+test("idempotency conflict yields retry_new_operation with next_operation_id", async (t) => {
+  const roots = await disposableRoots(t);
+
+  const receipt = await rememberMemory(dailyRequest(), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route() {
+      return { status: "FAILED", code: "IDEMPOTENCY_CONFLICT", message: "idempotency key belongs to another request" };
+    }
+  });
+
+  assert.equal(receipt.status, "FAILED");
+  const action = receipt.recovery?.actions?.find((entry) => entry.scope === "global");
+  assert.equal(action.failure_code, "IDEMPOTENCY_CONFLICT");
+  assert.equal(receipt.recovery.mode, "retry_new_operation", "conflito de idempotencia se cura com operation_id novo, sem recover");
+  assert.equal(action.command, null, "IDEMPOTENCY_CONFLICT nao exige recover");
+  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/, "deve oferecer operation_id novo (fecha o dead-end da revisao adversarial)");
+  assert.equal(receipt.recovery.then_command, "dex-memoria v2 remember");
 });
 
 test("recover then retry commits after a non-terminal journal loop", async (t) => {
@@ -138,7 +158,7 @@ test("recover then retry commits after a non-terminal journal loop", async (t) =
   const recovered = await runCli(["v2", "recover"], roots.memoryHome, action.command_input);
   assert.equal(recovered.exitCode, 0, recovered.stderr || recovered.stdout);
   const recoveredReceipt = JSON.parse(recovered.stdout);
-  assert.equal(recoveredReceipt.status, "FAILED" === recoveredReceipt.status ? "FAILED" : recoveredReceipt.recovery_status || recoveredReceipt.status, "recover deve reportar estado");
+  assert.equal(recoveredReceipt.status, "ROLLED_BACK", "recover bem-sucedido reporta status ROLLED_BACK");
   assert.ok(
     ["ROLLED_BACK", "ALREADY_ROLLED_BACK"].includes(recoveredReceipt.recovery_status ?? recoveredReceipt.status),
     "journal deve terminar ROLLED_BACK apos o recover do command_input"

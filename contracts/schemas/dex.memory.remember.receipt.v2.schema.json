@@ -86,7 +86,17 @@
                   "scope": { "enum": ["project", "global", "theme"] },
                   "failure_code": { "type": "string", "minLength": 1 },
                   "failure_cause": { "type": "string", "minLength": 1 },
-                  "command": { "enum": ["dex-memoria v2 recover", null] }
+                  "command": { "enum": ["dex-memoria v2 recover", null] },
+                  "command_input": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["contract", "request", "scope"],
+                    "properties": {
+                      "contract": { "const": "dex.memory.recover.request.v2" },
+                      "request": { "type": "object" },
+                      "scope": { "enum": ["project", "global", "theme"] }
+                    }
+                  }
                 }
               }
             },

@@ -113,12 +113,12 @@ function recoveryGuidance(normalized, pendingReceipts) {
     };
   });
   const hasManual = actions.some((action) => ![
-    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK"
+    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"
   ].includes(action.failure_code));
   const identity = actions.map((action) => `${action.scope}:${action.failure_code}`).join("|");
   const nextOperationId = `remember-retry-${digest(`${normalized.operation_id}:${identity}`).slice(0, 24)}`;
   const requiresNewOperation = actions.some((action) => [
-    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK"
+    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"
   ].includes(action.failure_code));
   if (hasManual) return {
     mode: "manual_resolution",

@@ -113,8 +113,10 @@ não é o único oracle.
 
 Retry do mesmo pedido comprometido deve manter `operation_id` e retornar
 `deduplicated=true`, sem duplicar L1 ou destino. Sempre que `recovery` não for
-`null` — inclusive em `FAILED` — siga-o: journal não terminal exige `recover`; journal já
-`ROLLED_BACK` exige repetir `remember` com o `next_operation_id` fornecido.
+`null` — inclusive em `FAILED` — siga-o: journal não terminal exige `recover`
+(com o `command_input` de cada action, JSON pronto para o stdin — não componha
+à mão); journal já `ROLLED_BACK` ou `IDEMPOTENCY_CONFLICT` exige repetir
+`remember` com o `next_operation_id` fornecido.
 Execute todas as entradas de `recovery.actions`, uma por rota pendente, antes
 do `then_command`. Não reutilize silenciosamente uma transação terminal.
 
