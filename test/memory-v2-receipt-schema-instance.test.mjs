@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const { rememberMemory, FAILURE_CURES, MODE_BY_BUCKET } = require("../bin/memory-v2-remember.js");
+const { rememberMemory, FAILURE_CURES, CURE_PRECEDENCE, MODE_BY_BUCKET } = require("../bin/memory-v2-remember.js");
 const repoRoot = join(process.cwd());
 const schemaPath = join(repoRoot, "contracts", "schemas", "dex.memory.remember.receipt.v2.schema.json");
 
@@ -80,6 +80,24 @@ test("schema instance gate: emitted recovery receipts match the published schema
     [...expectedModes].sort(),
     "enum do schema deve casar exatamente com MODE_BY_BUCKET + manual (duas verdades codigo x schema)"
   );
+  // Vacinas do 0.1.14 (issue #16): as TRES tabelas da fonte unica vacinadas —
+  // bucket novo sem precedencia (ou duplicado) reprova aqui, nao em producao.
+  const buckets = [...new Set(Object.values(FAILURE_CURES).map((cure) => cure.bucket))];
+  for (const bucket of buckets) {
+    assert.equal(
+      CURE_PRECEDENCE.filter((candidate) => candidate === bucket).length,
+      1,
+      `bucket "${bucket}" deve aparecer em CURE_PRECEDENCE exatamente 1x (probe WAIT do issue #16)`
+    );
+  }
+  const declaredCures = schema.properties.recovery.oneOf
+    .find((node) => node.type === "object")
+    ?.properties?.actions?.items?.properties?.cure?.enum ?? [];
+  assert.deepEqual(
+    [...declaredCures].sort(),
+    [...new Set([...buckets, "UNCLASSIFIED"])].sort(),
+    "enum cure do schema deve ser exatamente os buckets de FAILURE_CURES + UNCLASSIFIED"
+  );
   const MESSAGES = {
     recover_then_retry_new_operation: "transaction is DESTINATION_PUBLISHED; recover before retry",
     retry_new_operation: "transaction was rolled back; use a new operation_id",
@@ -146,5 +164,27 @@ test("schema instance gate: retry_same allOf branch appears exactly once", async
     count,
     1,
     `allOf de retry_same_operation deve aparecer exatamente 1 vez (encontrado ${count} — duplicacao byte-a-byte do 0.1.12, issue #14)`
+  );
+});
+
+test("contract_revision no receipt root discrimina a revisao do contrato (issue #16)", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory({
+    scope: "global",
+    title: "Entrada de revisao de contrato",
+    trigger: "Quando o consumidor precisa discriminar receipt pre/pos-cure por maquina",
+    body: "rev2 = cure nas actions; rev1 = implicito antes do 0.1.13.",
+    tags: ["#dex-memoria/contract-revision"]
+  }, {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route() { return { status: "FAILED", code: "CASE_COLLISION", message: "multiple case-equivalent L1 files" }; }
+  });
+  assert.equal(receipt.contract_revision, 2, "receipt root emite contract_revision (rev2 = cure)");
+  const schema = JSON.parse(await readFile(schemaPath, "utf8"));
+  assert.ok(schema.properties.contract_revision, "schema deve declarar contract_revision no root");
+  assert.ok(
+    (schema.required ?? []).includes("contract_revision"),
+    "contract_revision deve ser required no root do schema"
   );
 });

@@ -3,7 +3,7 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:aba587f603608b6adae885964bc22ecacb582f005597cec79a6b688f84fce41f",
+  "sources_revision": "sha256:5f7f6fd23fe23c174ca5bc375b28516321358bd3faed0e41751b492902817009",
   "sent_revision": "sha256:4f810f10fc0b6d233fa993f6b721c56f13c6108dd55c86312bc173a0243b8a68",
   "rules": [
     {
@@ -104,7 +104,7 @@
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
-      "sha256": "82bf8833e55ce7f745fb9d64c352cfe22fc6a136403a9816d136e9c6f24ea012",
+      "sha256": "a003fe40ca56b33fd1529064c2fd562a00d0b28551369854dc59f869a8402af5",
       "enviado": false
     }
   ]

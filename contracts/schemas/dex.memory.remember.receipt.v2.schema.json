@@ -4,10 +4,14 @@
   "title": "dex.memory.remember.receipt.v2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contract", "implementation_version", "status", "operation_id", "request_fingerprint", "candidate_id", "content_hash", "normalized_request", "routes", "route_receipts", "validations", "recovery"],
+  "required": ["contract", "implementation_version", "contract_revision", "status", "operation_id", "request_fingerprint", "candidate_id", "content_hash", "normalized_request", "routes", "route_receipts", "validations", "recovery"],
   "properties": {
     "contract": { "const": "dex.memory.remember.receipt.v2" },
     "implementation_version": { "const": "v2" },
+    "contract_revision": {
+      "const": 2,
+      "$comment": "Discriminador de maquina da revisao do contrato (issue #16): rev2 = recovery.actions carrega cure (0.1.13+); rev1 = implicito antes. Mutacoes in-place do required passam a ser legiveis por consumidor."
+    },
     "status": { "enum": ["COMMITTED", "PARTIAL_PENDING", "FAILED"] },
     "operation_id": { "type": "string", "minLength": 1 },
     "request_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
