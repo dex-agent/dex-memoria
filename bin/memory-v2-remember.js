@@ -93,13 +93,33 @@ async function rememberMemory(input, options = {}) {
   };
 }
 
-const CURE_BY_RECOVER = ["RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "JOURNAL_CONFLICT"];
-const CURE_BY_RETRY_NEW_OPERATION = ["TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"];
-const CURE_BY_RETRY_SAME_OPERATION = ["ROUTE_BUSY"];
+// Fonte unica da taxonomia de cura (issue #12: mata a alteracao divergente).
+// O gate de instancia (test/memory-v2-receipt-schema-instance.test.mjs) e a
+// secao de modos da docs LEEM daqui — mudou a tabela, schema/docs viajam juntos.
+const FAILURE_CURES = Object.freeze({
+  RECOVERY_REQUIRED: { bucket: "RECOVER" },
+  ROLLBACK_REQUIRED: { bucket: "RECOVER" },
+  JOURNAL_CONFLICT: { bucket: "RECOVER" },
+  TRANSACTION_ROLLED_BACK: { bucket: "RETRY_NEW" },
+  IDEMPOTENCY_CONFLICT: { bucket: "RETRY_NEW" },
+  ROUTE_BUSY: { bucket: "RETRY_SAME" }
+});
+// Precedencia DECLARADA (antes morava na ordem dos ifs — P1 do issue #12):
+// MANUAL primeiro (decisao humana antes de curar Irma); depois RECOVER vence
+// RETRY_SAME (dual misto transiente + journal pendente cura o journal primeiro).
+const CURE_PRECEDENCE = Object.freeze(["MANUAL", "RECOVER", "RETRY_NEW", "RETRY_SAME"]);
+const MODE_BY_BUCKET = Object.freeze({
+  MANUAL: "manual_resolution",
+  RECOVER: "recover_then_retry_new_operation",
+  RETRY_NEW: "retry_new_operation",
+  RETRY_SAME: "retry_same_operation"
+});
+const bucketOf = (failureCode) => FAILURE_CURES[failureCode]?.bucket ?? "MANUAL";
 
 function recoveryGuidance(normalized, pendingReceipts) {
   const actions = pendingReceipts.map((receipt) => {
-    const recoverable = CURE_BY_RECOVER.includes(receipt.failure_code);
+    const bucket = bucketOf(receipt.failure_code);
+    const recoverable = bucket === "RECOVER";
     return {
       scope: receipt.scope,
       failure_code: receipt.failure_code,
@@ -115,41 +135,31 @@ function recoveryGuidance(normalized, pendingReceipts) {
       } : {})
     };
   });
-  const hasManual = actions.some((action) => ![
-    ...CURE_BY_RECOVER, ...CURE_BY_RETRY_NEW_OPERATION, ...CURE_BY_RETRY_SAME_OPERATION
-  ].includes(action.failure_code));
+  const buckets = actions.map((action) => bucketOf(action.failure_code));
+  const winningBucket = CURE_PRECEDENCE.find((candidate) => buckets.includes(candidate));
+  const mode = MODE_BY_BUCKET[winningBucket];
   const identity = actions.map((action) => `${action.scope}:${action.failure_code}`).join("|");
   const nextOperationId = `remember-retry-${digest(`${normalized.operation_id}:${identity}`).slice(0, 24)}`;
-  const requiresNewOperation = actions.some((action) => [
-    ...CURE_BY_RECOVER, ...CURE_BY_RETRY_NEW_OPERATION
-  ].includes(action.failure_code));
-  const retriesSameOperation = actions.some((action) => CURE_BY_RETRY_SAME_OPERATION.includes(action.failure_code));
-  if (hasManual) return {
-    mode: "manual_resolution",
-    actions,
-    ...(requiresNewOperation ? {
-      then_command: "dex-memoria v2 remember",
-      next_operation_id: nextOperationId
-    } : {})
-  };
-
-  if (retriesSameOperation) {
+  const requiresNewOperation = buckets.some((bucket) => bucket === "RECOVER" || bucket === "RETRY_NEW");
+  if (mode === "manual_resolution") {
     return {
-      mode: "retry_same_operation",
+      mode,
+      actions,
+      ...(requiresNewOperation ? {
+        then_command: "dex-memoria v2 remember",
+        next_operation_id: nextOperationId
+      } : {})
+    };
+  }
+  if (mode === "retry_same_operation") {
+    return {
+      mode,
       actions,
       then_command: "dex-memoria v2 remember"
     };
   }
-  if (actions.some((action) => action.command === "dex-memoria v2 recover")) {
-    return {
-      mode: "recover_then_retry_new_operation",
-      actions,
-      then_command: "dex-memoria v2 remember",
-      next_operation_id: nextOperationId
-    };
-  }
   return {
-    mode: "retry_new_operation",
+    mode,
     actions,
     then_command: "dex-memoria v2 remember",
     next_operation_id: nextOperationId
@@ -255,4 +265,4 @@ function digest(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-module.exports = { normalizeRememberRequest, rememberMemory };
+module.exports = { normalizeRememberRequest, rememberMemory, FAILURE_CURES, CURE_PRECEDENCE, MODE_BY_BUCKET };

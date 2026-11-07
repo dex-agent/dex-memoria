@@ -65,6 +65,8 @@
             }
           },
           "failure_code": { "type": "string" },
+          "failure_message": { "type": "string", "minLength": 1 },
+          "failure": { "type": "object" },
           "failure_cause": { "type": "string" }
         },
         "allOf": [
