@@ -94,9 +94,17 @@ async function validateMemoryCapabilityRoot(input) {
     return validateMemoryCapability(input);
   }
 
+  if (input?.vault_root !== undefined && (typeof input?.vault_root !== "string" || input.vault_root.trim() === "")) {
+    const invalidVaultReceipt = result(input?.capability, input?.require_obsidian, [{
+      code: "INVALID_VAULT_ROOT",
+      message: "vault_root must be a non-empty filesystem path when provided"
+    }], CAPABILITIES[input?.capability]);
+    return { ...invalidVaultReceipt, resolved_root: input?.root, touched_files: [], evidence: emptyEvidence() };
+  }
+
   let evidence;
   try {
-    evidence = await inspectV2CapabilityRoot(input?.root);
+    evidence = await inspectV2CapabilityRoot(input?.root, input?.vault_root ?? null);
   } catch (error) {
     const receipt = result(input?.capability, input?.require_obsidian, [{
       code: "FILESYSTEM_VALIDATION_FAILED",
@@ -125,10 +133,16 @@ async function validateMemoryCapabilityRoot(input) {
       code: "ORPHAN_L1_LINE",
       message: `L1 line points to a missing destination: ${label}`
     }));
+  const emptyRootErrors = evidence.files.length === 0
+    ? [{
+        code: "EMPTY_ROOT",
+        message: `root ${evidence.root} has no V2 markdown surface (lembranca.md/memorias/conhecimento): a composed Obsidian vault keeps sub-roots in subfolders; pass vault_root to enable cross-vault resolution`
+      }]
+    : [];
   return {
     ...receipt,
-    ok: receipt.ok && orphanL1Errors.length === 0,
-    errors: [...receipt.errors, ...orphanL1Errors],
+    ok: receipt.ok && orphanL1Errors.length === 0 && emptyRootErrors.length === 0,
+    errors: [...receipt.errors, ...orphanL1Errors, ...emptyRootErrors],
     resolved_root: evidence.root,
     touched_files: evidence.files,
     evidence
@@ -190,7 +204,7 @@ async function validateMemoryCapabilityUnit(input) {
   };
 }
 
-async function inspectV2CapabilityRoot(rootPath) {
+async function inspectV2CapabilityRoot(rootPath, vaultRootPath = null) {
   if (typeof rootPath !== "string" || rootPath.trim() === "") {
     throw new Error("root must be a non-empty filesystem path");
   }
@@ -200,8 +214,18 @@ async function inspectV2CapabilityRoot(rootPath) {
     throw new Error("root must be a real directory, not a symbolic link");
   }
 
+  let vaultContext = null;
+  if (vaultRootPath !== null) {
+    const vaultRoot = await realpath(resolve(vaultRootPath));
+    const vaultRootInfo = await lstat(vaultRoot);
+    if (!vaultRootInfo.isDirectory() || vaultRootInfo.isSymbolicLink()) {
+      throw new Error("vault_root must be a real directory, not a symbolic link");
+    }
+    vaultContext = { root: vaultRoot, documents: await collectVaultLinkTargets(vaultRoot) };
+  }
+
   const markdownFiles = await collectV2MarkdownFiles(root);
-  return inspectV2CapabilityFiles(root, markdownFiles);
+  return inspectV2CapabilityFiles(root, markdownFiles, null, vaultContext);
 }
 
 async function inspectV2CapabilityUnit(rootPath, touchedPaths) {
@@ -225,7 +249,7 @@ async function inspectV2CapabilityUnit(rootPath, touchedPaths) {
   return inspectV2CapabilityFiles(root, markdownFiles, new Set(touchedPaths.map((entry) => portablePath(entry).toLowerCase())));
 }
 
-async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
+async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null, vaultContext = null) {
   const unitDestination = unitPaths ? Array.from(unitPaths).find((entry) => entry !== "lembranca.md") : null;
   const documents = new Map();
   const files = [];
@@ -264,6 +288,7 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
   const wikilinks = [];
   const unresolvedMarkdownLinks = [];
   const unresolvedWikilinks = [];
+  const crossVaultLinks = [];
   const observedBacklinks = new Set();
   for (const filePath of markdownFiles) {
     const sourcePath = portablePath(relative(root, filePath));
@@ -275,7 +300,16 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
       const label = `${sourcePath} -> ${target}`;
       markdownLinks.push(label);
       const resolvedTarget = resolveMemoryLink(root, sourcePath, target, false, documents);
-      if (!resolvedTarget.resolved) unresolvedMarkdownLinks.push(label);
+      if (!resolvedTarget.resolved) {
+        const vaultTarget = vaultContext
+          ? resolveVaultMemoryLink(vaultContext, root, sourcePath, target, false)
+          : null;
+        if (vaultTarget !== null) {
+          crossVaultLinks.push(`${sourcePath} -> ${target} (vault_root: ${vaultTarget})`);
+          continue;
+        }
+        unresolvedMarkdownLinks.push(label);
+      }
       addObservedBacklink(observedBacklinks, sourcePath, resolvedTarget.path);
     }
     for (const match of content.matchAll(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g)) {
@@ -285,7 +319,16 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
       const label = `${sourcePath} -> [[${target}]]`;
       wikilinks.push(label);
       const resolvedTarget = resolveMemoryLink(root, sourcePath, target, true, documents);
-      if (!resolvedTarget.resolved) unresolvedWikilinks.push(label);
+      if (!resolvedTarget.resolved) {
+        const vaultTarget = vaultContext
+          ? resolveVaultMemoryLink(vaultContext, root, sourcePath, target, true)
+          : null;
+        if (vaultTarget !== null) {
+          crossVaultLinks.push(`${sourcePath} -> [[${target}]] (vault_root: ${vaultTarget})`);
+          continue;
+        }
+        unresolvedWikilinks.push(label);
+      }
       addObservedBacklink(observedBacklinks, sourcePath, resolvedTarget.path);
     }
   }
@@ -306,7 +349,8 @@ async function inspectV2CapabilityFiles(root, markdownFiles, unitPaths = null) {
     backlinks: OBSERVABLE_BACKLINKS.filter((edge) => observedBacklinks.has(edge)),
     required_backlinks: requiredBacklinks,
     unresolved_markdown_links: unresolvedMarkdownLinks,
-    unresolved_wikilinks: unresolvedWikilinks
+    unresolved_wikilinks: unresolvedWikilinks,
+    cross_vault_links: crossVaultLinks
   };
 }
 
@@ -417,6 +461,51 @@ function resolveMemoryLink(root, sourcePath, rawTarget, isWikilink, documents) {
   return { resolved: false, path: null };
 }
 
+function resolveVaultMemoryLink(vaultContext, root, sourcePath, rawTarget, isWikilink) {
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(rawTarget)) return null;
+  const [rawFilePart, rawFragment = ""] = rawTarget.replace(/^<|>$/g, "").split("#", 2);
+  if (rawFilePart === "") return null;
+  const sourceAbsolutePath = resolve(root, ...sourcePath.split("/"));
+  const basePath = isWikilink && !rawFilePart.startsWith(".")
+    ? resolve(vaultContext.root, ...rawFilePart.split("/"))
+    : resolve(dirname(sourceAbsolutePath), ...rawFilePart.split("/"));
+  for (const candidate of [basePath, `${basePath}.md`, resolve(basePath, "README.md")]) {
+    if (!isContained(vaultContext.root, candidate)) continue;
+    const document = vaultContext.documents.get(relative(vaultContext.root, candidate).toLowerCase());
+    if (!document) continue;
+    if (rawFragment === "") return portablePath(relative(vaultContext.root, candidate));
+    const fragment = decodeURIComponent(rawFragment).toLowerCase();
+    const fragmentResolved = fragment.startsWith("^")
+      ? document.blockIds.has(fragment.slice(1))
+      : document.blockIds.has(fragment) || document.headingIds.has(fragment);
+    return fragmentResolved ? portablePath(relative(vaultContext.root, candidate)) : null;
+  }
+  return null;
+}
+
+async function collectVaultLinkTargets(vaultRoot) {
+  const documents = new Map();
+  const walk = async (directory) => {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const entryPath = resolve(directory, entry.name);
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) {
+        await walk(entryPath);
+        continue;
+      }
+      if (!entry.isFile() || extname(entry.name).toLowerCase() !== ".md") continue;
+      if (!isContained(vaultRoot, entryPath)) continue;
+      const content = (await readFile(entryPath)).toString("utf8");
+      documents.set(relative(vaultRoot, entryPath).toLowerCase(), {
+        blockIds: new Set(extractMatches(content, /\^([A-Za-z0-9][A-Za-z0-9_-]*)\s*$/gm).map((value) => value.toLowerCase())),
+        headingIds: new Set(extractHeadingIds(content).map((value) => value.toLowerCase()))
+      });
+    }
+  };
+  await walk(vaultRoot);
+  return documents;
+}
+
 function addObservedBacklink(observedBacklinks, sourcePath, targetPath) {
   if (!targetPath) return;
   const sourceLayer = memoryLayer(sourcePath);
@@ -472,7 +561,8 @@ function emptyEvidence() {
     backlinks: [],
     required_backlinks: [],
     unresolved_markdown_links: [],
-    unresolved_wikilinks: []
+    unresolved_wikilinks: [],
+    cross_vault_links: []
   };
 }
 

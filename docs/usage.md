@@ -832,3 +832,61 @@ causa real em `route_receipts.<scope>.failure.detail.validation_errors` (com os
 codigos acima e os `touched_paths` validados), alem de `failure_code` e
 `failure_cause`; a recuperacao e reenviar com `operation_id` novo apos corrigir
 a entrada.
+
+## Semântica de Root do validate-root
+
+O `v2 validate-root` resolve links de forma **root-relative fail-closed**: um
+link so e considerado resolvido se o destino esta dentro da raiz validada e faz
+parte da superficie V2 dela (`lembranca.md`, `memorias/<slug>.md`,
+`conhecimento/<slug>/README.md` no **topo** da raiz). Dois casos de vault real
+precisam de contrato explicito:
+
+1. **Root self-contained** (default): a raiz e um vault V2 completo por si
+   (ex.: `<WORKSPACE>\.agents`). Todo link vivo resolve dentro dela; sem o
+   campo `vault_root` o comportamento e exatamente este, fail-closed.
+2. **Vault composto**: a raiz validada e sub-pasta de um vault Obsidian maior
+   (ex.: `DEX_MEMORIA_HOME\global` dentro de `DEX_MEMORIA_HOME` com `temas\`).
+   Links de navegacao que apontam irmaos do vault (estilo Obsidian
+   `temas/<tema>/nota#^ancora`) sao vivos na perspectiva do vault, mas escapam
+   da sub-raiz. Passe o campo opcional `vault_root` no request:
+
+```json
+{
+  "capability": "v2-obsidian",
+  "require_obsidian": true,
+  "root": "<DEX_MEMORIA_HOME>\\global",
+  "vault_root": "<DEX_MEMORIA_HOME>"
+}
+```
+
+Com `vault_root`, um link que foge da raiz e conferido contra o vault inteiro
+(varredura recursiva de Markdown do `vault_root`): se resolve la, entra em
+`evidence.cross_vault_links` (auditavel, nao reprova, nao gera backlink); se
+nao resolve em lugar nenhum, continua `UNRESOLVED_WIKILINK` /
+`UNRESOLVED_MARKDOWN_LINK`. Sem o campo, nada muda (fail-closed preservado).
+
+**`EMPTY_ROOT` (anti verde-vazio, 0.1.8):** uma raiz cuja varredura le **0
+arquivos** (sem superficie V2 no topo — tipico de apontar `root` para um vault
+composto cujas sub-raizes moram em sub-pastas) agora devolve `ok:false` com
+`EMPTY_ROOT` citando a raiz, em vez de um `ok:true` vazio que nao provava nada.
+Se a intencao era validar o vault composto, valide cada sub-raiz com
+`vault_root`, ou crie a superficie V2 no topo da raiz.
+
+### Skips declarados do validador (auditoria 2026-11-07)
+
+Cada desvio silencioso da cadeia de coleta/resolucao de links
+(`bin/memory-v2-capabilities.js`), classificado — nenhum outro skip existe na
+cadeia:
+
+| Local | Regra | Efeito |
+| --- | --- | --- |
+| l.298/l.317 | `isUnitRelation` no modo unidade (`v2 validate` com `touched_paths`) | So os links da unidade sob escrita sao avaliados; escopo do contrato de par, nao afeta `validate-root` |
+| l.299/l.318 | `isLegacyV1LinkTarget` no modo root | Links shape-V1 (`<caminho>/memoria`, `<caminho>/lembranca`, `conhecimento/<slug>` de 2 segmentos) **nao sao coletados** — population invisivel ao validador, viva no Obsidian (o "segundo silencio" do issue #5) |
+| l.309/l.328 | link resolvido via `vault_root` | Entra em `cross_vault_links`; nao e unresolved nem backlink (0.1.8) |
+| l.450/l.473 | `!isContained(root/vault_root, candidate)` | Fail-closed do escopo: candidato fora da raiz (ou do vault) e rejeitado — o "primeiro silencio" do issue #5, agora com rota de fuga declarada (`vault_root`) |
+| l.453/l.475 | candidato sem documento lido | Arquivo contido no escopo mas fora da superficie V2 (nao entra no indice de resolucao) |
+| l.491/l.494/l.496/l.497 | coletor do `vault_root`: symlink / diretorio (desce na recursao do walk e segue) / nao-Markdown / fora do vault | Seguranca e alcance do indice de resolucao do vault |
+
+Lembrete de fixture para testes: um alvo cross-vault de teste **nao** pode se
+chamar `memoria`/`lembranca` (com caminho) — esses entram no skip legacy-V1 e o
+teste passa vazio. Use nomes neutros (ex.: `temas/<tema>/nota.md`).

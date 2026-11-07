@@ -349,7 +349,15 @@ async function v2Validate(args) {
 async function v2ValidateRoot(args) {
   if (args.length > 0) throw new CliError(2, "INVALID_USAGE", "usage: dex-memoria v2 validate-root");
   const request = parseJsonInput(await readStdin());
-  requireExactKeys(request, ["capability", "require_obsidian", "root"], "v2 validate-root request");
+  rejectUnknownKeys(request, ["capability", "require_obsidian", "root", "vault_root"], "v2 validate-root request");
+  for (const requiredKey of ["capability", "require_obsidian", "root"]) {
+    if (!(requiredKey in request)) {
+      throw new CliError(2, "INVALID_REQUEST", `v2 validate-root request is missing ${requiredKey}`);
+    }
+  }
+  if ("vault_root" in request && (typeof request.vault_root !== "string" || request.vault_root.trim() === "")) {
+    throw new CliError(2, "INVALID_REQUEST", "vault_root must be a non-empty string when provided");
+  }
   const receipt = await validateMemoryCapabilityRoot(request);
   process.stdout.write(`${JSON.stringify(receipt)}\n`);
   if (!receipt.ok) process.exitCode = 5;
