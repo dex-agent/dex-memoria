@@ -5,7 +5,7 @@
 > em `.agents/GATILHOS-VIVOS.md` — fonte mudou condição de capacidade ⇒ regenere.
 
 - **Objeto**: pacote `dex-memoria` (contrato documental + CLI de memória operacional Dex).
-- **Fotografia**: `0.1.8` @ commit `487f5ba` — 2026-11-07.
+- **Fotografia**: `0.1.11` @ commit `corte 0.1.11` — 2026-11-07.
 - **Ambiente observado**: Windows (win32 x64), Node 24 (contrato exige ≥18), Git Bash.
 - **Fontes vivas**: `SKILL.md` (sha `c9dace3f…`), `SPEC.md` (sha `77f19711…`),
   `bin/dex-memoria.js` (sha `1919c660…`), `bin/memory-v2-capabilities.js`
@@ -23,17 +23,17 @@
 | Transação V2 (`v2 plan\|apply\|resume\|recover`) | operador do vault | request JSON | journal + failpoints + recovery declarados | suíte de testes de transação | 353/343 pass (0 fail) |
 | Validação de unidade (`v2 validate`) | escritor (antes de fechar bloco) | `touched_paths` L1+destino | contrato de tags (aninhada, conjunto idêntico, corpo varrido) + backlinks | suíte `memory-v2-*` RED-first | issues #2/#3 (PR #4) |
 | Validação de raiz (`v2 validate-root`) | fiscal de vault | request com `root` | ORPHAN_L1_LINE + contrato de tags no root inteiro | suíte + execução no vault real (378 arquivos) | medido 2026-11-07 |
-| **Resolução cross-vault (`vault_root`)** — NOVO 0.1.8 | fiscal de vault composto | request com `vault_root` | link fora-da-raiz que resolve no vault vira `evidence.cross_vault_links` (auditável); morto continua `UNRESOLVED_*` | `test/memory-v2-vault-root.test.mjs` (4 cenários RED→GREEN) | issue #5 / PR #6 |
-| **Anti verde-vazio (`EMPTY_ROOT`)** — NOVO 0.1.8 | fiscal | raiz com 0 arquivos lidos | `ok:false` + `EMPTY_ROOT` citando a raiz | teste `empty root` + execução real (`root=memories` → EMPTY_ROOT) | receipt `.agents/RECEIPTS/2026-11-07-issue5-real-vault-green.json` |
+| **Resolução cross-vault (`vault_root`)** — NOVO 0.1.11 | fiscal de vault composto | request com `vault_root` | link fora-da-raiz que resolve no vault vira `evidence.cross_vault_links` (auditável); morto continua `UNRESOLVED_*` | `test/memory-v2-vault-root.test.mjs` (4 cenários RED→GREEN) | issue #5 / PR #6 |
+| **Anti verde-vazio (`EMPTY_ROOT`)** — NOVO 0.1.11 | fiscal | raiz com 0 arquivos lidos | `ok:false` + `EMPTY_ROOT` citando a raiz | teste `empty root` + execução real (`root=memories` → EMPTY_ROOT) | receipt `.agents/RECEIPTS/2026-11-07-issue5-real-vault-green.json` |
 | Fixtures V0 (`create plan\|apply\|recover`) | mantenedor do contrato | CLI JSON fixture-only | bancadas descartáveis L1+L2 com schemas Draft 2020-12 | suíte `create-*` | fixture-only por SPEC |
 | Gate de pacote (`npm run check` / `pack:check` / CI) | mantenedor/release | commit/PR | valida estrutura pública + 6 superfícies de versão alinhadas | GitHub Actions (PR #6: 2/2 SUCCESS) | validate-public sha vigente |
-| Projeção externa (`PLAYBOOK.md`) | destinatário terceiro | `tools/playbook/generate-playbook.py` | projeção determinística + hook anti-drift | `--check` exit 0 | FRESCO (commit 487f5ba) |
+| Projeção externa (`PLAYBOOK.md`) | destinatário terceiro | `tools/playbook/generate-playbook.py` | projeção determinística + hook anti-drift | `--check` exit 0 | FRESCO (commit corte 0.1.11) |
 
 ## Mermaid estático (capacidade → consumidor/oracle)
 
 ```mermaid
 flowchart LR
-  subgraph pacote[dex-memoria 0.1.8]
+  subgraph pacote[dex-memoria 0.1.11]
     REM[v2 remember] --> VAL[v2 validate/validate-root]
     VAL --> VR[vault_root + cross_vault_links]
     VAL --> ER[EMPTY_ROOT]

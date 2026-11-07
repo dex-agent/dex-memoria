@@ -6,6 +6,13 @@ This repository is intentionally small and public. It carries the documentation,
 templates, examples, and skill contract for Dex Agent operational memory. It is
 not the Dex Agent runtime.
 
+## Campo novo em contrato publico
+
+Checklist obrigatorio: campo novo em receipt/schema viaja com (1) o schema
+publicado atualizado no MESMO PR, (2) teste de instancia-vs-schema
+(test/memory-v2-receipt-schema-instance.test.mjs) cobrindo o campo, (3) entrada
+no CHANGELOG. O gate da suite rejeita campo emitido sem declaracao.
+
 ## Before You Change Files
 
 - Check `git status --short` and preserve work you did not make.

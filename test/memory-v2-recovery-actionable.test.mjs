@@ -103,6 +103,25 @@ test("idempotency conflict yields retry_new_operation with next_operation_id", a
   assert.equal(receipt.recovery.then_command, "dex-memoria v2 remember");
 });
 
+test("route busy yields retry_same_operation with then_command and no next_operation_id", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory(dailyRequest(), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route() {
+      return { status: "FAILED", code: "ROUTE_BUSY", message: "route mutex is held by another writer" };
+    }
+  });
+  assert.equal(receipt.status, "FAILED");
+  const action = receipt.recovery.actions.find((entry) => entry.scope === "global");
+  assert.equal(action.failure_code, "ROUTE_BUSY");
+  assert.equal(action.command, null, "ROUTE_BUSY nao exige recover");
+  assert.equal(action.failure_message, "route mutex is held by another writer", "message do executor deve chegar na action");
+  assert.equal(receipt.recovery.mode, "retry_same_operation", "transiente se cura repetindo a MESMA operacao");
+  assert.equal(receipt.recovery.then_command, "dex-memoria v2 remember");
+  assert.equal(receipt.recovery.next_operation_id, undefined, "retry da mesma operacao nao oferta id novo");
+});
+
 test("recover then retry commits after a non-terminal journal loop", async (t) => {
   const roots = await disposableRoots(t);
   const request = dailyRequest();

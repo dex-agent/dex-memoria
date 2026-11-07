@@ -891,6 +891,13 @@ Lembrete de fixture para testes: um alvo cross-vault de teste **nao** pode se
 chamar `memoria`/`lembranca` (com caminho) — esses entram no skip legacy-V1 e o
 teste passa vazio. Use nomes neutros (ex.: `temas/<tema>/nota.md`).
 
+## Identidade Do `request_fingerprint`
+
+O `request_fingerprint` do receipt identifica a **operação** (payload
+normalizado, incluindo `operation_id`), não o conteúdo — ele muda a cada retry
+com `next_operation_id` mesmo com body idêntico. NÃO use para dedup por
+conteúdo (issue #10, item 4).
+
 ## Recuperacao De Rota Simples (v2 remember + v2 recover)
 
 Quando uma escrita de `v2 remember` falha no meio (validacao, transporte ou
