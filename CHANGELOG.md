@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.1.15 - 2026-11-07
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Hotfix do issue #18 (consolidado adversarial 0.1.14) — vacinas bidirecionais,
+pinos de contrato e projeções coerentes:
+
+- **Bijeção BIDIRECIONAL no gate**: `CURE_PRECEDENCE` e as chaves de
+  `MODE_BY_BUCKET` devem ser o MESMO conjunto — entrada órfã de qualquer lado
+  (probes GHOST_BUCKET/WAIT/ARCHIVE) reprova no CI.
+- **Pino bin↔schema**: o `const` de `contract_revision` no schema é conferido
+  contra o receipt emitido (bump unilateral passa a reprovar).
+- **Pino da ordem**: dual `JOURNAL_CONFLICT` + `TRANSACTION_ROLLED_BACK` =
+  `recover_then_retry_new_operation` — swap silencioso em `CURE_PRECEDENCE`
+  reprova no teste.
+- **Instância de TODOS os 11 codes** no gate com `cure` pinado por code (fim
+  da cobertura 4/11); teste cwd-independente (`import.meta.url`); asserts
+  reordenados (enum `cure` antes de modos — mensagem certa pro erro certo).
+- **Resolvedor único de verdade**: o guidance delega a `bucketOf` (tradução
+  `UNCLASSIFIED→MANUAL` num lugar só).
+- **Semântica rev corrigida**: rev2 = `cure` + `contract_revision` (0.1.14+);
+  receipts 0.1.13 carregam `cure` SEM o campo (não validam contra o schema
+  0.1.14+); rev1 = pré-`cure`. `RECOVERY_FAILED` documentado como
+  `UNCLASSIFIED` (o que o emissor devolve).
+- **Projeções coerentes**: DECISION-FLOW migrado a blobs `git hash-object`
+  (mesma convenção do CAPACITY; DECISIONS.md blob real) e mermaid do CAPACITY
+  SEM rótulo de versão (mata a classe do atraso recorrente em 3 cortes).
+- Fallback mudo de mode: permanece coberto pela vacina bidirecional no CI +
+  `$comment` do schema (runtime inalterado — erro nunca bloqueante).
+- Suite: 367 testes / 357 pass / 0 fail (10 skipped). Adversarial deste corte
+  adiada por decisão do dono (workflow em atualização de viabilidade).
+
 ## 0.1.14 - 2026-11-07
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
