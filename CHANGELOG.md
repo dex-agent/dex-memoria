@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.14 - 2026-11-07
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Corte curativo do issue #16 (consolidado adversarial 0.1.13) — vacinas nas 3
+tabelas da fonte única, discriminador de contrato e projeções honestas:
+
+- **Gate vacina as 3 tabelas**: bijeção `MODE_BY_BUCKET` × `CURE_PRECEDENCE`
+  (todo bucket exatamente 1× na precedência) + enum `cure` do schema ==
+  buckets de `FAILURE_CURES` ∪ `UNCLASSIFIED`. O probe do issue #16 (bucket
+  novo fora da precedência → receipt sem `mode` com suíte verde) morre no CI
+  agora; fallback defensivo de `mode` no runtime.
+- **`contract_revision: 2`** no receipt root (required no schema, mesmo PR):
+  discriminador de máquina para mutações do contrato — rev2 = receipts com
+  `cure` (0.1.13+); rev1 = implícito antes.
+- **Resolvedor único** `cureOf`/`bucketOf` (UNCLASSIFIED é tratado como MANUAL
+  na precedência — default explícito; fim dos dois resolvedores divergindo).
+- **Projeções honestas**: mapas citam blobs `git hash-object` calculados
+  pós-edição (imunes a CRLF/LF do working tree); CONTRIBUTING ensina a rota;
+  mermaid do CAPACITY agora diz 0.1.13+.
+- **docs/usage**: exemplo UNCLASSIFIED alcançável (`ROUTE_EXECUTION_FAILED`,
+  errnos de fs) + inventário + ressalva `RECOVERY_FAILED` (fila issue #10).
+- Suite: 366 testes / 356 pass / 0 fail (10 skipped).
+
 ## 0.1.13 - 2026-11-07
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
