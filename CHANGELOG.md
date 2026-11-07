@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.9 - 2026-11-07
+
+- Torna o recovery do `v2 remember` acionável por contrato (issue #7):
+  `JOURNAL_CONFLICT` entra nas rotas de cura (`command` + `then_command` +
+  `next_operation_id`, mode `recover_then_retry_new_operation`) e sai do
+  `manual_resolution` mudo com `command: null` que travou a frota em loop de
+  re-emissão idempotente.
+- Adiciona `actions[].command_input` ao receipt de recovery: objeto JSON
+  pronto para o stdin do `dex-memoria v2 recover` — executável as-is, sem
+  composição manual (testado fim-a-fim com o CLI real).
+- Documenta a seção `Recuperacao De Rota Simples` em `docs/usage.md`
+  (fluxo de fim de loop, journal intruso, estados pós-crash).
+- Contrato vigente inalterado: Dex Memoria V2 permanece o writer/selector
+  ativo; `legacy-v1` somente leitura/restauração do corpus histórico.
+
 ## 0.1.8 - 2026-11-07
 
 - Adiciona o campo opcional `vault_root` ao `v2 validate-root`: link fora-da-raiz

@@ -13,7 +13,7 @@ const {
 } = require("./generate-memory-resource-limit-artifacts");
 
 const root = path.resolve(__dirname, "..");
-const expectedVersion = "0.1.8";
+const expectedVersion = "0.1.9";
 
 const requiredFiles = [
   "LICENSE",
@@ -186,7 +186,7 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.8`", "dex-agent", "nao e um writer automatico", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.9`", "dex-agent", "nao e um writer automatico", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
   requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica", "Taxonomia De Temas"]);
   requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
@@ -325,8 +325,8 @@ function main() {
     '"L1->L2"',
     '"L1->L3"'
   ]);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.8 - 2026-11-07", "CLI JSON fixture-only"]);
-  requireText(errors, "CONTRIBUTING.md", ["version `0.1.8`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.9 - 2026-11-07", "CLI JSON fixture-only"]);
+  requireText(errors, "CONTRIBUTING.md", ["version `0.1.9`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);
   requireText(errors, "AGENTS.md", ["V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
   validateCreateContractSchemas(errors);
   validateRememberContractSchemas(errors);
@@ -380,7 +380,7 @@ function main() {
   ]);
   validateConscienciaTemplates(errors);
   validateGraduatedMemoryBattery(errors);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.8 - 2026-11-07", "## 0.1.7 - 2026-11-06", "## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.9 - 2026-11-07", "## 0.1.8 - 2026-11-07", "## 0.1.7 - 2026-11-06", "## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", [
     "must not contain secrets",
     "does not provide the Dex Agent runtime",
