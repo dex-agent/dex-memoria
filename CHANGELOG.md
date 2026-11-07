@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.8 - 2026-11-07
+
+- Adiciona o campo opcional `vault_root` ao `v2 validate-root`: link fora-da-raiz
+  que resolve no vault composto e auditado em `evidence.cross_vault_links`
+  (nao reprova, nao gera backlink); link morto continua `UNRESOLVED_*`; sem o
+  campo, o comportamento fail-closed root-relative e preservado (issue #5).
+- Adiciona `EMPTY_ROOT` ao `v2 validate-root`: raiz com 0 arquivos lidos
+  (vault composto sem superficie V2 no topo) devolve `ok:false` citando a raiz,
+  em vez do `ok:true` vazio — mudanca intencional de contrato: consumers que
+  validavam raiz vazia esperando verde devem validar a sub-raiz com
+  `vault_root` ou criar a superficie no topo.
+- Documenta a secao `Semantica de Root do validate-root` em `docs/usage.md`
+  (root self-contained vs vault composto, contrato do `vault_root`,
+  `cross_vault_links`, `EMPTY_ROOT` e a tabela dos 14 skips declarados da
+  cadeia de coleta/resolucao), apontada pelo `SKILL.md`.
+- Testes RED-first do vault composto (alvo cross-vault NAO-legacy — a armadilha
+  `MEMORIA.md` do skip legacy-V1 esta documentada na issue #5).
+- Contrato vigente inalterado: Dex Memoria V2 permanece o writer/selector
+  ativo; `legacy-v1` somente leitura/restauracao do corpus historico.
+
 ## 0.1.7 - 2026-11-06
 
 - Adiciona `dex-memoria v2 remember` como entrada cotidiana única: payload
