@@ -19,7 +19,7 @@ no CHANGELOG. O gate da suite rejeita campo emitido sem declaracao.
 - Do not edit secrets, local state, `.env`, runtime ledgers, private `.agents/`
   data, logs, screenshots, or session artifacts.
 - Keep examples sanitized and free of real personal data.
-- Keep behavior claims aligned with version `0.1.10`: no hooks or general
+- Keep behavior claims aligned with version `0.1.11`: no hooks or general
   automatic memory writes; the only executable create boundary is the marked,
   disposable fixture-only V0 documented in `docs/cli-create-fixture-v0.md`.
 

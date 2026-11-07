@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.11 - 2026-11-07
+
+- Adiciona gate de instancia-vs-schema na suite: receipts reais dos modos de
+  recovery validados contra o schema publicado (closed-set por nivel) com caso
+  negativo sintetico — campo emitido sem declaracao nunca mais passa verde
+  (impossibilita a classe do P1 da revisao adversarial; issue #10 item 5).
+- Taxonomia de cura declarada (CURE_BY_RECOVER / CURE_BY_RETRY_NEW_OPERATION /
+  CURE_BY_RETRY_SAME_OPERATION): ROUTE_BUSY deixa de ser mudo e vira
+  `retry_same_operation` (mesma operacao, sem next_operation_id);
+  `failure_message` do executor passa a chegar na action, declarada no schema
+  (issues #10 itens 1, 2 e 8-parte).
+- Documenta `request_fingerprint` como identidade de OPERACAO (nao dedup por
+  conteudo) e adiciona ao CONTRIBUTING o checklist campo-novo-em-contrato
+  (schema + teste de instancia no mesmo PR).
+- Contrato vigente inalterado: Dex Memoria V2 permanece o writer/selector
+  ativo; `legacy-v1` somente leitura/restauracao.
+
 ## 0.1.10 - 2026-11-07
 
 - Declara `command_input` no schema público do receipt
