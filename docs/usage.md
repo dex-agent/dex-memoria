@@ -890,3 +890,45 @@ cadeia:
 Lembrete de fixture para testes: um alvo cross-vault de teste **nao** pode se
 chamar `memoria`/`lembranca` (com caminho) — esses entram no skip legacy-V1 e o
 teste passa vazio. Use nomes neutros (ex.: `temas/<tema>/nota.md`).
+
+## Recuperacao De Rota Simples (v2 remember + v2 recover)
+
+Quando uma escrita de `v2 remember` falha no meio (validacao, transporte ou
+journal anterior nao-terminal), o receipt devolve `recovery` **acionavel por
+contrato** (issue #7): para `RECOVERY_REQUIRED`, `ROLLBACK_REQUIRED` e
+`JOURNAL_CONFLICT`, cada `actions[]` carrega:
+
+- `command`: `dex-memoria v2 recover`;
+- `command_input`: objeto JSON **pronto para o stdin** do comando acima —
+  nao precisa compor nada a mao;
+- no nivel do `recovery`: `then_command` (`dex-memoria v2 remember`) e
+  `next_operation_id` (id novo deterministico para o retry).
+
+Fluxo canônico de fim de loop (rota simples ou dual):
+
+```bash
+# 1) o receipt falhou com recovery.mode = recover_then_retry_new_operation
+echo '<payload original>' | dex-memoria v2 remember        # receipt com recovery.command_input
+
+# 2) executar a cura com o command_input do receipt (copie o objeto inteiro)
+echo '<recovery.actions[0].command_input>' | dex-memoria v2 recover
+# => journal termina ROLLED_BACK (ou ALREADY_ROLLED_BACK)
+
+# 3) reemitir o payload original com o operation_id novo do receipt
+echo '<payload com operation_id = recovery.next_operation_id>' | dex-memoria v2 remember
+# => COMMITTED
+```
+
+Notas de contrato:
+
+- `JOURNAL_CONFLICT` significa que o journal armazenado nao pertence a rota
+  recalculada (identidade, paths ou request divergiram). O `v2 recover` com o
+  `command_input` ainda e a primeira acao: journals nao-terminais sao rolados
+  back; journals adulterados/intrusos devolverao o diagnostico de seguranca —
+  nesse caso a remocao manual do diretorio `.dex-memoria/transactions/<id>` e
+  decisao humana, registrada com motivo.
+- `TRANSACTION_ROLLED_BACK` (journal ja terminal e limpo) nao exige recover:
+  o receipt devolve `mode: retry_new_operation` com `next_operation_id`.
+- Estados intermediarios do journal (PREPARED/DESTINATION_PUBLISHED/
+  L1_PUBLISHED) existem para retomada pos-crash; o recover restaura os
+  backups `before` e marca `ROLLED_BACK` de forma deterministica.

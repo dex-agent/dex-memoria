@@ -114,12 +114,17 @@ test("v2 remember chooses recover before resume when the pending route requires 
     }
   });
   assert.equal(receipt.status, "PARTIAL_PENDING");
+  const recoveryAction = receipt.recovery.actions.find((entry) => entry.scope === "global");
+  assert.ok(recoveryAction.command_input, "action de recovery deve trazer command_input executavel (issue #7)");
+  assert.equal(recoveryAction.command_input.contract, "dex.memory.recover.request.v2");
+  assert.equal(recoveryAction.command_input.scope, "global");
   assert.deepEqual(receipt.recovery, {
     mode: "recover_then_retry_new_operation",
     actions: [{
       scope: "global",
       failure_code: "RECOVERY_REQUIRED",
-      command: "dex-memoria v2 recover"
+      command: "dex-memoria v2 recover",
+      command_input: recoveryAction.command_input
     }],
     then_command: "dex-memoria v2 remember",
     next_operation_id: receipt.recovery.next_operation_id
