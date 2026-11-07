@@ -81,10 +81,11 @@
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["scope", "failure_code", "command"],
+                "required": ["scope", "failure_code", "cure", "command"],
                 "properties": {
                   "scope": { "enum": ["project", "global", "theme"] },
                   "failure_code": { "type": "string", "minLength": 1 },
+                  "cure": { "enum": ["MANUAL", "RECOVER", "RETRY_NEW", "RETRY_SAME", "UNCLASSIFIED"] },
                   "failure_cause": { "type": "string", "minLength": 1 },
                   "failure_message": { "type": "string", "minLength": 1 },
                   "command": { "enum": ["dex-memoria v2 recover", null] },
@@ -117,14 +118,6 @@
               "then": {
                 "required": ["then_command", "next_operation_id"],
                 "properties": { "actions": { "items": { "properties": { "command": { "type": "null" } } } } }
-              }
-            },
-            {
-              "if": { "properties": { "mode": { "const": "retry_same_operation" } }, "required": ["mode"] },
-              "then": {
-                "required": ["then_command"],
-                "properties": { "actions": { "items": { "properties": { "command": { "type": "null" } } } } },
-                "not": { "required": ["next_operation_id"] }
               }
             },
             {

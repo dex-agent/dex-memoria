@@ -909,11 +909,21 @@ mudou a fonte, atualize aqui no mesmo PR):
 | `recover_then_retry_new_operation` | `RECOVERY_REQUIRED`, `ROLLBACK_REQUIRED`, `JOURNAL_CONFLICT` | `v2 recover` (com `command_input` da action) e retry com `next_operation_id` |
 | `retry_new_operation` | `TRANSACTION_ROLLED_BACK`, `IDEMPOTENCY_CONFLICT` | reemitir com `next_operation_id` |
 | `retry_same_operation` | `ROUTE_BUSY` | repetir a MESMA operação quando o mutex liberar (sem `next_operation_id`; sem pacing automático — aguarde entre tentativas) |
-| `manual_resolution` | demais códigos (ex.: `CASE_COLLISION`, `SAFETY_BOUNDARY`) | decisão humana; `failure_message` da action carrega o motivo do executor |
+| `manual_resolution` | manuais DECLARADOS na tabela: `CASE_COLLISION`, `ROUTE_CONFLICT`, `SAFETY_BOUNDARY`, `RECEIPT_JOURNAL_DIVERGENCE`, `RECOVERY_CONFLICT`, `PRODUCER_PROVENANCE_REQUIRED` | decisão humana; `failure_message` da action carrega o motivo do executor |
+
+Toda action carrega `cure` com a classificação da fonte única (`MANUAL`,
+`RECOVER`, `RETRY_NEW`, `RETRY_SAME`) — o consumidor não reimplementa a
+tabela. Código fora dela devolve `cure: "UNCLASSIFIED"`: o receipt denuncia a
+própria lacuna em vez de degradar para manual mudo (hoje `JOURNAL_NOT_FOUND`
+segue `UNCLASSIFIED` até classificação explícita).
 
 Precedência declarada: `MANUAL > RECOVER > RETRY_NEW > RETRY_SAME` — em escopo
 dual misto, a ação de maior precedência presente define o modo (a action de
-cada rota continua carregando sua própria cura).
+cada rota continua carregando sua própria cura). Divergência de contrato
+anunciada no 0.1.12 e documentada aqui (issue #14): o dual
+`ROUTE_BUSY + TRANSACTION_ROLLED_BACK/IDEMPOTENCY_CONFLICT` resolve como
+`retry_new_operation` **com** `next_operation_id` (a irmã com transação
+rolada precisa de id novo; antes do 0.1.12 era `retry_same_operation` sem id).
 
 Quando uma escrita de `v2 remember` falha no meio (validacao, transporte ou
 journal anterior nao-terminal), o receipt devolve `recovery` **acionavel por

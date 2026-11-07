@@ -33,7 +33,7 @@ flowchart TD
   CROSS --> D06
   UNR --> D06
   OK --> D06{"D-06 · 0 arquivos lidos?"}
-  D06 -->|sim| EMPTY["EMPTY_ROOT ok:false (0.1.12)"]
+  D06 -->|sim| EMPTY["EMPTY_ROOT ok:false (0.1.8)"]
   D06 -->|não| D07{"D-07 · linha L1 aponta destino faltante?"}
   D07 -->|sim| ORF["ORPHAN_L1_LINE"]
   D07 -->|não| D08{"D-08 · tags L1×destino idênticas e aninhadas?"}
@@ -50,10 +50,10 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- |
 | D-01 | capability conhecida? | `CAPABILITIES` map (3 chaves) | desconhecida → `UNKNOWN_CAPABILITY` | mantenedor | `bin/memory-v2-capabilities.js` | implementado+testado |
 | D-02 | `require_obsidian` compatível? | legacy exige true; v2-markdown proíbe true; v2-obsidian exige true | incompatível → erro estável | mantenedor | idem | implementado+testado |
-| D-03 | `vault_root` presente e link fora-da-raiz? | **0.1.12**: retry contra índice recursivo do vault | resolve → `cross_vault_links`; não resolve → `UNRESOLVED_*`; sem campo → fail-closed preservado | mantenedor | `docs/usage.md` §Semântica de Root + código | RED→GREEN 4 cenários + vault real (receipt) |
+| D-03 | `vault_root` presente e link fora-da-raiz? | **0.1.8**: retry contra índice recursivo do vault | resolve → `cross_vault_links`; não resolve → `UNRESOLVED_*`; sem campo → fail-closed preservado | mantenedor | `docs/usage.md` §Semântica de Root + código | RED→GREEN 4 cenários + vault real (receipt) |
 | D-04 | link shape-V1 legacy? | `isLegacyV1LinkTarget` (último segmento `memoria`/`lembranca` com caminho; `conhecimento/<slug>`) | sim → skip declarado (invisível ao validador, vivo no Obsidian) | mantenedor | docs §Skips (auditoria 14/14) | medido ao vivo (issue #5) |
 | D-05 | modo unidade? | `isUnitRelation` com `touched_paths` | só links da unidade sob escrita são avaliados | mantenedor | código + SPEC | implementado+testado |
-| D-06 | raiz leu 0 arquivos? | **0.1.12**: `files.length === 0` | `EMPTY_ROOT` ok:false citando a raiz (anti verde-vazio) | mantenedor | CHANGELOG 0.1.12 | teste + vault real (`root=memories`) |
+| D-06 | raiz leu 0 arquivos? | **0.1.8**: `files.length === 0` | `EMPTY_ROOT` ok:false citando a raiz (anti verde-vazio) | mantenedor | CHANGELOG 0.1.8 | teste + vault real (`root=memories`) |
 | D-07 | linha L1 órfã? | labels unresolved saindo de `lembranca.md` | `ORPHAN_L1_LINE` citando destino | mantenedor | issue #2 / PR #4 | teste dedicado |
 | D-08 | contrato de tags ok? | aninhada + conjunto idêntico + corpo varrido | `MISSING_NESTED_TAG`/`DIVERGENT_TAG_SET`/`INVALID_TAG` | mantenedor | docs §Contrato De Tags | testes + 4 repros reais |
 | D-09 | remember reprovado, como recuperar? | transação rola back; recovery por novo `operation_id` | NUNCA `resume` impossível; receipt ecoa `failure.detail.validation_errors` | mantenedor | issue #3 / PR #4 | teste RED-first |

@@ -13,6 +13,16 @@ publicado atualizado no MESMO PR, (2) teste de instancia-vs-schema
 (test/memory-v2-receipt-schema-instance.test.mjs) cobrindo o campo, (3) entrada
 no CHANGELOG. O gate da suite rejeita campo emitido sem declaracao.
 
+## Mapas derivados sao projecao (nunca bump-por-rotulo)
+
+`CAPACITY.md`, `DECISION-FLOW.md` e o `INDEX.md` da raiz sao projecoes do
+estado real do repositorio. Ao tocar um corte/release, REGENERE os campos a
+partir das fontes: versao por feature = CHANGELOG da versao que introduziu
+(nao a corrente), contadores = saida da suite (`node --test`), SHAs =
+`git rev-parse`/hash do arquivo vigente. Bump-por-rotulo (trocar "0.1.8" por
+"0.1.12" em bloco) certificou dados falsos em release publicada (issue #14,
+P1) — e proibido.
+
 ## Before You Change Files
 
 - Check `git status --short` and preserve work you did not make.

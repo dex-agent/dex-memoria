@@ -119,6 +119,10 @@ Retry do mesmo pedido comprometido deve manter `operation_id` e retornar
 `remember` com o `next_operation_id` fornecido.
 Execute todas as entradas de `recovery.actions`, uma por rota pendente, antes
 do `then_command`. Não reutilize silenciosamente uma transação terminal.
+Cada action carrega `cure` com a classificação da fonte única
+(`MANUAL`/`RECOVER`/`RETRY_NEW`/`RETRY_SAME`); `cure: "UNCLASSIFIED"` denota
+código de falha fora da tabela — trate como manual e reporte a lacuna ao
+mantenedor.
 
 ## Camadas
 
