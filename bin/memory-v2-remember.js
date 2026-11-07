@@ -153,7 +153,7 @@ function recoveryGuidance(normalized, pendingReceipts) {
       } : {})
     };
   });
-  const buckets = actions.map((action) => (action.cure === "UNCLASSIFIED" ? "MANUAL" : action.cure));
+  const buckets = actions.map((action) => bucketOf(action.failure_code));
   const winningBucket = CURE_PRECEDENCE.find((candidate) => buckets.includes(candidate));
   // Defesa comentada (issue #16): bucket fora de CURE_PRECEDENCE nunca chega
   // aqui — a vacina do gate (bijecao precedence x MODE_BY_BUCKET) reprova no

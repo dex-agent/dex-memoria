@@ -917,11 +917,12 @@ tabela. Código fora dela devolve `cure: "UNCLASSIFIED"`: o receipt denuncia a
 própria lacuna em vez de degradar para manual mudo. Inventário UNCLASSIFIED
 alcançável pelo `v2 remember` hoje: `ROUTE_EXECUTION_FAILED` (falha de
 execução não classificada, coerção do runtime) e errnos de fs crus (ex.:
-`EACCES`, `EIO`). Ressalva conhecida: `RECOVERY_FAILED` nasce com
-`recoverable: true` no route receipt enquanto a action irmã declara cure
-`MANUAL` (fila issue #10). O receipt root emite `contract_revision`
-(`2` = receipts com `cure`, 0.1.13+; `1` = implícito antes) — discriminador
-de máquina para consumidores validarem a revisão do contrato.
+`EACCES`, `EIO`). Ressalva conhecida: `RECOVERY_FAILED` não está na tabela — nasce `cure:
+"UNCLASSIFIED"` na action (e `recoverable: true` no route receipt; fila
+issue #10). O receipt root emite `contract_revision` — discriminador de
+máquina da revisão do contrato: **rev 2 = `cure` + `contract_revision`
+(0.1.14+)**; receipts do 0.1.13 carregam `cure` mas NÃO o campo (não
+validam contra o schema 0.1.14+); rev 1 = implícito, pré-`cure`.
 
 Precedência declarada: `MANUAL > RECOVER > RETRY_NEW > RETRY_SAME` — em escopo
 dual misto, a ação de maior precedência presente define o modo (a action de

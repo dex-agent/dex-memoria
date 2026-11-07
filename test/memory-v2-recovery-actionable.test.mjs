@@ -264,3 +264,22 @@ test("dual retry new plus retry same resolves to retry_new_operation with next i
   );
   assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/, "a irma com transacao rollbackada precisa de operation_id novo");
 });
+
+test("dual recover plus retry_new pins RECOVER before RETRY_NEW in precedence", async (t) => {
+  const roots = await disposableRoots(t);
+  const receipt = await rememberMemory(dailyRequest({ scope: "dual" }), {
+    cwd: roots.workspace,
+    memory_home: roots.memoryHome,
+    execute_route(route) {
+      return route.scope === "project"
+        ? { status: "FAILED", code: "JOURNAL_CONFLICT", message: "stored journal does not belong to this route" }
+        : { status: "FAILED", code: "TRANSACTION_ROLLED_BACK", message: "transaction rolled back; retry with new operation_id" };
+    }
+  });
+  assert.equal(
+    receipt.recovery.mode,
+    "recover_then_retry_new_operation",
+    "ordem da precedencia pinada: RECOVER vence RETRY_NEW no dual misto (swap silencioso em CURE_PRECEDENCE reprova aqui — issue #18)"
+  );
+  assert.match(receipt.recovery.next_operation_id ?? "", /^remember-/);
+});

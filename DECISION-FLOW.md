@@ -7,8 +7,8 @@
 
 - **Corte**: `0.1.14` @ `corte 0.1.14 @ 18886ba` — 2026-11-07.
 - **Cobertura**: prescrito (SKILL/SPEC/docs/usage) + **implementado**
-  (`bin/dex-memoria.js` sha `1919c660…`, `bin/memory-v2-capabilities.js` sha
-  `4956e454…` examinados) + **observado** (execuções com receipts nesta data).
+  (`bin/dex-memoria.js` blob `81f3c948…`, `bin/memory-v2-capabilities.js` blob
+  `4093c2f3…` examinados — mesma convenção blob do CAPACITY) + **observado** (execuções com receipts nesta data).
 - **Dependências externas**: Node ≥18; nenhum runtime/hooks automáticos.
 
 ```mermaid
@@ -58,7 +58,7 @@ flowchart TD
 | D-08 | contrato de tags ok? | aninhada + conjunto idêntico + corpo varrido | `MISSING_NESTED_TAG`/`DIVERGENT_TAG_SET`/`INVALID_TAG` | mantenedor | docs §Contrato De Tags | testes + 4 repros reais |
 | D-09 | remember reprovado, como recuperar? | transação rola back; recovery por novo `operation_id` | NUNCA `resume` impossível; receipt ecoa `failure.detail.validation_errors` | mantenedor | issue #3 / PR #4 | teste RED-first |
 | D-10 | install copia o quê? | desde 0.1.7: SOMENTE redirector global | cópia completa/local = não-fonte; `--target` rejeitado | mantenedor | SKILL + CHANGELOG 0.1.7 | usado na frota |
-| D-11 | canal de distribuição? | decisão do dono 2026-11-06 | Git/GitHub; registro npm descontinuado (0.1.5 histórico) | dono | `DECISIONS.md` sha `fb06029f…` | lavrada e publicada |
+| D-11 | canal de distribuição? | decisão do dono 2026-11-06 | Git/GitHub; registro npm descontinuado (0.1.5 histórico) | dono | `DECISIONS.md` blob `26a53d31…` | lavrada e publicada |
 | D-12 | como liberar versão? | 6 superfícies alinhadas + contrato `validate-public` (5 pontos) + 2 hardcodes de teste | check/test/CI verde ⇒ tag + gh release | mantenedor | `scripts/validate-public.js` | pago 2× (0.1.7 e 0.1.12); travado |
 
 ## Handoffs e lacunas
