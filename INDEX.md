@@ -33,6 +33,7 @@ depender do historico da conversa.
 - `DECISION-FLOW.md` - fluxo operacional de decisoes do validador/CLI (corte
   0.1.8; derivada — regenere ao mudar condicao/ramo/owner).
 - `contracts/` - contratos operacionais complementares.
+- `workflow/` - receitas locais (dex.workflow.v1); INDEX em `workflow/INDEX.md`.
 - `templates/` - modelos copiaveis e sanitizados.
 - `examples/` - exemplos sanitizados; nunca estado real.
 
