@@ -19,9 +19,10 @@ no CHANGELOG. O gate da suite rejeita campo emitido sem declaracao.
 estado real do repositorio. Ao tocar um corte/release, REGENERE os campos a
 partir das fontes: versao por feature = CHANGELOG da versao que introduziu
 (nao a corrente), contadores = saida da suite (`node --test`), SHAs =
-`git rev-parse`/hash do arquivo vigente. Bump-por-rotulo (trocar "0.1.8" por
-"0.1.12" em bloco) certificou dados falsos em release publicada (issue #14,
-P1) — e proibido.
+`git hash-object <arquivo>` calculado DEPOIS da ultima edicao do arquivo (o
+blob do git e imune ao CRLF/LF do working tree; sha256 do working tree nao
+e — issue #16, P1). Bump-por-rotulo (trocar "0.1.8" por "0.1.12" em bloco)
+certificou dados falsos em release publicada (issue #14, P1) — e proibido.
 
 ## Before You Change Files
 

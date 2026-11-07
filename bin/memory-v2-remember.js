@@ -80,6 +80,7 @@ async function rememberMemory(input, options = {}) {
   return {
     contract: "dex.memory.remember.receipt.v2",
     implementation_version: "v2",
+    contract_revision: 2,
     status: coordinator.status,
     operation_id: normalized.operation_id,
     request_fingerprint: digest(JSON.stringify(normalized)),
@@ -94,8 +95,9 @@ async function rememberMemory(input, options = {}) {
 }
 
 // Fonte unica da taxonomia de cura (issue #12: mata a alteracao divergente).
-// O gate de instancia (test/memory-v2-receipt-schema-instance.test.mjs) e a
-// secao de modos da docs LEEM daqui — mudou a tabela, schema/docs viajam juntos.
+// O gate de instancia DERIVA daqui (modos, bijecao com CURE_PRECEDENCE e
+// enum cure); a tabela de modos da docs e projecao conferida — mudou a
+// fonte, schema/docs/gate viajam juntos (checklist CONTRIBUTING).
 const FAILURE_CURES = Object.freeze({
   RECOVERY_REQUIRED: { bucket: "RECOVER" },
   ROLLBACK_REQUIRED: { bucket: "RECOVER" },
@@ -122,11 +124,14 @@ const MODE_BY_BUCKET = Object.freeze({
   RETRY_NEW: "retry_new_operation",
   RETRY_SAME: "retry_same_operation"
 });
-const bucketOf = (failureCode) => FAILURE_CURES[failureCode]?.bucket ?? "MANUAL";
-// cure declara a classificacao NO receipt (issue #14 P2): codigo fora da
-// tabela devolve UNCLASSIFIED — o receipt denuncia a propria lacuna em vez
-// de degradar para manual mudo.
+// Resolvedor UNICO da classificacao (issue #16 P3: dois resolvedores do mesmo
+// fato divergindo so no default): cure carrega a verdade — UNCLASSIFIED =
+// codigo fora da tabela — e a precedencia trata UNCLASSIFIED como MANUAL.
 const cureOf = (failureCode) => FAILURE_CURES[failureCode]?.bucket ?? "UNCLASSIFIED";
+const bucketOf = (failureCode) => {
+  const cure = cureOf(failureCode);
+  return cure === "UNCLASSIFIED" ? "MANUAL" : cure;
+};
 
 function recoveryGuidance(normalized, pendingReceipts) {
   const actions = pendingReceipts.map((receipt) => {
@@ -148,9 +153,12 @@ function recoveryGuidance(normalized, pendingReceipts) {
       } : {})
     };
   });
-  const buckets = actions.map((action) => bucketOf(action.failure_code));
+  const buckets = actions.map((action) => (action.cure === "UNCLASSIFIED" ? "MANUAL" : action.cure));
   const winningBucket = CURE_PRECEDENCE.find((candidate) => buckets.includes(candidate));
-  const mode = MODE_BY_BUCKET[winningBucket];
+  // Defesa comentada (issue #16): bucket fora de CURE_PRECEDENCE nunca chega
+  // aqui — a vacina do gate (bijecao precedence x MODE_BY_BUCKET) reprova no
+  // CI; o fallback so existe para o receipt jamais nascer sem mode.
+  const mode = MODE_BY_BUCKET[winningBucket] ?? "manual_resolution";
   const identity = actions.map((action) => `${action.scope}:${action.failure_code}`).join("|");
   const nextOperationId = `remember-retry-${digest(`${normalized.operation_id}:${identity}`).slice(0, 24)}`;
   const requiresNewOperation = buckets.some((bucket) => bucket === "RECOVER" || bucket === "RETRY_NEW");
