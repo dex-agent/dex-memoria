@@ -73,7 +73,7 @@
           "additionalProperties": false,
           "required": ["mode", "actions"],
           "properties": {
-            "mode": { "enum": ["recover_then_retry_new_operation", "retry_new_operation", "manual_resolution"] },
+            "mode": { "enum": ["recover_then_retry_new_operation", "retry_new_operation", "retry_same_operation", "manual_resolution"] },
             "actions": {
               "type": "array",
               "minItems": 1,
@@ -86,6 +86,7 @@
                   "scope": { "enum": ["project", "global", "theme"] },
                   "failure_code": { "type": "string", "minLength": 1 },
                   "failure_cause": { "type": "string", "minLength": 1 },
+                  "failure_message": { "type": "string", "minLength": 1 },
                   "command": { "enum": ["dex-memoria v2 recover", null] },
                   "command_input": {
                     "type": "object",

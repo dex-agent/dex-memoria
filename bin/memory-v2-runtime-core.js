@@ -140,6 +140,7 @@ function normalizeExecutionResult(route, result) {
       receipt_id: route.receipt_id,
       status: "PENDING",
       failure_code: typeof result.code === "string" ? result.code : "ROUTE_EXECUTION_FAILED",
+      ...(typeof result.message === "string" ? { failure_message: result.message } : {}),
       ...(typeof result.cause_code === "string" ? { failure_cause: result.cause_code } : {}),
       ...(result.failure ? { failure: result.failure } : {})
     };

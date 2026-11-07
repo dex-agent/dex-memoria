@@ -93,14 +93,17 @@ async function rememberMemory(input, options = {}) {
   };
 }
 
-const RECOVERABLE_FAILURE_CODES = ["RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "JOURNAL_CONFLICT"];
+const CURE_BY_RECOVER = ["RECOVERY_REQUIRED", "ROLLBACK_REQUIRED", "JOURNAL_CONFLICT"];
+const CURE_BY_RETRY_NEW_OPERATION = ["TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"];
+const CURE_BY_RETRY_SAME_OPERATION = ["ROUTE_BUSY"];
 
 function recoveryGuidance(normalized, pendingReceipts) {
   const actions = pendingReceipts.map((receipt) => {
-    const recoverable = RECOVERABLE_FAILURE_CODES.includes(receipt.failure_code);
+    const recoverable = CURE_BY_RECOVER.includes(receipt.failure_code);
     return {
       scope: receipt.scope,
       failure_code: receipt.failure_code,
+      ...(receipt.failure_message ? { failure_message: receipt.failure_message } : {}),
       ...(receipt.failure_cause ? { failure_cause: receipt.failure_cause } : {}),
       command: recoverable ? "dex-memoria v2 recover" : null,
       ...(recoverable ? {
@@ -113,13 +116,14 @@ function recoveryGuidance(normalized, pendingReceipts) {
     };
   });
   const hasManual = actions.some((action) => ![
-    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"
+    ...CURE_BY_RECOVER, ...CURE_BY_RETRY_NEW_OPERATION, ...CURE_BY_RETRY_SAME_OPERATION
   ].includes(action.failure_code));
   const identity = actions.map((action) => `${action.scope}:${action.failure_code}`).join("|");
   const nextOperationId = `remember-retry-${digest(`${normalized.operation_id}:${identity}`).slice(0, 24)}`;
   const requiresNewOperation = actions.some((action) => [
-    ...RECOVERABLE_FAILURE_CODES, "TRANSACTION_ROLLED_BACK", "IDEMPOTENCY_CONFLICT"
+    ...CURE_BY_RECOVER, ...CURE_BY_RETRY_NEW_OPERATION
   ].includes(action.failure_code));
+  const retriesSameOperation = actions.some((action) => CURE_BY_RETRY_SAME_OPERATION.includes(action.failure_code));
   if (hasManual) return {
     mode: "manual_resolution",
     actions,
@@ -129,6 +133,13 @@ function recoveryGuidance(normalized, pendingReceipts) {
     } : {})
   };
 
+  if (retriesSameOperation) {
+    return {
+      mode: "retry_same_operation",
+      actions,
+      then_command: "dex-memoria v2 remember"
+    };
+  }
   if (actions.some((action) => action.command === "dex-memoria v2 recover")) {
     return {
       mode: "recover_then_retry_new_operation",
