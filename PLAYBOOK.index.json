@@ -3,17 +3,31 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:37f31e8e175b704f1e660a94e9cac95d53162195982c424bdcd68404aa2d80fc",
-  "sent_revision": "sha256:09fd3de07b6a5dee26a6cc07111a438ed2e7aed40c3c3e25b9927363ca80040b",
+  "sources_revision": "sha256:9046758d39e08b9dca171227c9e22b8485c63effe374f093f380d6fe770ab722",
+  "sent_revision": "sha256:c1a3991b31442b5660b43b71e565326abc191976529eb353636e0d6d786b737d",
   "rules": [
     {
-      "seal": "pb-7112c46e",
+      "seal": "pb-d1ab29bf",
+      "locator": "TRACKER-LOCAL",
+      "title": "Local Load Order",
+      "gatilho": "ndeclarado",
+      "extrato": "For a new AI window working in this repository, load in this order:",
+      "rotas": [
+        "`AGENTS.md` - this local contract.",
+        "`INDEX.md` - short locator for live sources.",
+        "`.agents/PROJECT.md` - stable local identity and constraint...",
+        "`.agents/STRUCTURE.md` - local project map, if present."
+      ],
+      "fonte": "AGENTS.md#L132-L153"
+    },
+    {
+      "seal": "pb-0e712e17",
       "locator": "DEX-MEMORIA-PROVA-W6-ZERO-DEPS",
       "title": "Validation",
       "gatilho": "ndeclarado",
       "extrato": "Use Node.js 18 or newer.",
       "rotas": [],
-      "fonte": "AGENTS.md#L312-L344"
+      "fonte": "AGENTS.md#L316-L348"
     }
   ],
   "mesa": {
@@ -47,54 +61,50 @@
       "ancora": "AGENTS.md#L112"
     },
     {
-      "titulo": "Local Load Order",
-      "ancora": "AGENTS.md#L132"
-    },
-    {
       "titulo": "Local Context Surfaces",
-      "ancora": "AGENTS.md#L150"
+      "ancora": "AGENTS.md#L154"
     },
     {
       "titulo": "Memory And Continuity Model",
-      "ancora": "AGENTS.md#L180"
+      "ancora": "AGENTS.md#L184"
     },
     {
       "titulo": "Save Rules",
-      "ancora": "AGENTS.md#L227"
+      "ancora": "AGENTS.md#L231"
     },
     {
       "titulo": "Public Repository Safety",
-      "ancora": "AGENTS.md#L253"
+      "ancora": "AGENTS.md#L257"
     },
     {
       "titulo": "Editing Rules",
-      "ancora": "AGENTS.md#L273"
+      "ancora": "AGENTS.md#L277"
     },
     {
       "titulo": "Execution Trails",
-      "ancora": "AGENTS.md#L345"
+      "ancora": "AGENTS.md#L349"
     },
     {
       "titulo": "Known Current Local State",
-      "ancora": "AGENTS.md#L367"
+      "ancora": "AGENTS.md#L371"
     },
     {
       "titulo": "Bootstrap (toda janela nova, nesta ordem)",
-      "ancora": "AGENTS.md#L381"
+      "ancora": "AGENTS.md#L385"
     },
     {
       "titulo": "Indexação (doutrina da casa)",
-      "ancora": "AGENTS.md#L399"
+      "ancora": "AGENTS.md#L403"
     },
     {
       "titulo": "Envio a terceiros",
-      "ancora": "AGENTS.md#L406"
+      "ancora": "AGENTS.md#L410"
     }
   ],
   "fontes": [
     {
       "caminho": "AGENTS.md",
-      "sha256": "d6f5f09814255ff412f81889a3a0e5feb7a319df2406f242069b3f03cef74ebf",
+      "sha256": "c6310bf40b6ae3ad01e903f794728512e35ac7074c6b1fe5fad75ed8325d1d86",
       "enviado": true
     },
     {
@@ -104,7 +114,7 @@
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
-      "sha256": "6371a9797da5247576dc731ae7ec6b2c6cce5d981c296fd2b48fdf5eff9473c4",
+      "sha256": "6fb845bd947d99ad9527665da2d4ed8e904c5986f66081b77505815fd449984d",
       "enviado": false
     }
   ]

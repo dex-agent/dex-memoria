@@ -142,7 +142,11 @@ For a new AI window working in this repository, load in this order:
 7. `.agents/MEMORY.ndjson` - compact local memory only by clear trigger.
 8. `.codex/napkin.md` - tactical runbook only when commands or local gotchas matter.
 9. `.agents/PLAN-TASKS/ACTIVE.md` - active Trilho/SPT if execution is underway.
-10. Public package sources listed above.
+10. `.agents/TRACKER/INDEX.md` - local issues/PRs offline (plaquinha
+   `TRACKER-LOCAL`, schema `dex.issue-local.v1`; check the `aguardando` column —
+   items marked **owner** wait for the repo owner; the dialogue truth lives in
+   the item, not in HANDOFF). Owner of the format: skill `dex-gerar-issues-git`.
+11. Public package sources listed above.
 
 Do not blindly load generated graphs, logs, caches, private config, `.env`, or
 runtime dumps.
