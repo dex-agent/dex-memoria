@@ -330,7 +330,7 @@ test("v2 remember reuses canonical candidate limits before any route executes", 
     execute_route() { calls += 1; }
   };
   for (const request of [
-    dailyRequest({ title: "linha um\nlinha dois" }),
+    dailyRequest({ title: "t".repeat(257) }),
     dailyRequest({ trigger: "gatilho\u0000invalido" }),
     dailyRequest({ body: "x".repeat(65537) }),
     dailyRequest({ target_layer: "L3", owner_skill: "Owner Invalido" })

@@ -203,6 +203,17 @@ function normalizeRememberRequest(input, options = {}) {
   const targetLayer = input.target_layer === undefined ? "L2" : input.target_layer;
   if (!LAYERS.has(targetLayer)) invalid("target_layer must be L2 or L3");
   for (const field of ["title", "trigger", "body"]) requireText(input[field], field);
+  for (const field of ["title", "trigger"]) {
+    const breakers = input[field].match(/[\r\n]|[\[\]^]/g);
+    if (breakers !== null) {
+      const found = [...new Set(breakers)].map((c) => (c === "\n" || c === "\r" ? "quebra de linha" : c)).join(" ");
+      invalid(
+        `${field} contains character(s) the L1 line format cannot represent: ${found} — ` +
+        "remove or replace them (the markdown link/wikilink of the L1 line breaks); " +
+        'contract: docs/usage.md secao "Charset de title e trigger"'
+      );
+    }
+  }
   if (!Array.isArray(input.tags) || input.tags.length === 0 || new Set(input.tags).size !== input.tags.length) {
     invalid("tags must be a non-empty unique array");
   }

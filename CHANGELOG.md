@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.16 - 2026-11-09
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Hotfix do ISSUE-LOCAL-0001 (TRACKER local) — guard de charset na fronteira do
+`v2 remember` e erro com contexto:
+
+- **Causa provada por repro**: `]` no `title` fecha cedo os DOIS parsers da
+  linha L1 (link markdown e wikilink de `renderL1Entry`), a aresta `L1->L2`
+  nunca e observada e o write morre em `CAPABILITY_VALIDATION_FAILED
+  (MISSING_BACKLINK)` com rollback. Hipotese anterior (angle brackets) foi
+  refutada por repro controlada — `<...>` e `|` commitam normal.
+- **Guard na fronteira**: title/trigger com `[`, `]`, `^` ou quebra de linha
+  sao rejeitados em estagio de request (`INVALID_REMEMBER_REQUEST`) citando o
+  caractere ofensivo, ANTES de qualquer escrita (nenhum journal criado).
+  Parenteses, pipe e angle brackets seguem permitidos (o formato representa).
+  Contrato documentado em `docs/usage.md` ("Charset De Title E Trigger").
+- **Erro com contexto**: `MISSING_BACKLINK` em unit-receipt agora cita
+  `unit: <slug>` e o sufixo esperado da linha L1 — o caller diagnostica a
+  causa em vez de cacar o sintoma (heuristica "Provide Context with
+  Exceptions", Clean Code en-2008 l.230; fronteira: G3 l.363).
+- Suite: 370 testes / 360 pass / 0 fail (10 skipped).
+
 ## 0.1.15 - 2026-11-07
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas

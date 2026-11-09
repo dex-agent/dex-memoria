@@ -971,3 +971,26 @@ Notas de contrato:
 - Estados intermediarios do journal (PREPARED/DESTINATION_PUBLISHED/
   L1_PUBLISHED) existem para retomada pos-crash; o recover restaura os
   backups `before` e marca `ROLLED_BACK` de forma deterministica.
+
+## Charset De Title E Trigger
+
+O `title` e o `trigger` do `v2 remember` viram a LINHA L1 do `lembranca.md`
+(link markdown + wikilink + block-id na mesma linha). O formato Obsidian nao
+representa certos metacaracteres dentro dessa sintaxe; a fronteira do request
+rejeita title/trigger que contenham:
+
+- `[` `]` (colchetes — fecham cedo o link/wikilink da linha L1)
+- `^` (circunflexo — forja o padrao de block-id)
+- quebra de linha (`CR`/`LF` — a linha L1 e uma linha unica)
+
+A rejeicao acontece em estagio de request (erro
+`INVALID_REMEMBER_REQUEST` citando o caractere ofensivo), ANTES de qualquer
+escrita: nenhum journal e criado. Nao sao proibidos: parenteses, pipe `|`,
+angle brackets `< >` (sobrevivem ao formato e ao validador; corpo `body` nao
+tem restricao alem do tamanho).
+
+O erro `MISSING_BACKLINK` de uma unidade escrita denuncia a causa com
+contexto: cita o `unit:` e o sufixo esperado da linha L1
+(`expected L1 line ending with ^<slug>`) — se um par manual reprovar com esse
+erro, confira title/trigger quanto a metacaracteres antes de investigar o
+validador.
