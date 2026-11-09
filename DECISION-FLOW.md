@@ -5,7 +5,7 @@
 > Fonte mudou condição/ramo/owner ⇒ regenere (gatilho
 > `STALENESS-ARTEFATOS-DERIVADOS`).
 
-- **Corte**: `0.1.16` @ `corte 0.1.16 (PR em voo)` — 2026-11-09.
+- **Corte**: `0.1.16` @ `corte 0.1.16 @ 249d76b` — 2026-11-09.
 - **Cobertura**: prescrito (SKILL/SPEC/docs/usage) + **implementado**
   (`bin/dex-memoria.js` blob `81f3c948…`, `bin/memory-v2-capabilities.js` blob
   `382d31c5…`, `bin/memory-v2-remember.js` blob `1b3821f6…` examinados —
