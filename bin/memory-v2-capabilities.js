@@ -192,10 +192,21 @@ async function validateMemoryCapabilityUnit(input) {
       });
     }
   }
+  const unitDestination = Array.isArray(input?.touched_paths)
+    ? input.touched_paths.map((entry) => portablePath(entry).toLowerCase()).find((entry) => entry !== "lembranca.md")
+    : undefined;
+  const unitSlug = unitDestination?.match(/(?:memorias\/([^/]+)\.md|conhecimento\/([^/]+)\/readme\.md)$/i)?.slice(1).find(Boolean);
+  const errors = [...receipt.errors, ...tagErrors].map((error) => {
+    if (error.code !== "MISSING_BACKLINK" || unitSlug === undefined) return error;
+    return {
+      ...error,
+      message: `${error.message} (unit: ${unitSlug}; expected L1 line ending with ^${unitSlug}; check title/trigger for markdown metacharacters)`
+    };
+  });
   return {
     ...receipt,
     ok: receipt.ok && tagErrors.length === 0,
-    errors: [...receipt.errors, ...tagErrors],
+    errors,
     contract: "dex.memory.capability.unit-receipt.v2",
     resolved_root: evidence.root,
     touched_files: evidence.files,
