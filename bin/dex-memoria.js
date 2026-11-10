@@ -23,7 +23,7 @@ const {
   planMemoryOperation,
   resumePendingSibling
 } = require("./memory-v2-runtime-core");
-const { executeMemoryRoute, recoverMemoryRoute } = require("./memory-v2-route-executor");
+const { executeMemoryRoute, recoverMemoryRoute, validateCandidate } = require("./memory-v2-route-executor");
 const { rememberMemory } = require("./memory-v2-remember");
 const { handleDocFlags, helpHint } = require("./cli-doc");
 const {
@@ -284,6 +284,7 @@ async function v2Apply(args) {
   if (request.contract !== "dex.memory.apply.request.v2") {
     throw new CliError(2, "INVALID_SCHEMA", "v2 apply request is invalid");
   }
+  validateCandidate(request.candidate);
   const producerProvenance = currentEntrypointProvenance();
   const execute = (route) => executeMemoryRoute(route, request.candidate, { producer_provenance: producerProvenance });
   const receipt = await coordinateMemoryOperation(planMemoryOperation(request.request), execute);
@@ -298,6 +299,7 @@ async function v2Resume(args) {
   if (request.contract !== "dex.memory.resume.request.v2") {
     throw new CliError(2, "INVALID_SCHEMA", "v2 resume request is invalid");
   }
+  validateCandidate(request.candidate);
   const plan = planMemoryOperation(request.request);
   assertCoordinatorReceiptMatchesPlan(request.receipt, plan);
   const producerProvenance = currentEntrypointProvenance();

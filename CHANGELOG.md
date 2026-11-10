@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.17 - 2026-11-10
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Hotfix do ISSUE-LOCAL-0001 (REABERTO — regressão pela porta MM): guard de
+charset no CHOKEPOINT cobrindo TODAS as portas:
+
+- **Regressão**: o guard do 0.1.16 morava só na porta CLI (`remember`); a rota
+  MM do dex-PPIRTV (`mm_memory_candidate_resolve`) escreve pelo
+  `route-executor` (writer compartilhado) e rolou back 2× com
+  `MISSING_BACKLINK` — trigger no shape nativo `^{slug}-[hash8]$` contendo os
+  chars do guard, sem rejeição em request-stage.
+- **Cura no chokepoint**: `validateCandidate` (route-executor) valida charset
+  de title/trigger via helper SSOT `l1CharsetErrorMessage` — consumido pelo
+  remember E pelo executor (uma verdade, duas portas); `v2 apply` e
+  `v2 resume` ganham `validateCandidate` em request-stage (fail-fast antes de
+  qualquer rota). Rejeitar o shape MM nativo é propositivo: o gerador (lado
+  dex-PPIRTV) sanar o trigger; o erro cita o caractere e o contrato.
+- **Docs**: seção Charset vale para TODAS as portas; `$ { }` declarados
+  permitidos.
+- Suite: 372 testes / 362 pass / 0 fail (10 skipped).
+
 ## 0.1.16 - 2026-11-09
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
