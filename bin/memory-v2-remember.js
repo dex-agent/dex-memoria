@@ -8,7 +8,7 @@ const {
   coordinateMemoryOperation,
   planMemoryOperation
 } = require("./memory-v2-runtime-core");
-const { validateCandidate } = require("./memory-v2-route-executor");
+const { l1CharsetErrorMessage, validateCandidate } = require("./memory-v2-route-executor");
 
 const SCOPES = new Set(["project", "global", "theme", "dual"]);
 const LAYERS = new Set(["L2", "L3"]);
@@ -204,15 +204,8 @@ function normalizeRememberRequest(input, options = {}) {
   if (!LAYERS.has(targetLayer)) invalid("target_layer must be L2 or L3");
   for (const field of ["title", "trigger", "body"]) requireText(input[field], field);
   for (const field of ["title", "trigger"]) {
-    const breakers = input[field].match(/[\r\n]|[\[\]^]/g);
-    if (breakers !== null) {
-      const found = [...new Set(breakers)].map((c) => (c === "\n" || c === "\r" ? "quebra de linha" : c)).join(" ");
-      invalid(
-        `${field} contains character(s) the L1 line format cannot represent: ${found} — ` +
-        "remove or replace them (the markdown link/wikilink of the L1 line breaks); " +
-        'contract: docs/usage.md secao "Charset de title e trigger"'
-      );
-    }
+    const charsetError = l1CharsetErrorMessage(field, input[field]);
+    if (charsetError !== null) invalid(charsetError);
   }
   if (!Array.isArray(input.tags) || input.tags.length === 0 || new Set(input.tags).size !== input.tags.length) {
     invalid("tags must be a non-empty unique array");

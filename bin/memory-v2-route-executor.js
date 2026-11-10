@@ -5,6 +5,7 @@ const fsp = require("fs/promises");
 const path = require("path");
 const { createHash, randomUUID } = require("crypto");
 const { validateMemoryCapabilityUnit } = require("./memory-v2-capabilities");
+const { MemoryRuntimeError } = require("./memory-v2-runtime-core");
 
 const JOURNAL_DIRECTORY = ".dex-memoria/transactions";
 const INCOMPLETE_LOCK_GRACE_MILLISECONDS = 30_000;
@@ -273,6 +274,10 @@ function validateCandidate(candidate) {
   }
   if (!isSingleLineText(candidate.trigger, 512)) invalid("INVALID_CANDIDATE", "trigger is invalid");
   if (!isSingleLineText(candidate.title, 256)) invalid("INVALID_CANDIDATE", "title is invalid");
+  for (const field of ["trigger", "title"]) {
+    const charsetError = l1CharsetErrorMessage(field, candidate[field]);
+    if (charsetError !== null) throw new MemoryRuntimeError("INVALID_CANDIDATE", charsetError);
+  }
   if (typeof candidate.body !== "string" || candidate.body.trim() === "" || [...candidate.body].length > 65536) {
     invalid("INVALID_CANDIDATE", "body is invalid");
   }
@@ -290,6 +295,18 @@ const RESERVED_SLUGS = new Set([
   "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
   "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
 ]);
+
+function l1CharsetErrorMessage(field, value) {
+  if (typeof value !== "string") return null;
+  const breakers = value.match(/[\r\n]|[\[\]^]/g);
+  if (breakers === null) return null;
+  const found = [...new Set(breakers)].map((c) => (c === "\n" || c === "\r" ? "quebra de linha" : c)).join(" ");
+  return (
+    `${field} contains character(s) the L1 line format cannot represent: ${found} — ` +
+    "remove or replace them (the markdown link/wikilink of the L1 line breaks); " +
+    'contract: docs/usage.md secao "Charset de title e trigger"'
+  );
+}
 
 function isSingleLineText(value, maxCodePoints) {
   return typeof value === "string" &&
@@ -753,4 +770,4 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-module.exports = { executeMemoryRoute, recoverMemoryRoute, validateCandidate };
+module.exports = { executeMemoryRoute, recoverMemoryRoute, l1CharsetErrorMessage, validateCandidate };

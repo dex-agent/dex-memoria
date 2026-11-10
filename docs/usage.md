@@ -974,20 +974,27 @@ Notas de contrato:
 
 ## Charset De Title E Trigger
 
-O `title` e o `trigger` do `v2 remember` viram a LINHA L1 do `lembranca.md`
-(link markdown + wikilink + block-id na mesma linha). O formato Obsidian nao
-representa certos metacaracteres dentro dessa sintaxe; a fronteira do request
-rejeita title/trigger que contenham:
+O `title` e o `trigger` viram a LINHA L1 do `lembranca.md` (link markdown +
+wikilink + block-id na mesma linha). O formato Obsidian nao representa certos
+metacaracteres dentro dessa sintaxe; a fronteira do request rejeita
+title/trigger que contenham:
 
 - `[` `]` (colchetes — fecham cedo o link/wikilink da linha L1)
 - `^` (circunflexo — forja o padrao de block-id)
 - quebra de linha (`CR`/`LF` — a linha L1 e uma linha unica)
 
-A rejeicao acontece em estagio de request (erro
-`INVALID_REMEMBER_REQUEST` citando o caractere ofensivo), ANTES de qualquer
-escrita: nenhum journal e criado. Nao sao proibidos: parenteses, pipe `|`,
-angle brackets `< >` (sobrevivem ao formato e ao validador; corpo `body` nao
-tem restricao alem do tamanho).
+A regra vale para TODAS as portas de escrita (ISSUE-LOCAL-0001, reaberta
+2026-11-10): `v2 remember` (erro `INVALID_REMEMBER_REQUEST`) E `v2 apply` /
+`v2 resume` — a rota MM do PPIRTV usa essas portas e o candidate cru naquela
+epoca commitava linha L1 corrompida em silencio. O guard vive no chokepoint
+`validateCandidate` do route-executor (executado por `executeMemoryRoute` e
+em estagio de request pelo CLI), com a mesma mensagem citando o caractere
+ofensivo e apontando esta secao; regra SSOT no helper `l1CharsetErrorMessage`.
+
+A rejeicao acontece em estagio de request, ANTES de qualquer escrita: nenhum
+journal e criado. Nao sao proibidos: parenteses, pipe `|`, cifrao `$`,
+chaves `{ }`, angle brackets `< >` (sobrevivem ao formato e ao validador;
+corpo `body` nao tem restricao alem do tamanho).
 
 O erro `MISSING_BACKLINK` de uma unidade escrita denuncia a causa com
 contexto: cita o `unit:` e o sufixo esperado da linha L1
