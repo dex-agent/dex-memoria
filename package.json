@@ -1,6 +1,6 @@
 {
   "name": "dex-memoria",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Contrato documental para ciclo de vida de memoria operacional em projetos Dex Agent.",
   "license": "MIT",
   "type": "commonjs",

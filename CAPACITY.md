@@ -5,12 +5,14 @@
 > em `.agents/GATILHOS-VIVOS.md` — fonte mudou condição de capacidade ⇒ regenere.
 
 - **Objeto**: pacote `dex-memoria` (contrato documental + CLI de memória operacional Dex).
-- **Fotografia**: `0.1.16` @ commit `corte 0.1.17 @ e7a7bfb` — 2026-11-10.
+- **Fotografia**: `0.1.18` @ commit `corte 0.1.18 @ (merge pendente — chore atualiza com sha real)` — 2026-11-11.
 - **Ambiente observado**: Windows (win32 x64), Node 24 (contrato exige ≥18), Git Bash.
 - **Fontes vivas**: `SKILL.md` (blob `ab86e8f7…`), `SPEC.md` (blob `73fd3939…`),
   `bin/dex-memoria.js` (blob `a50987a…`), `bin/memory-v2-capabilities.js`
   (blob `382d31c5…`), `bin/memory-v2-remember.js` (blob `5aaaec3…`),
-  `docs/usage.md` (blob `b98fb56…`) — git hash-object pos-edicao (issue #16).
+  `bin/memory-v2-route-executor.js` (blob `87b157cd…`, chokepoint do guard de
+  boundary — ISSUE-LOCAL-0002), `docs/usage.md` (blob `1a38688f…`) — git
+  hash-object pos-edicao (issue #16).
 - **Limites**: Linux/macOS e UI Obsidian não observados neste corte; capacidades
   do fluxo `create` são **fixture-only** por contrato (não gravam vault vivo).
 
@@ -21,7 +23,8 @@
 | Diagnóstico de instalação (`doctor`) | dono/sessão | `dex-memoria doctor` | reporta memória home, skill canônica, versão | saída do comando + exit code | executado na esteira local (0 fail) |
 | Instalação do redirector (`install`) | nova máquina/frota | `dex-memoria install` | atualiza SOMENTE o redirector global `.agents/skills/dex-memoria/SKILL.md`; rejeita `--target` | diff do redirector vs `registry/agents-skills` | contrato 0.1.7+; uso na frota |
 | Escrita canônica (`v2 remember`) | sessão com achado memorável | payload fechado (scope/title/trigger/body/tags) | grava L1+L2/L3 com slug determinístico; receipt por rota; `FAILED` ecoa `failure.detail.validation_errors` | `v2 validate`/`validate-root` da unidade + `consciencia-memorias` | gravado 17× neste projeto (batch 16/16) |
-| Transação V2 (`v2 plan\|apply\|resume\|recover`) | operador do vault | request JSON | journal + failpoints + recovery declarados | suíte de testes de transação | 372/362 pass (0 fail; 10 skipped) |
+| Transação V2 (`v2 plan\|apply\|resume\|recover`) | operador do vault | request JSON | journal + failpoints + recovery declarados | suíte de testes de transação | 373/363 pass (0 fail; 10 skipped) |
+| **Guard de reparse escopado ao boundary** — 0.1.18 | qualquer workspace sob junction/symlink acima do `.agents` | `v2 remember scope=project` | audita ancestrais DENTRO do vault apenas; reparse acima do vault não bloqueia; reparse interno e alvo fora do boundary continuam `SAFETY_BOUNDARY` | teste junction-acima COMMITTED + teste TOCTOU (l.372) segue FAILED | ISSUE-LOCAL-0002; RED→GREEN provado |
 | Validação de unidade (`v2 validate`) | escritor (antes de fechar bloco) | `touched_paths` L1+destino | contrato de tags (aninhada, conjunto idêntico, corpo varrido) + backlinks COM contexto (`unit:` + linha L1 esperada, 0.1.16) | suíte `memory-v2-*` RED-first | issues #2/#3 (PR #4) + charset (ISSUE-LOCAL-0001) |
 | Validação de raiz (`v2 validate-root`) | fiscal de vault | request com `root` | ORPHAN_L1_LINE + contrato de tags no root inteiro | suíte + execução no vault real (378 arquivos) | medido 2026-11-07 |
 | **Resolução cross-vault (`vault_root`)** — 0.1.8 | fiscal de vault composto | request com `vault_root` | link fora-da-raiz que resolve no vault vira `evidence.cross_vault_links` (auditável); morto continua `UNRESOLVED_*` | `test/memory-v2-vault-root.test.mjs` (4 cenários RED→GREEN) | issue #5 / PR #6 |
@@ -44,7 +47,7 @@ flowchart LR
   SESS[sessao/janela] -->|escreve| REM
   FISC[fiscal do vault] -->|confere| VAL
   FROTA[maquinas da frota] -->|git pull +| INS
-  VAL -.->|oracle| TEST[suite 372/362/0]
+  VAL -.->|oracle| TEST[suite 373/363/0]
   VR -.->|oracle| VRT[test vault-root RED-first]
   ER -.->|oracle| REAL[receipt vault real]
 ```

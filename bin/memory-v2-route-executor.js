@@ -17,14 +17,14 @@ async function executeMemoryRoute(route, candidate, options = {}) {
   try {
     validateRoute(route);
     validateCandidate(candidate);
-    await assertSafeAncestors(fileSystem, route.resolved_root);
+    await assertSafeAncestors(fileSystem, route.resolved_root, route.resolved_root);
     mutex = await acquireRouteMutex(fileSystem, route, "apply");
-    await assertSafeAncestors(fileSystem, route.resolved_root);
+    await assertSafeAncestors(fileSystem, route.resolved_root, route.resolved_root);
     const l1Name = await resolveL1FileName(fileSystem, route);
     const paths = resolveTransactionPaths(route, candidate, l1Name);
-    await assertSafeAncestors(fileSystem, paths.l1);
-    await assertSafeAncestors(fileSystem, paths.destination);
-    await assertSafeAncestors(fileSystem, paths.journal);
+    await assertSafeAncestors(fileSystem, paths.l1, route.resolved_root);
+    await assertSafeAncestors(fileSystem, paths.destination, route.resolved_root);
+    await assertSafeAncestors(fileSystem, paths.journal, route.resolved_root);
     await assertCanonicalPathCasing(fileSystem, paths.l1);
     await assertCanonicalPathCasing(fileSystem, paths.destination);
     const existing = await readJsonIfExists(fileSystem, paths.journal);
@@ -45,7 +45,7 @@ async function executeMemoryRoute(route, candidate, options = {}) {
     const oppositeDestination = candidate.target_layer === "L2"
       ? path.join(route.resolved_root, "conhecimento", candidate.slug, "README.md")
       : path.join(route.resolved_root, "memorias", `${candidate.slug}.md`);
-    await assertSafeAncestors(fileSystem, oppositeDestination);
+    await assertSafeAncestors(fileSystem, oppositeDestination, route.resolved_root);
     await assertCanonicalPathCasing(fileSystem, oppositeDestination);
     if (await exists(fileSystem, oppositeDestination)) {
       return failed(route, "ROUTE_CONFLICT", "slug is already active in L2 or L3");
@@ -135,11 +135,11 @@ async function recoverMemoryRoute(route, options = {}) {
   let mutex;
   try {
     validateRoute(route);
-    await assertSafeAncestors(fileSystem, route.resolved_root);
+    await assertSafeAncestors(fileSystem, route.resolved_root, route.resolved_root);
     mutex = await acquireRouteMutex(fileSystem, route, "recover");
     const transactionRoot = path.join(route.resolved_root, ...JOURNAL_DIRECTORY.split("/"), route.transaction_id);
     const journalPath = path.join(transactionRoot, "journal.json");
-    await assertSafeAncestors(fileSystem, journalPath);
+    await assertSafeAncestors(fileSystem, journalPath, route.resolved_root);
     const journal = await readJsonIfExists(fileSystem, journalPath);
     if (!journal) return failed(route, "JOURNAL_NOT_FOUND", "route journal was not found");
     validateCandidate(journal.candidate);
@@ -148,8 +148,8 @@ async function recoverMemoryRoute(route, options = {}) {
     validateStoredJournal(route, journal, paths);
     if (journal.state === "COMMITTED") return { ...journal.receipt, recovery_status: "ALREADY_COMMITTED" };
     if (journal.state === "ROLLED_BACK") return recoveryReceipt(route, journalPath, "ALREADY_ROLLED_BACK");
-    await assertSafeAncestors(fileSystem, paths.l1);
-    await assertSafeAncestors(fileSystem, paths.destination);
+    await assertSafeAncestors(fileSystem, paths.l1, route.resolved_root);
+    await assertSafeAncestors(fileSystem, paths.destination, route.resolved_root);
     await assertRecoveryStateMatches(fileSystem, journal, paths);
     await restore(fileSystem, paths.destination, journal.before.destination, route.resolved_root, route.transaction_id, "destination-recover");
     await restore(fileSystem, paths.l1, journal.before.l1, route.resolved_root, route.transaction_id, "l1-recover");
@@ -166,9 +166,9 @@ async function recoverMemoryRoute(route, options = {}) {
 
 async function acquireRouteMutex(fileSystem, route, mode) {
   const controlRoot = path.join(route.resolved_root, ".dex-memoria");
-  await assertSafeAncestors(fileSystem, route.resolved_root);
+  await assertSafeAncestors(fileSystem, route.resolved_root, route.resolved_root);
   await fileSystem.mkdir(controlRoot, { recursive: true });
-  await assertSafeAncestors(fileSystem, controlRoot);
+  await assertSafeAncestors(fileSystem, controlRoot, route.resolved_root);
   const lockPath = path.join(controlRoot, "write.lock");
   const record = {
     contract: "dex.memory.route-lock.v2",
@@ -193,7 +193,7 @@ async function acquireRouteMutex(fileSystem, route, mode) {
       }
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
-      await assertSafeAncestors(fileSystem, lockPath);
+      await assertSafeAncestors(fileSystem, lockPath, route.resolved_root);
       const existing = await readJsonIfExists(fileSystem, lockPath).catch(() => null);
       if (!existing) {
         const lockStat = await fileSystem.lstat(lockPath);
@@ -628,34 +628,34 @@ async function exists(fileSystem, filePath) {
 }
 
 async function writeBytesAtomic(fileSystem, filePath, bytes, transactionId, slot, boundaryRoot) {
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   await fileSystem.mkdir(path.dirname(filePath), { recursive: true });
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   const temporary = `${filePath}.${transactionId}.${slot}.tmp`;
   await fileSystem.writeFile(temporary, bytes, { flag: "wx" });
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   assertLexicallyContained(boundaryRoot, filePath);
   await fileSystem.rename(temporary, filePath);
 }
 
 async function writeJsonAtomic(fileSystem, filePath, value, transactionId, boundaryRoot) {
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   await fileSystem.mkdir(path.dirname(filePath), { recursive: true });
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   const temporary = `${filePath}.${transactionId}.tmp`;
   await fileSystem.writeFile(temporary, serializeJson(value), { flag: "wx" });
-  await assertSafeAncestors(fileSystem, path.dirname(filePath));
+  await assertSafeAncestors(fileSystem, path.dirname(filePath), boundaryRoot);
   assertLexicallyContained(boundaryRoot, filePath);
   await fileSystem.rename(temporary, filePath);
 }
 
 async function restore(fileSystem, filePath, before, boundaryRoot, transactionId, slot) {
   assertLexicallyContained(boundaryRoot, filePath);
-  await assertSafeAncestors(fileSystem, filePath);
+  await assertSafeAncestors(fileSystem, filePath, boundaryRoot);
   if (before.exists) {
     await writeBytesAtomic(fileSystem, filePath, Buffer.from(before.bytes_base64, "base64"), transactionId, slot, boundaryRoot);
   } else {
-    await assertSafeAncestors(fileSystem, filePath);
+    await assertSafeAncestors(fileSystem, filePath, boundaryRoot);
     await fileSystem.rm(filePath, { force: true });
   }
 }
@@ -672,21 +672,33 @@ async function removePublishTemporaries(fileSystem, paths, transactionId, bounda
   ].filter(Boolean);
   for (const ownedPath of ownedPaths) {
     assertLexicallyContained(boundaryRoot, ownedPath);
-    await assertSafeAncestors(fileSystem, path.dirname(ownedPath));
+    await assertSafeAncestors(fileSystem, path.dirname(ownedPath), boundaryRoot);
     await fileSystem.rm(ownedPath, { force: true });
   }
 }
 
-async function assertSafeAncestors(fileSystem, targetPath) {
+async function assertSafeAncestors(fileSystem, targetPath, boundaryRoot) {
   const absoluteTarget = path.resolve(targetPath);
-  const parsed = path.parse(absoluteTarget);
-  let current = parsed.root;
-  const segments = absoluteTarget.slice(parsed.root.length).split(path.sep).filter(Boolean);
-  for (const segment of segments) {
+  const absoluteBoundary = path.resolve(boundaryRoot);
+  const relative = path.relative(absoluteBoundary, absoluteTarget);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    invalid(
+      "SAFETY_BOUNDARY",
+      `target is outside the vault boundary: ${absoluteTarget} (boundary: ${absoluteBoundary})`
+    );
+  }
+  const ancestors = [absoluteBoundary];
+  let current = absoluteBoundary;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
     current = path.join(current, segment);
+    ancestors.push(current);
+  }
+  for (const ancestor of ancestors) {
     try {
-      const stat = await fileSystem.lstat(current);
-      if (stat.isSymbolicLink()) invalid("SAFETY_BOUNDARY", `reparse ancestor is not allowed: ${current}`);
+      const stat = await fileSystem.lstat(ancestor);
+      if (stat.isSymbolicLink()) {
+        invalid("SAFETY_BOUNDARY", `reparse point inside the vault boundary is not allowed: ${ancestor}`);
+      }
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }

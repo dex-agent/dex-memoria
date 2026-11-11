@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.18 - 2026-11-11
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Fix do ISSUE-LOCAL-0002: `assertSafeAncestors` agora é escopado ao boundary
+do vault — audita apenas os ancestrais DENTRO do vault (`resolved_root` ->
+alvo), não mais desde a raiz do drive. Workspaces alcançados por
+junction/symlink ACIMA do `.agents` (ex.: `C:\DeepProjetos` -> `Z:`) voltam
+a gravar memória de projeto; reparse points DENTRO do vault continuam
+bloqueados (`SAFETY_BOUNDARY`) com erro nomeando o caminho ofensor. Targets
+fora do boundary são recusados com mensagem que cita boundary e target.
+
+Também neste corte: `.agents/TRACKER/` (fila de issues locais, schema
+`dex.issue-local.v1`) passa a ser versionado no git — proteção contra o sync
+do ecossistema que apagou a fila uma vez (`robocopy /MIR`); o restante de
+`.agents/` segue local. Testes: novo caso junction-acima-do-vault ->
+`COMMITTED` com prova de escrita pelo caminho real (suíte 373/363/0).
+
 ## 0.1.17 - 2026-11-10
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas

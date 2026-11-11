@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:9046758d39e08b9dca171227c9e22b8485c63effe374f093f380d6fe770ab722",
-  "sent_revision": "sha256:c1a3991b31442b5660b43b71e565326abc191976529eb353636e0d6d786b737d",
+  "sources_revision": "sha256:16b793976f0013049e33845b865e16dd038eeea5520b320b5a456c1e5311e09e",
+  "sent_revision": "sha256:b95e7915e63d33949762c561cea7b7b089e3b08deb3eca9c26995a99d6563065",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -21,13 +21,13 @@
       "fonte": "AGENTS.md#L132-L153"
     },
     {
-      "seal": "pb-0e712e17",
+      "seal": "pb-9c53c953",
       "locator": "DEX-MEMORIA-PROVA-W6-ZERO-DEPS",
       "title": "Validation",
       "gatilho": "ndeclarado",
       "extrato": "Use Node.js 18 or newer.",
       "rotas": [],
-      "fonte": "AGENTS.md#L316-L348"
+      "fonte": "AGENTS.md#L319-L351"
     }
   ],
   "mesa": {
@@ -66,45 +66,45 @@
     },
     {
       "titulo": "Memory And Continuity Model",
-      "ancora": "AGENTS.md#L184"
+      "ancora": "AGENTS.md#L187"
     },
     {
       "titulo": "Save Rules",
-      "ancora": "AGENTS.md#L231"
+      "ancora": "AGENTS.md#L234"
     },
     {
       "titulo": "Public Repository Safety",
-      "ancora": "AGENTS.md#L257"
+      "ancora": "AGENTS.md#L260"
     },
     {
       "titulo": "Editing Rules",
-      "ancora": "AGENTS.md#L277"
+      "ancora": "AGENTS.md#L280"
     },
     {
       "titulo": "Execution Trails",
-      "ancora": "AGENTS.md#L349"
+      "ancora": "AGENTS.md#L352"
     },
     {
       "titulo": "Known Current Local State",
-      "ancora": "AGENTS.md#L371"
+      "ancora": "AGENTS.md#L374"
     },
     {
       "titulo": "Bootstrap (toda janela nova, nesta ordem)",
-      "ancora": "AGENTS.md#L385"
+      "ancora": "AGENTS.md#L388"
     },
     {
       "titulo": "Indexação (doutrina da casa)",
-      "ancora": "AGENTS.md#L403"
+      "ancora": "AGENTS.md#L406"
     },
     {
       "titulo": "Envio a terceiros",
-      "ancora": "AGENTS.md#L410"
+      "ancora": "AGENTS.md#L413"
     }
   ],
   "fontes": [
     {
       "caminho": "AGENTS.md",
-      "sha256": "c6310bf40b6ae3ad01e903f794728512e35ac7074c6b1fe5fad75ed8325d1d86",
+      "sha256": "fcba7e322d344b43d0e63b479dfae942807850af345f711dd339ea76c5195505",
       "enviado": true
     },
     {

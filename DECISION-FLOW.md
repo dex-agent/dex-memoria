@@ -5,7 +5,7 @@
 > Fonte mudou condição/ramo/owner ⇒ regenere (gatilho
 > `STALENESS-ARTEFATOS-DERIVADOS`).
 
-- **Corte**: `0.1.16` @ `corte 0.1.17 @ e7a7bfb` — 2026-11-10.
+- **Corte**: `0.1.18` @ `corte 0.1.18 @ (merge pendente — chore atualiza com sha real)` — 2026-11-11.
 - **Cobertura**: prescrito (SKILL/SPEC/docs/usage) + **implementado**
   (`bin/dex-memoria.js` blob `a50987a…`, `bin/memory-v2-capabilities.js` blob
   `382d31c5…`, `bin/memory-v2-remember.js` blob `5aaaec3…` examinados —
@@ -61,6 +61,7 @@ flowchart TD
 | D-10 | install copia o quê? | desde 0.1.7: SOMENTE redirector global | cópia completa/local = não-fonte; `--target` rejeitado | mantenedor | SKILL + CHANGELOG 0.1.7 | usado na frota |
 | D-11 | canal de distribuição? | decisão do dono 2026-11-06 | Git/GitHub; registro npm descontinuado (0.1.5 histórico) | dono | `DECISIONS.md` blob `26a53d31…` | lavrada e publicada |
 | D-12 | como liberar versão? | 6 superfícies alinhadas + contrato `validate-public` (5 pontos) + 2 hardcodes de teste | check/test/CI verde ⇒ tag + gh release | mantenedor | `scripts/validate-public.js` | pago 2× (0.1.7 e 0.1.12); travado |
+| D-13 | alvo de escrita cruza reparse point? | **0.1.18**: `assertSafeAncestors` escopado ao territory do vault (`resolved_root` → alvo), não à raiz do drive | reparse DENTRO do vault → `SAFETY_BOUNDARY` nomeando o caminho; reparse ACIMA do vault (layout da máquina, ex. junction no caminho do workspace) → não bloqueia; alvo fora do boundary → recusa citando boundary e target | mantenedor | `docs/usage.md` §Boundary Do Guard De Reparse + ISSUE-LOCAL-0002 | RED→GREEN: junction-acima COMMITTED + TOCTOU (resolved-root junction) segue FAILED |
 
 ## Handoffs e lacunas
 
