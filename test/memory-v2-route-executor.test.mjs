@@ -391,6 +391,28 @@ test("route executor rejects a resolved-root junction before writing outside the
   await assert.rejects(() => readFile(join(outsideRoot, "memorias", "executor-real.md")), { code: "ENOENT" });
 });
 
+test("route executor allows a workspace reached through a junction above the vault boundary", async (t) => {
+  const testRoots = await roots(t);
+  const realWorkspace = join(testRoots.root, "real-workspace");
+  const linkedWorkspace = join(testRoots.root, "linked-workspace");
+  await mkdir(realWorkspace, { recursive: true });
+  try {
+    await fsPromises.symlink(realWorkspace, linkedWorkspace, "junction");
+  } catch (error) {
+    if (["EPERM", "ENOTSUP", "EINVAL"].includes(error.code)) {
+      t.skip(`junctions unavailable: ${error.code}`);
+      return;
+    }
+    throw error;
+  }
+
+  const route = planFor(testRoots, { workspace_root: linkedWorkspace, operation_id: "op-route-above-junction" }).routes[0];
+  const receipt = await executeMemoryRoute(route, l2Candidate());
+  assert.equal(receipt.status, "COMMITTED", `junction acima do vault nao pode bloquear: ${JSON.stringify(receipt).slice(0, 400)}`);
+  const written = await readFile(join(realWorkspace, ".agents", "memorias", "executor-real.md"), "utf8");
+  assert.match(written, /layer: L2/);
+});
+
 test("route executor rejects final L1 and destination symlinks before snapshot or journal", async (t) => {
   for (const slot of ["l1", "destination"]) {
     const testRoots = await roots(t);

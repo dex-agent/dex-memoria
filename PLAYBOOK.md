@@ -4,8 +4,8 @@ description: "Regras de decisao e procedimentos deste projeto - projecao gerada 
 type: playbook
 generated_by: "tools/playbook/generate-playbook.py"
 authority: derived_projection
-sources_revision: "sha256:9046758d39e08b9dca171227c9e22b8485c63effe374f093f380d6fe770ab722"
-sent_revision: "sha256:c1a3991b31442b5660b43b71e565326abc191976529eb353636e0d6d786b737d"
+sources_revision: "sha256:16b793976f0013049e33845b865e16dd038eeea5520b320b5a456c1e5311e09e"
+sent_revision: "sha256:b95e7915e63d33949762c561cea7b7b089e3b08deb3eca9c26995a99d6563065"
 do_not_edit: true
 ---
 # Playbook - dex-memoria
@@ -39,8 +39,8 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 - Localizador: `DEX-MEMORIA-PROVA-W6-ZERO-DEPS`
 - Gatilho: ndeclarado
 - Extrato: Use Node.js 18 or newer.
-- Fonte: `AGENTS.md#L316-L348`
-- Selo: `pb-0e712e17`
+- Fonte: `AGENTS.md#L319-L351`
+- Selo: `pb-9c53c953`
 
 ## Runbook <-> Playbook (procedimentos)
 
@@ -54,7 +54,7 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 
 | caminho | sha256 | Enviado? |
 | --- | --- | --- |
-| `AGENTS.md` | `c6310bf40b6ae3ad01e903f794728512e35ac7074c6b1fe5fad75ed8325d1d86` | sim |
+| `AGENTS.md` | `fcba7e322d344b43d0e63b479dfae942807850af345f711dd339ea76c5195505` | sim |
 | `.agents/napkin.md` | `a2f18bbd63d7de057680779d03c3b3726300c1ed52ac5856a43a01c1f5a06524` | nao |
 | `.agents/PLAN-TASKS/ACTIVE.md` | `6fb845bd947d99ad9527665da2d4ed8e904c5986f66081b77505815fd449984d` | nao |
 
@@ -70,12 +70,12 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 - What This Repo Is -> `AGENTS.md#L37` (sem token de localizador)
 - What This Repo Is Not -> `AGENTS.md#L112` (sem token de localizador)
 - Local Context Surfaces -> `AGENTS.md#L154` (sem token de localizador)
-- Memory And Continuity Model -> `AGENTS.md#L184` (sem token de localizador)
-- Save Rules -> `AGENTS.md#L231` (sem token de localizador)
-- Public Repository Safety -> `AGENTS.md#L257` (sem token de localizador)
-- Editing Rules -> `AGENTS.md#L277` (sem token de localizador)
-- Execution Trails -> `AGENTS.md#L349` (sem token de localizador)
-- Known Current Local State -> `AGENTS.md#L371` (sem token de localizador)
-- Bootstrap (toda janela nova, nesta ordem) -> `AGENTS.md#L385` (sem token de localizador)
-- Indexação (doutrina da casa) -> `AGENTS.md#L403` (sem token de localizador)
-- Envio a terceiros -> `AGENTS.md#L410` (sem token de localizador)
+- Memory And Continuity Model -> `AGENTS.md#L187` (sem token de localizador)
+- Save Rules -> `AGENTS.md#L234` (sem token de localizador)
+- Public Repository Safety -> `AGENTS.md#L260` (sem token de localizador)
+- Editing Rules -> `AGENTS.md#L280` (sem token de localizador)
+- Execution Trails -> `AGENTS.md#L352` (sem token de localizador)
+- Known Current Local State -> `AGENTS.md#L374` (sem token de localizador)
+- Bootstrap (toda janela nova, nesta ordem) -> `AGENTS.md#L388` (sem token de localizador)
+- Indexação (doutrina da casa) -> `AGENTS.md#L406` (sem token de localizador)
+- Envio a terceiros -> `AGENTS.md#L413` (sem token de localizador)

@@ -161,7 +161,10 @@ This repo uses two different surfaces:
 
 Local state examples:
 
-- `.agents/`
+- `.agents/` — with one deliberate exception: `.agents/TRACKER/` (offline
+  issues queue, schema `dex.issue-local.v1`) IS versioned in git (decided
+  2026-11-11, ISSUE-LOCAL-0002, after the ecosystem sync `robocopy /MIR`
+  wiped the queue once; git tracking is the durable protection)
 - `.codex/`
 - `.ppirtv/`
 - `.harness/`

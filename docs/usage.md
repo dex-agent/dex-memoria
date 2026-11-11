@@ -1001,3 +1001,27 @@ contexto: cita o `unit:` e o sufixo esperado da linha L1
 (`expected L1 line ending with ^<slug>`) — se um par manual reprovar com esse
 erro, confira title/trigger quanto a metacaracteres antes de investigar o
 validador.
+
+## Boundary Do Guard De Reparse (SAFETY_BOUNDARY)
+
+O guard de escrita `assertSafeAncestors` e escopado ao TERRITORIO DO VAULT:
+audita apenas os ancestrais de `resolved_root` (o `.agents` do scope) ate o
+alvo. O que esta ACIMA do vault — o layout da maquina (drives, junctions,
+symlinks no caminho ate o workspace, ex.: `C:\DeepProjetos` -> `Z:`) — nao
+e territorio do vault e nao bloqueia a escrita (ISSUE-LOCAL-0002, fix
+2026-11-11; antes o guard andava desde a raiz do drive e qualquer workspace
+sob junction tomava falso `SAFETY_BOUNDARY`).
+
+O que o guard continua bloqueando, com `SAFETY_BOUNDARY` nomeando o caminho
+ofensor:
+
+- reparse point (junction/symlink) DENTRO do vault, em qualquer ancestral do
+  alvo ate o proprio `resolved_root` — e assim que a escrita nao escapa por
+  um troca-caminho interno (o caso TOCTOU do teste
+  `route executor rejects a resolved-root junction`);
+- alvo FORA do boundary (`target is outside the vault boundary`, citando
+  boundary e target).
+
+Racional: quem decide se a escrita escapa do vault e a relacao
+boundary -> alvo (containment + reparse interno), nao o nome do caminho que
+leva ate o vault.
