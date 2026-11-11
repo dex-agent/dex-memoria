@@ -1,7 +1,7 @@
 ---
 id: ISSUE-LOCAL-0002
 titulo: "assertSafeAncestors audita territorio ACIMA do boundary: qualquer workspace sob junction/symlink (C:\\DeepProjetos -> Z:) bloqueia v2 remember no projeto inteiro"
-status: aberto
+status: integrado
 prioridade: P1
 tipo: bug
 tags:
@@ -10,6 +10,7 @@ tags:
 aberto_por: "sessao:zcode (sess_c5e3bbe2-6b93-4ac5-99c4-89a0e84fcc88)"
 criado_em: 2026-11-11
 atualizado_em: 2026-11-11
+integrado_em: 2026-11-11
 responsavel: sessao:zcode
 vinculos:
   - "sess_c5e3bbe2-6b93-4ac5-99c4-89a0e84fcc88"
@@ -167,3 +168,36 @@ descartável** por tooling de espelho/restore, e o tracker não está versionado
 `.agents/TRACKER/**` (ou pelo menos os itens abertos) com exceção no
 `.gitignore`, OU adicionar `.agents` do dex-memoria ao `/XD` do robocopy.
 Sem isso, todo item criado offline neste repo vive até o próximo sync.
+
+---
+
+## Diálogo (append-only)
+
+### CURA PAGA — 2026-11-11 (janela dona, GO-PADRAO do dono via quiz)
+
+- **PR #23** merge squash `d6c1449` (CI 2/2: test suite win32 1m19s + validate
+  public 12s) · release **`v0.1.18`** · Trilho
+  `2026-11-11-issue-local-0002-boundary-guard-0118.md` (preflight achados=0).
+- **Cura**: `assertSafeAncestors(fileSystem, targetPath, boundaryRoot)` com
+  boundary OBRIGATÓRIO nos 22 call sites — audita apenas `resolved_root` →
+  alvo; reparse ACIMA do vault não bloqueia; reparse DENTRO do vault (TOCTOU,
+  teste `route executor rejects a resolved-root junction`) e alvo fora do
+  boundary continuam `SAFETY_BOUNDARY` nomeando o caminho.
+- **Prova RED→GREEN**: teste novo junction-acima-do-vault falhou em 2.2ms no
+  guard antigo (`reparse ancestor ... linked-workspace`) → COMMITTED com
+  escrita provada pelo caminho REAL (`real-workspace/.agents/memorias/`).
+  Suíte **373/363/0** (pós-bumps re-rodada); `check` + `pack:check` +
+  playbook `--check` exit 0.
+- **Rota realpath-do-resolved_root VETADA** (decisão da janela dona com o
+  conselheiro oraculo-clean-code): mudaria a identidade canônica do vault
+  (paths UNC) e arriscaria o tropeço irmão `st_ino` — escopo do guard é a
+  cura correta (Fowler l.1130 Código Duplicado; clean-code l.363 G3).
+- **Risco colateral resolvido na MESMA rota**: `.agents/TRACKER/**`
+  versionado no git (`.gitignore` `.agents/*` + `!.agents/TRACKER/`;
+  exceção documentada no AGENTS.md e ensinada ao `validate-public`); o
+  robocopy pode continuar apagando — o git devolve.
+- **Ressalva**: a sugestão irmã `/XD` do robocopy (repo dex-atualizador)
+  segue válida como defesa em profundidade LÁ — pendência deles, não nossa.
+- **Selo conselheiro $oraculo-clean-code (GO ATIVO)**: G3 *Incorrect
+  Behavior at the Boundaries* (l.363) + Código Duplicado (Fowler l.1130) —
+  diagnóstico da sessão consumiu o corpus no eixo certo na 1ª tentativa.
