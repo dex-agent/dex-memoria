@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:16b793976f0013049e33845b865e16dd038eeea5520b320b5a456c1e5311e09e",
-  "sent_revision": "sha256:b95e7915e63d33949762c561cea7b7b089e3b08deb3eca9c26995a99d6563065",
+  "sources_revision": "sha256:ab8be723dae3594518f9e9a048586a6b2b9f51cafcccd673c6fa1f114dd5237e",
+  "sent_revision": "sha256:2a73c21795a54f04e01bee8f5ee5e96ca2060d3b89622a0dc6b0ea1e2308d2c3",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -97,14 +97,18 @@
       "ancora": "AGENTS.md#L406"
     },
     {
-      "titulo": "Envio a terceiros",
+      "titulo": "Toolsbook (consulta antes de usar ou criar ferramentas)",
       "ancora": "AGENTS.md#L413"
+    },
+    {
+      "titulo": "Envio a terceiros",
+      "ancora": "AGENTS.md#L436"
     }
   ],
   "fontes": [
     {
       "caminho": "AGENTS.md",
-      "sha256": "fcba7e322d344b43d0e63b479dfae942807850af345f711dd339ea76c5195505",
+      "sha256": "86b04ce83a146d83482427bf3a9fcdb40e528cf5e96ab1608aa5ef1315514f71",
       "enviado": true
     },
     {
@@ -114,7 +118,7 @@
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
-      "sha256": "6fb845bd947d99ad9527665da2d4ed8e904c5986f66081b77505815fd449984d",
+      "sha256": "6954fbf7443697274bf24b98e3d9df6c20509d1a765613fdd97404a49ba2d832",
       "enviado": false
     }
   ]
