@@ -9,11 +9,17 @@ cache/
 
 # Local AI/development system state. Keep out of the public GitHub repo.
 .codex/
-# .agents/ stays local EXCEPT the offline issues queue (TRACKER), which is
-# versioned on purpose (ISSUE-LOCAL-0002): the ecosystem sync (robocopy /MIR)
-# wiped it once; git tracking is the durable protection.
+# .agents/ stays local EXCEPT the offline issues queue (TRACKER) and the
+# curated durable-knowledge files at the root — versioned on purpose
+# (TRACKER: ISSUE-LOCAL-0002, sync wiped it once; the 5 files: dex-ignore
+# durability audit 2026-11-14, clean of machine/session markers).
 .agents/*
 !.agents/TRACKER/
+!.agents/GATILHOS-VIVOS.md
+!.agents/napkin.md
+!.agents/PROJECT.md
+!.agents/STRUCTURE.md
+!.agents/DEPENDENCIES.md
 .ppirtv/
 .harness/
 .claude/

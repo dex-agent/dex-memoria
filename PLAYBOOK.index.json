@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:ab8be723dae3594518f9e9a048586a6b2b9f51cafcccd673c6fa1f114dd5237e",
-  "sent_revision": "sha256:2a73c21795a54f04e01bee8f5ee5e96ca2060d3b89622a0dc6b0ea1e2308d2c3",
+  "sources_revision": "sha256:ee6621c09c23cf7e235b3f1477433a271e53c51884f1e4d4b4bd55fe363b8000",
+  "sent_revision": "sha256:4fe8a12ff94c0ca1f28a20d68737a5858128037ef6241e35cf4fc1962a99b329",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -21,13 +21,13 @@
       "fonte": "AGENTS.md#L132-L153"
     },
     {
-      "seal": "pb-9c53c953",
+      "seal": "pb-5948ef07",
       "locator": "DEX-MEMORIA-PROVA-W6-ZERO-DEPS",
       "title": "Validation",
       "gatilho": "ndeclarado",
       "extrato": "Use Node.js 18 or newer.",
       "rotas": [],
-      "fonte": "AGENTS.md#L319-L351"
+      "fonte": "AGENTS.md#L323-L355"
     }
   ],
   "mesa": {
@@ -66,55 +66,55 @@
     },
     {
       "titulo": "Memory And Continuity Model",
-      "ancora": "AGENTS.md#L187"
+      "ancora": "AGENTS.md#L191"
     },
     {
       "titulo": "Save Rules",
-      "ancora": "AGENTS.md#L234"
+      "ancora": "AGENTS.md#L238"
     },
     {
       "titulo": "Public Repository Safety",
-      "ancora": "AGENTS.md#L260"
+      "ancora": "AGENTS.md#L264"
     },
     {
       "titulo": "Editing Rules",
-      "ancora": "AGENTS.md#L280"
+      "ancora": "AGENTS.md#L284"
     },
     {
       "titulo": "Execution Trails",
-      "ancora": "AGENTS.md#L352"
+      "ancora": "AGENTS.md#L356"
     },
     {
       "titulo": "Known Current Local State",
-      "ancora": "AGENTS.md#L374"
+      "ancora": "AGENTS.md#L378"
     },
     {
       "titulo": "Bootstrap (toda janela nova, nesta ordem)",
-      "ancora": "AGENTS.md#L388"
+      "ancora": "AGENTS.md#L392"
     },
     {
       "titulo": "Indexação (doutrina da casa)",
-      "ancora": "AGENTS.md#L406"
+      "ancora": "AGENTS.md#L410"
     },
     {
       "titulo": "Toolsbook (consulta antes de usar ou criar ferramentas)",
-      "ancora": "AGENTS.md#L413"
+      "ancora": "AGENTS.md#L417"
     },
     {
       "titulo": "Envio a terceiros",
-      "ancora": "AGENTS.md#L436"
+      "ancora": "AGENTS.md#L440"
     }
   ],
   "fontes": [
     {
       "caminho": "AGENTS.md",
-      "sha256": "86b04ce83a146d83482427bf3a9fcdb40e528cf5e96ab1608aa5ef1315514f71",
+      "sha256": "d4b09a6ef4c6ba8464e958dad89c911a4c94a93dfbfe45c17eccf01bc20c73ad",
       "enviado": true
     },
     {
       "caminho": ".agents/napkin.md",
       "sha256": "a2f18bbd63d7de057680779d03c3b3726300c1ed52ac5856a43a01c1f5a06524",
-      "enviado": false
+      "enviado": true
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
