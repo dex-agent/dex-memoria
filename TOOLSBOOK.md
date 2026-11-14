@@ -399,6 +399,7 @@ mantenedor do contrato
 - alinhamento de versão
 - segurança pública de repo
 - histórico de changelog
+- allowlist de conhecimento duravel versionado (TRACKER + 5 arquivos raiz, auditoria dex-ignore 2026-11-14) ensinada ao filtro
 
 **not_for:**
 - aprovação semântica de conteúdo (estrutura, não sentido)
@@ -407,9 +408,10 @@ mantenedor do contrato
 - exit 0 nos cortes 0.1.16-0.1.18
 - CI job 'Validate public package' 12s verde (PR #23)
 - pagou 2× na história (0.1.7/0.1.12) e travou os bumps desde então
+- gate pegou path hardcoded em .agents/PROJECT.md na 1a tentativa de versionar (2026-11-14) — sanitizado, check verde
 
 **Fontes examinadas:**
-- `scripts/validate-public.js` — SHA256 `979fbf5a84beb57b9ecbf355862024fe3159fa51222f18c08d1edd76eb25d2c1`
+- `scripts/validate-public.js` — SHA256 `68fc34202068f27426900e918061509330a119bbcfb0525da76adad05f56c010`
 
 ## graduated-memory-battery
 

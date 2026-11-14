@@ -157,6 +157,17 @@ const forbiddenTrackedFiles = new Set([
   ".graphifyignore"
 ]);
 
+// Curated durable .agents/ knowledge that IS versioned (dex-ignore audit,
+// 2026-11-14). Vault and station state (memorias/, ACTIVE, HANDOFF, MEMORY.ndjson,
+// journals) remain forbidden by the prefix rule below.
+const trackedDurableAllowlist = new Set([
+  ".agents/GATILHOS-VIVOS.md",
+  ".agents/napkin.md",
+  ".agents/PROJECT.md",
+  ".agents/STRUCTURE.md",
+  ".agents/DEPENDENCIES.md"
+]);
+
 function main() {
   const errors = [];
 
@@ -488,9 +499,14 @@ function validateNoForbiddenTrackedFiles(errors) {
     if (/^\.env\./.test(file)) {
       return true;
     }
-    // Deliberate exception (ISSUE-LOCAL-0002, 2026-11-11): the offline issues
-    // queue is versioned on purpose; every other .agents/ path stays forbidden.
+    // Deliberate exceptions: curated durable knowledge is versioned on purpose;
+    // every other .agents/ path stays forbidden. TRACKER: ISSUE-LOCAL-0002
+    // (2026-11-11, sync wiped the queue once). The 5 root files: dex-ignore
+    // durability audit (2026-11-14) — bootstrap/consumer-backed, scanned clean.
     if (file.startsWith(".agents/TRACKER/")) {
+      return false;
+    }
+    if (trackedDurableAllowlist.has(file)) {
       return false;
     }
     return forbiddenTrackedPrefixes.some((prefix) => file.startsWith(prefix));
