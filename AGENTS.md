@@ -410,6 +410,29 @@ As of the 2026-06-06 context-structure pass:
   Quem cria conteúdo atualiza o índice do diretório na mesma sessão —
   descoberta barata por listagem, sem caçar arquivo por arquivo.
 
+## Toolsbook (consulta antes de usar ou criar ferramentas)
+
+Antes de usar ou criar uma ferramenta neste repo, consulte primeiro
+[TOOLSBOOK.index.md](TOOLSBOOK.index.md). Abra só as fichas pertinentes no
+catálogo/livro; não carregue o livro inteiro por padrão. Fonte autorada:
+`TOOLSBOOK.json` v2 (raiz scope/inspected/unexplored/tools; fichas por
+capacidade com id/purpose/when/how/not_for/sources/evidence;
+external_sources aponta owners externos e NÃO é checado localmente — reabra
+o owner canônico). Contrato completo: `python -B
+"$env:USERPROFILE\.agents\skills\dex-toolsbook\scripts\toolsbook.py" --schema`.
+Consulta focal: mesmo helper com `--card TOOLSBOOK.json ID_EXATO`. Inclua
+capacidades auxiliares e dados necessários identificados pelo próprio agente
+ao planejar comandos; a consulta não depende de pedido nominal do usuário.
+Confirme no código a adequação e a revisão do candidato. Se não encontrar,
+investigue o repertório relevante antes de concluir ausência ou criar algo.
+Após uso, mudança ou recuperação de solução temporária, atualize o catálogo
+e sua prova (ler fonte → editar TOOLSBOOK.json → `--check` exit 0 →
+reprojetar `--render`/`--index` → conferir ponteiros). A consulta orienta a
+escolha; não autoriza efeitos externos. Responsável pela manutenção: o agente
+da conversa seguindo a skill `dex-toolsbook` (contrato
+`dex.toolsbook.v2`). O Painel de Ferramentas global aponta o repertório da
+casa; o Toolsbook detalha as capacidades executáveis DESTE projeto.
+
 ## Envio a terceiros
 
 `PLAYBOOK.md` + `PLAYBOOK.index.json` (raiz) já nascem instalados pelo

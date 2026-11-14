@@ -76,6 +76,11 @@ público, selector, default ou instrução de retomada.
 
 ## Package And Validation
 
+- `TOOLSBOOK.index.md` - índice curto das ferramentas executáveis do repo
+  (consulta antes de usar/criar ferramenta; fichas por capacidade).
+- `TOOLSBOOK.md` - livro completo projetado do catálogo.
+- `TOOLSBOOK.json` - fonte autorada do catálogo (`dex.toolsbook.v2`; fichas
+  com sources sha256 + evidence; porta de consulta no AGENTS.md).
 - `package.json` - metadados, binario e scripts npm.
 - `bin/dex-memoria.js` - CLI canônica do Dex Memoria V2; também preserva os
   comandos históricos de fixture e compatibilidade explicitamente rotulados.
