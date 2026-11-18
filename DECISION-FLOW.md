@@ -5,7 +5,7 @@
 > Fonte mudou condição/ramo/owner ⇒ regenere (gatilho
 > `STALENESS-ARTEFATOS-DERIVADOS`).
 
-- **Corte**: `0.1.19` @ `corte 0.1.19 @ (merge pendente — chore atualiza com sha real)` — 2026-11-18.
+- **Corte**: `0.1.19` @ `corte 0.1.19 @ 896fc7b` — 2026-11-18.
 - **Cobertura**: prescrito (SKILL/SPEC/docs/usage) + **implementado**
   (`bin/dex-memoria.js` blob `a50987a…`, `bin/memory-v2-capabilities.js` blob
   `382d31c5…`, `bin/memory-v2-remember.js` blob `5aaaec3…` examinados —
