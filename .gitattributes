@@ -6,3 +6,4 @@ scripts/generate-memory-resource-limit-artifacts.js text eol=lf
 scripts/read-memory-resource-limits-shadow.js text eol=lf
 scripts/read-memory-resource-limits-shadow.ps1 text eol=lf
 test/memory-resource-limits-shadow.test.mjs text eol=lf
+tools/playbook/hooks/* text eol=lf
