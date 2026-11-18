@@ -4,8 +4,8 @@ description: "Regras de decisao e procedimentos deste projeto - projecao gerada 
 type: playbook
 generated_by: "tools/playbook/generate-playbook.py"
 authority: derived_projection
-sources_revision: "sha256:d8f43d03024ea121df891080b5127a12b45e16b417de241ad2ed0fdeb84299f7"
-sent_revision: "sha256:ca6171e74b936bfaa86a166fee4776ea72089825edcfe38c35be4103e0971074"
+sources_revision: "sha256:36654635c20b9c598afcf720501d1ab343f81cd6ca4f86e155c710a2ade20e2e"
+sent_revision: "sha256:b37a1e4e575984fc210f39495acc28ece1d6a5a2e266201808685c94f2175936"
 do_not_edit: true
 ---
 # Playbook - dex-memoria
@@ -54,7 +54,7 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 
 | caminho | sha256 | Enviado? |
 | --- | --- | --- |
-| `AGENTS.md` | `d4b09a6ef4c6ba8464e958dad89c911a4c94a93dfbfe45c17eccf01bc20c73ad` | sim |
+| `AGENTS.md` | `1267c6a9bafabb63a70a93b266237635fd002a8b3f081991f4c23d2bccd0dc19` | sim |
 | `.agents/napkin.md` | `82b1a5c626c64da878a92706a078d443e89252e42ad592c2d125bbbc5c637573` | sim |
 | `.agents/PLAN-TASKS/ACTIVE.md` | `6954fbf7443697274bf24b98e3d9df6c20509d1a765613fdd97404a49ba2d832` | nao |
 
@@ -80,3 +80,4 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 - Indexação (doutrina da casa) -> `AGENTS.md#L410` (sem token de localizador)
 - Toolsbook (consulta antes de usar ou criar ferramentas) -> `AGENTS.md#L417` (sem token de localizador)
 - Envio a terceiros -> `AGENTS.md#L440` (sem token de localizador)
+- Gates de git (hooks da casa) -> `AGENTS.md#L460` (sem token de localizador)

@@ -456,3 +456,9 @@ Regenerar apos editar fonte:
 Verificar frescor: mesmo comando com `--check` (exit 0 limpo, exit 2 drift).
 Ativar trava de commit: `git config core.hooksPath tools/playbook/hooks`.
 <!-- playbook-pointer:end -->
+
+## Gates de git (hooks da casa)
+
+Merge de branches é gated pelo hook pre-merge-commit (escape
+`MERGE_CHECK_SKIP=1`); artefatos derivados citados só após staleness-check
+(GATILHOS-VIVOS) $dex-5w2h-gatilhos-vivo.

@@ -1,18 +1,22 @@
 # Gatilhos Vivos
 
 Hub de gatilhos quentes de reuso (promovidos do napkin quando um aviso ganha
-alcance de projeto). Indice no topo: `| Gatilho | Quando lembrar | Fonte viva / acao |`;
-detalhe no molde de 5 campos (GO do dono 2026-10-28): Por que / Como / Quando /
-Onde / E-SE?? (pergunta adversarial com resposta curta, repetivel).
+alcance de projeto). Indice no topo (com campo 0 `Quem`, emenda GO 2026-11-15):
+`| Gatilho | Quem | Quando lembrar | Fonte viva / acao |`; detalhe no molde 5W2H
+(GO do dono 2026-10-28): Quem / Por que / Como / Quando / Onde / E-SE??
+(pergunta adversarial com resposta curta, repetivel).
 
-| Gatilho | Quando lembrar | Fonte viva / ação |
-| --- | --- | --- |
-| `DEX-MEMORIA-PROVA-W6-ZERO-DEPS` | provar build/teste deste repo antes de declarar pronto | `.agents/SCRIPTS/comprovar-node-arqueologia.sh` + receipt `.agents/RECEIPTS/2026-11-05-arqueologia-w6-comprovar-node.json` |
-| `TRACKER-LOCAL` | no bootstrap: issues/PRs locais abertos moram em `.agents/TRACKER/INDEX.md` (plaquinha global `ISSUES-POR-REPO-DONO`; item 0001 MISSING_BACKLINK P1 aguardando owner) | `.agents/TRACKER/INDEX.md` — ler e ver coluna `aguardando` |
-| `STALENESS-ARTEFATOS-DERIVADOS` | ANTES de ler/citar CRG, graphify, PLAYBOOK, INDEX ou mapa derivado | seção abaixo — 3 números: fonte × artefato × regen |
+| Gatilho | Quem | Quando lembrar | Fonte viva / ação |
+| --- | --- | --- | --- |
+| `DEX-MEMORIA-PROVA-W6-ZERO-DEPS` | harness `.agents/SCRIPTS/comprovar-node-arqueologia.sh` (sessão do repo roda) | provar build/teste deste repo antes de declarar pronto | `.agents/SCRIPTS/comprovar-node-arqueologia.sh` + receipt `.agents/RECEIPTS/2026-11-05-arqueologia-w6-comprovar-node.json` |
+| `TRACKER-LOCAL` | skill `dex-gerar-issues-git` (dona do formato) | no bootstrap: issues/PRs locais abertos moram em `.agents/TRACKER/INDEX.md` (plaquinha global `ISSUES-POR-REPO-DONO`) | `.agents/TRACKER/INDEX.md` — ler e ver coluna `aguardando` |
+| `STALENESS-ARTEFATOS-DERIVADOS` | sessão do projeto (regen: owner por artefato no inventário abaixo) | ANTES de ler/citar CRG, graphify, PLAYBOOK, INDEX ou mapa derivado | seção abaixo — 3 números: fonte × artefato × regen |
+| `MERGE-CHECK-HOOK-PRE-MERGE` | hook `tools/playbook/hooks/pre-merge-commit` (dispara em todo `git merge` local) | todo merge local de branches; antes do clique de merge em PR remoto | seção abaixo — laboratório três vias + escapes |
 
 ## `STALENESS-ARTEFATOS-DERIVADOS`
 
+- **Quem**: sessão do projeto (checa antes de citar; regen tem owner por
+  artefato no inventário abaixo; fiscal: `$guarda-plaquinhas`).
 - **Por que**: artefato derivado nasce fotografando a fonte num instante; se a
   fonte mudou sem regen, a leitura é confiante num mapa antigo — foto velha
   vira ruído confiável (falso verde). Pago ao vivo em 2026-11-06 neste repo: o
@@ -24,12 +28,12 @@ Onde / E-SE?? (pergunta adversarial com resposta curta, repetivel).
   STALE ⇒ rodar o regen e só então citar. Staleness medido em segundos/SHAs,
   nunca "parece atual". Artefatos cobertos (inventário 2026-11-06, todos
   confirmados no disco):
-  1. **CRG** — `.code-review-graph/graph.db`; quando: `cd
-     C:/CodexProjetos/code-review-graph && uv run code-review-graph status
-     --repo C:/CodexProjetos/dex-memoria` (campos `Built at commit` — comparar
-     com `git rev-parse HEAD` — e `Last updated`); regen: `uv run
-     code-review-graph update --repo C:/CodexProjetos/dex-memoria`
-     (incremental).
+  1. **CRG** — `.code-review-graph/graph.db`; quando (1 comando, compara
+     sozinho): `code-review-graph doctor` no cwd do repo (linha "built at
+     <sha> but HEAD is <sha>" = stale; ver detalhes com `status --repo`);
+     regen: `code-review-graph update --repo .` (incremental). Trocado ao
+     vivo em 2026-11-18: doctor reportou grafo stale (`1939a54` vs HEAD
+     `ee3a207`) — a foto velha existia de verdade.
   2. **graphify estrutural** — `graphify-out/graph.json` (sem campo built_at:
      usar mtime do arquivo) × `git log -1 --format=%cI`; regen:
      `graphify update .` (exit 0).
@@ -46,7 +50,11 @@ Onde / E-SE?? (pergunta adversarial com resposta curta, repetivel).
      arqueologia (owner: próxima arqueologia do repo).
   Ausências registradas: receipts em `.agents/RECEIPTS/` são evidência
   congelada datada — não consultáveis como "estado atual", ficam fora do
-  check.
+  check. DESDE 0.1.19 (2026-11-18) os mapas PÚBLICOS (`CAPACITY.md`/
+  `DECISION-FLOW.md`) têm gate mecânico de blob no `npm run check`
+  (`validate-public.js`, issue #20) — drift de blob citado reprova commit;
+  o staleness-check acima continua valendo para os artefatos SEM gate
+  (CRG, graphify, PLAYBOOK tem --check dedicado no pre-commit, INDEX, MAPAS).
   6. **Mapas de projeto** — `.agents/MAPAS/{missao,capacidades,decisoes}.md`
      (instalados 2026-11-06); fonte = ACTIVE/HANDOFF/Git/`DECISIONS.md`;
      quando: data do corte no cabeçalho de cada mapa; regen = re-rodar as
@@ -65,6 +73,42 @@ Onde / E-SE?? (pergunta adversarial com resposta curta, repetivel).
   **E SE?? o check passar (verde) mas o conteúdo parecer errado?** → verde de
   staleness não é prova de semântica: abre a FONTE, não o artefato — "fonte
   viva sempre vence memória".
+
+## `MERGE-CHECK-HOOK-PRE-MERGE`
+
+- **Quem**: hook `tools/playbook/hooks/pre-merge-commit` (dispara sozinho em
+  todo `git merge` local; mantém: sessão do repo; motor: fork casa
+  `code-review-graph >= 2.4.0+dex.1`, instalado global no PATH — NÃO usar
+  `code-review-graph install`, que registra MCP/skills de plataforma e não é
+  gate). Instalado 2026-11-18; todos os ramos provados com stub + suíte real.
+- **Por que**: merge que quebra nasce verde na suíte das partes — cada lado
+  passa sozinho, a combinação não; sem gate, o commit de merge nasce e o
+  estrago aparece downstream. O laboratório três vias (base/ours/theirs)
+  detecta conflito textual E semântico antes do commit existir.
+- **Como**: automático. Suíte declarada em `tools/playbook/hooks/merge-check.conf`
+  (`SUITE="npm test"`; vazia = avisa e NÃO bloqueia). Sem `# Conflicts:` no
+  MERGE_MSG → gate completo: `code-review-graph merge-check --repo . --base
+  $BASE --ours $OURS --theirs $THEIRS --test-failure-exit 1 -- $SUITE`. Com
+  resolução manual → suíte direto no worktree (rótulo `resolved-merge`; a
+  camada textual daria falso-positivo ao refazer o merge sem a resolução
+  humana). Bloqueio = 3 linhas com o comando para inspecionar fora do hook.
+  Escapes declarados: `MERGE_CHECK_SKIP=1` ou `git merge --no-verify`.
+  `execution_error` (exit 2) reporta sem bloquear — suíte doente não é
+  veredito de integração.
+- **Quando**: todo merge local de branches (hook automático); e ANTES do clique
+  de merge em PR remoto (o hook local não vê merge de plataforma — ver E-SE).
+- **Onde**: `tools/playbook/hooks/pre-merge-commit` + `merge-check.conf`;
+  `core.hooksPath=tools/playbook/hooks` (mesmo diretório do `pre-commit` do
+  playbook — irmãos, não rivais; NÃO remover hooks irmãos ao mexer aqui).
+- **E SE?? o merge for remoto (botão/CLI de PR no GitHub)?** → o hook local
+  NÃO roda: a sessão roda o laboratório manual antes do clique —
+  `code-review-graph merge-check --repo . --base $(git merge-base origin/main HEAD) --ours origin/main --theirs HEAD --test-failure-exit 1 -- npm test`.
+  **E SE?? o índice do CRG (`.code-review-graph/`) estiver stale?** → não
+  invalida o gate: o merge-check monta laboratório próprio três vias,
+  independente do índice corrente (staleness do índice é ficha irmã acima).
+  **E SE?? o gate devolver execution_error (exit 2)?** → hook reporta e segue
+  (exit 0): o conserto é da suíte, não do merge — curar a suíte e re-rodar o
+  merge-check manual antes de confiar.
 
 ## `DEX-MEMORIA-PROVA-W6-ZERO-DEPS`
 
