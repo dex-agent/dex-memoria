@@ -4,8 +4,8 @@ description: "Regras de decisao e procedimentos deste projeto - projecao gerada 
 type: playbook
 generated_by: "tools/playbook/generate-playbook.py"
 authority: derived_projection
-sources_revision: "sha256:36654635c20b9c598afcf720501d1ab343f81cd6ca4f86e155c710a2ade20e2e"
-sent_revision: "sha256:b37a1e4e575984fc210f39495acc28ece1d6a5a2e266201808685c94f2175936"
+sources_revision: "sha256:f9591d206785551e49ee7e2e61d4c104df1ff352659912e8b2175fcdfab92412"
+sent_revision: "sha256:0296fe8585dfc3f98c384b88877d3e3af18b0dedfd1f89c080a88196cc9c51f2"
 do_not_edit: true
 ---
 # Playbook - dex-memoria
@@ -45,6 +45,7 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 ## Runbook <-> Playbook (procedimentos)
 
 - [2026-11-05] Gate textual da suite: Node 24 emite resumo com prefixo INFO, nao '# pass' - Faca: case os dois formatos — `grep -E "^(#|ℹ) fail[[:space:]]"` — e -> `.agents/napkin.md#L16 (local)`
+- [2026-11-18] Provar hook de git SEM merge real: fake GIT_DIR + stubs de git/CRG - Faca: mktemp dir com `MERGE_HEAD`/`MERGE_MSG` fake (o `# Conflicts:` -> `.agents/napkin.md#L24 (local)`
 
 ## Plano de execucao vigente
 
@@ -55,7 +56,7 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 | caminho | sha256 | Enviado? |
 | --- | --- | --- |
 | `AGENTS.md` | `1267c6a9bafabb63a70a93b266237635fd002a8b3f081991f4c23d2bccd0dc19` | sim |
-| `.agents/napkin.md` | `82b1a5c626c64da878a92706a078d443e89252e42ad592c2d125bbbc5c637573` | sim |
+| `.agents/napkin.md` | `1f9e1e342b010fb4f8353f237d0e451b91b43fea5638d9124a7e11b526ff00c0` | sim |
 | `.agents/PLAN-TASKS/ACTIVE.md` | `6954fbf7443697274bf24b98e3d9df6c20509d1a765613fdd97404a49ba2d832` | nao |
 
 ## Superficie enviada vs local
