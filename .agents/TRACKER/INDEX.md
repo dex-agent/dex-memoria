@@ -8,6 +8,6 @@ Issues locais do projeto dex-memoria (destino offline da plaquinha global `ISSUE
 | --- | --- | --- | --- | --- |
 | [ISSUE-LOCAL-0001](issues/0001-missing-backlink-l1-l2.md) | MISSING_BACKLINK L1->L2 por metacaractere: `]` no title (3× 261109, curado CLI PR #21) + REABERTO 261110 porta MM (RED provava COMMIT sujo) — FECHADO 261110 chokepoint PR #22 / release 0.1.17 (`e7a7bfb`), confirmação owner; ressalva gerador MM roteada ao TRACKER dex-PPIRTV | integrado | P1 | — |
 | [ISSUE-LOCAL-0002](issues/0002-assertsafeancestors-audita-acima-do-boundary.md) | `assertSafeAncestors` audita territorio ACIMA do boundary: workspace sob junction (`C:\DeepProjetos` -> `Z:`) bloqueia `v2 remember scope=project`; FECHADO 261111 guard escopado ao boundary PR #23 / release 0.1.18 (`d6c1449`), TOCTOU preservado; TRACKER versionado no mesmo corte | integrado | P1 | — |
+| [ISSUE-LOCAL-0003](issues/0003-autoria-schemas.md) | docs: ligar remember aos schemas de entrada e recibo — FECHADO 261118: cura `4f5a58f` (janela codex), aceite conferido 3/3 pela janela dona (links no clone + ids nos schemas + teste 5/5); GitHub #26 CLOSED | integrado | P2 | — |
 
 Registros: criado em 2026-11-09 no bootstrap do TRACKER (1º item — piloto da plaquinha `ISSUES-POR-REPO-DONO`; skill dona do formato: `dex-gerar-issues-git` modo offline).
-| [ISSUE-LOCAL-0003](issues/0003-autoria-schemas.md) | docs: ligar remember aos schemas de entrada e recibo | aberto | P2 | — |
