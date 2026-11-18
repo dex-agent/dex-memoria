@@ -59,6 +59,8 @@ conexão bidirecional efetivamente escolhida, `L1↔L2` ou `L1↔L3`.
 '@ | node "C:\CodexProjetos\dex-memoria\bin\dex-memoria.js" v2 remember
 ```
 
+Consulte a [entrada de remember](contracts/schemas/dex.memory.remember.request.v2.schema.json) e o [recibo de remember](contracts/schemas/dex.memory.remember.receipt.v2.schema.json). Para redigir contratos no ecossistema Dex, a porta estável do registry é `check-schemas/SKILL.md`.
+
 O payload cotidiano é fechado:
 
 - `scope`: obrigatório; `project`, `global`, `theme` ou `dual`;
@@ -200,7 +202,7 @@ contrato ou executando recovery manual, consulte sob demanda:
   verde-vazio e a tabela de skips declarados do validador — issue #5);
 - `docs/runtime-boundary.md`: fronteira do pacote;
 - `docs/memory-home.md`: resolução de roots;
-- `contracts/schemas/`: schemas públicos;
+- `contracts/schemas/`: demais schemas públicos;
 - `bin/dex-memoria.js help`: primitivas avançadas.
 
 Primitivas avançadas preservadas:
