@@ -3,6 +3,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 const {
   SCHEMA_FILES: createContractSchemaFiles,
@@ -13,7 +14,7 @@ const {
 } = require("./generate-memory-resource-limit-artifacts");
 
 const root = path.resolve(__dirname, "..");
-const expectedVersion = "0.1.18";
+const expectedVersion = "0.1.19";
 
 const requiredFiles = [
   "LICENSE",
@@ -168,6 +169,73 @@ const trackedDurableAllowlist = new Set([
   ".agents/DEPENDENCIES.md"
 ]);
 
+// Projection blob gate (issue #20, 0.1.19): CAPACITY.md and DECISION-FLOW.md cite
+// live sources as `path` (blob `<prefix>…`), where the blob is the TRUNCATED git
+// blob id (git hash-object = sha1("blob <len>\0" + bytes)) — NOT the plain file
+// sha256. The gate recalculates each cited blob and rejects drift, closing the
+// "stale blob paid 3x" class mechanically (classe 3x = gate sistemico 1x).
+const PROJECTION_MAPS = ["CAPACITY.md", "DECISION-FLOW.md"];
+
+function gitBlobId(rawBytes) {
+  // Replicates git's text clean filter for checked-in content: the stored blob
+  // (what `git hash-object` reports and what the maps cite) normalizes CRLF to LF.
+  const bytes = rawBytes.includes(Buffer.from("\r\n")) ? Buffer.from(rawBytes.toString("utf8").replace(/\r\n/g, "\n"), "utf8") : rawBytes;
+  return crypto.createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+}
+
+function collectProjectionBlobDrifts(mapContents, computeBlobId, fileExists) {
+  const drifts = [];
+  const pattern = /`([^`\s]+)`[\s\S]{0,40}?\bblob\s+`([a-f0-9]{6,64})(?:…|\.\.\.)?`/g;
+  for (const [mapName, text] of Object.entries(mapContents)) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const citedPath = match[1];
+      const citedPrefix = match[2].toLowerCase();
+      if (!fileExists(citedPath)) {
+        drifts.push({ map: mapName, path: citedPath, kind: "missing_file", cited: citedPrefix });
+        continue;
+      }
+      const actualBlob = computeBlobId(citedPath);
+      if (!actualBlob.startsWith(citedPrefix)) {
+        drifts.push({
+          map: mapName,
+          path: citedPath,
+          kind: "stale_blob",
+          cited: citedPrefix,
+          actual: actualBlob.slice(0, citedPrefix.length)
+        });
+      }
+    }
+  }
+  return drifts;
+}
+
+function validateProjectionBlobs(errors) {
+  const mapContents = {};
+  for (const mapName of PROJECTION_MAPS) {
+    const mapPath = path.join(root, mapName);
+    if (!fs.existsSync(mapPath)) continue;
+    mapContents[mapName] = fs.readFileSync(mapPath, "utf8");
+  }
+  const drifts = collectProjectionBlobDrifts(
+    mapContents,
+    (citedPath) => gitBlobId(fs.readFileSync(path.join(root, citedPath))),
+    (citedPath) => fs.existsSync(path.join(root, citedPath))
+  );
+  if (drifts.length > 0) {
+    errors.push(
+      [
+        "Projection blob drifts (map cites a stale git-blob for a live source — recalculate and update the map in the SAME commit; issue #20, 0.1.19):",
+        ...drifts.map((drift) =>
+          drift.kind === "missing_file"
+            ? `- ${drift.map} -> ${drift.path}: cited file does not exist (cited blob ${drift.cited}…)`
+            : `- ${drift.map} -> ${drift.path}: cited blob ${drift.cited}… but working tree blob is ${drift.actual}…`
+        )
+      ].join("\n")
+    );
+  }
+}
+
 function main() {
   const errors = [];
 
@@ -197,7 +265,7 @@ function main() {
     errors.push(`VERSION must be ${expectedVersion}, got ${version}`);
   }
 
-  requireText(errors, "README.md", ["Versao atual: `0.1.18`", "dex-agent", "nao e um writer automatico", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
+  requireText(errors, "README.md", ["Versao atual: `0.1.19`", "dex-agent", "nao e um writer automatico", "DEX_MEMORIA_HOME", "Taxonomia de temas"]);
   requireText(errors, "SPEC.md", ["L1 - Lembranca", "L2 - Memoria", "L3 - Conhecimento", "Escopos De Caminho", "Raiz Canonica", "Taxonomia De Temas"]);
   requireText(errors, "docs/usage.md", ["Usar L1/L2/L3", "gatilho -> ancora -> detalhe", "Escolher O Caminho Correto", "$HOME/.agents/memories", "tema e dominio reutilizavel"]);
   requireText(errors, "docs/runtime-boundary.md", ["Carregamento De L1/L2/L3", "global roteia", "DEX_MEMORIA_HOME"]);
@@ -336,8 +404,8 @@ function main() {
     '"L1->L2"',
     '"L1->L3"'
   ]);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.18 - 2026-11-11", "V2 writer/selector ativo"]);
-  requireText(errors, "CONTRIBUTING.md", ["version `0.1.18`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.19 - 2026-11-18", "V2 writer/selector ativo"]);
+  requireText(errors, "CONTRIBUTING.md", ["version `0.1.19`", "fixture-only V0", "docs/cli-create-fixture-v0.md"]);
   requireText(errors, "AGENTS.md", ["V0 fixture-only", "docs/cli-create-fixture-v0.md"]);
   validateCreateContractSchemas(errors);
   validateRememberContractSchemas(errors);
@@ -391,7 +459,7 @@ function main() {
   ]);
   validateConscienciaTemplates(errors);
   validateGraduatedMemoryBattery(errors);
-  requireText(errors, "CHANGELOG.md", ["## 0.1.18 - 2026-11-11", "## 0.1.17 - 2026-11-10", "## 0.1.16 - 2026-11-09", "## 0.1.15 - 2026-11-07", "## 0.1.14 - 2026-11-07", "## 0.1.13 - 2026-11-07", "## 0.1.12 - 2026-11-07", "## 0.1.11 - 2026-11-07", "## 0.1.10 - 2026-11-07", "## 0.1.9 - 2026-11-07", "## 0.1.8 - 2026-11-07", "## 0.1.7 - 2026-11-06", "## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
+  requireText(errors, "CHANGELOG.md", ["## 0.1.19 - 2026-11-18", "## 0.1.18 - 2026-11-11", "## 0.1.17 - 2026-11-10", "## 0.1.16 - 2026-11-09", "## 0.1.15 - 2026-11-07", "## 0.1.14 - 2026-11-07", "## 0.1.13 - 2026-11-07", "## 0.1.12 - 2026-11-07", "## 0.1.11 - 2026-11-07", "## 0.1.10 - 2026-11-07", "## 0.1.9 - 2026-11-07", "## 0.1.8 - 2026-11-07", "## 0.1.7 - 2026-11-06", "## 0.1.6 - 2026-06-19", "## 0.1.5 - 2026-05-17", "## 0.1.4 - 2026-05-16", "## 0.1.3 - 2026-05-15", "## 0.1.2 - 2026-05-09"]);
   requireText(errors, "SECURITY.md", [
     "must not contain secrets",
     "does not provide the Dex Agent runtime",
@@ -402,6 +470,7 @@ function main() {
   requireText(errors, "LICENSE", ["MIT License"]);
   validateLayeredMemoryExample(errors);
   validateNoForbiddenTrackedFiles(errors);
+  validateProjectionBlobs(errors);
   validateNoHardcodedWindowsUserProfilePath(errors);
   validateResourceLimitPolicy(errors);
 
@@ -731,4 +800,8 @@ function assertEqual(errors, label, actual, expected) {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { gitBlobId, collectProjectionBlobDrifts, PROJECTION_MAPS };

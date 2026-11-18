@@ -5,7 +5,7 @@
 > Fonte mudou condição/ramo/owner ⇒ regenere (gatilho
 > `STALENESS-ARTEFATOS-DERIVADOS`).
 
-- **Corte**: `0.1.18` @ `corte 0.1.18 @ d6c1449` — 2026-11-11.
+- **Corte**: `0.1.19` @ `corte 0.1.19 @ (merge pendente — chore atualiza com sha real)` — 2026-11-18.
 - **Cobertura**: prescrito (SKILL/SPEC/docs/usage) + **implementado**
   (`bin/dex-memoria.js` blob `a50987a…`, `bin/memory-v2-capabilities.js` blob
   `382d31c5…`, `bin/memory-v2-remember.js` blob `5aaaec3…` examinados —
@@ -62,6 +62,7 @@ flowchart TD
 | D-11 | canal de distribuição? | decisão do dono 2026-11-06 | Git/GitHub; registro npm descontinuado (0.1.5 histórico) | dono | `DECISIONS.md` blob `26a53d31…` | lavrada e publicada |
 | D-12 | como liberar versão? | 6 superfícies alinhadas + contrato `validate-public` (5 pontos) + 2 hardcodes de teste | check/test/CI verde ⇒ tag + gh release | mantenedor | `scripts/validate-public.js` | pago 2× (0.1.7 e 0.1.12); travado |
 | D-13 | alvo de escrita cruza reparse point? | **0.1.18**: `assertSafeAncestors` escopado ao territory do vault (`resolved_root` → alvo), não à raiz do drive | reparse DENTRO do vault → `SAFETY_BOUNDARY` nomeando o caminho; reparse ACIMA do vault (layout da máquina, ex. junction no caminho do workspace) → não bloqueia; alvo fora do boundary → recusa citando boundary e target | mantenedor | `docs/usage.md` §Boundary Do Guard De Reparse + ISSUE-LOCAL-0002 | RED→GREEN: junction-acima COMMITTED + TOCTOU (resolved-root junction) segue FAILED |
+| D-14 | mapa cita blob de fonte viva ainda vigente? | **0.1.19**: gate em `validate-public` recalcula o git-blob id (clean filter CRLF→LF) de cada par `path` (blob `prefixo…`) em CAPACITY/DECISION-FLOW | prefixo citado == blob atual → passa; divergência → reprova citando par citado×atual com a cura (regen do mapa NO MESMO commit); arquivo citado inexistente → reprova | mantenedor | issue #20 (classe 3×: 0.1.13/0.1.14/0.1.15) + teste `validate-public-projection-blobs` | RED→GREEN e2e + drift real (SKILL.md 11-18) pego na 1ª execução |
 
 ## Handoffs e lacunas
 

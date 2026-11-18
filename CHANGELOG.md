@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.19 - 2026-11-18
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Gate de projeções (issue #20 — classe de blob stale paga 3×, agora fechada
+mecanicamente): `npm run check` recalcula o git-blob id de cada fonte viva
+citada em `CAPACITY.md`/`DECISION-FLOW.md` (formato `path` (blob `prefixo…`))
+e reprova drift citando par citado×atual, com a cura na própria mensagem
+(recalcular e atualizar o mapa NO MESMO commit). O cálculo replica o clean
+filter do git (CRLF→LF) — os blobs citados são git-blob ids, não sha256 de
+arquivo. Prova RED→GREEN e2e: blob adulterado passava no check antigo; com o
+gate, reprova citando o par. O gate também pegou ao vivo um drift real
+(`SKILL.md` editado em 11-18 sem regen do mapa) na primeira execução.
+
+Testes: `test/validate-public-projection-blobs.test.mjs` (âncora do blob
+vazio `e69de29…`, normalização CRLF, drift/fresh/missing, par multilinha);
+suíte 377/367/0.
+
 ## 0.1.18 - 2026-11-11
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
