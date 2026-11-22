@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:f34aadf2044f5bbbebfbd01890a42318c74943cece7bfc2d3290ada7368ae34b",
-  "sent_revision": "sha256:595edcc815508a665f65a648a0bb06766d4d90684937a0decec824d98b5d5974",
+  "sources_revision": "sha256:3c00b4e3fa7a5c13fccaf8c7e01f2ca6782e802e90289dde8844078413de560d",
+  "sent_revision": "sha256:bba4c63e5837a496c39d3a2c42a939071bdca91011e6caabc87799d891540a48",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -65,8 +65,8 @@
     {
       "data": "2026-11-21",
       "localizador": "",
-      "titulo": "Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silêncio",
-      "faca": "após escrever/editar hook, `python -c \"b=open(f,'rb').read(); print(b'",
+      "titulo": "Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silencio",
+      "faca": "apos escrever/editar hook, conferir bytes e normalizar —",
       "ancora": ".agents/napkin.md#L55",
       "local": true
     }
@@ -141,7 +141,7 @@
     },
     {
       "caminho": ".agents/napkin.md",
-      "sha256": "3761d3fd22163eccfa2f740c4e77c3d5bf2da5f99986055ecad8bd6c447c9e09",
+      "sha256": "86708d124854ee39696351e44bcc5e15955b743bd18b056cd26d4898358d14d5",
       "enviado": true
     },
     {

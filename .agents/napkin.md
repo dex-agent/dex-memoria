@@ -52,11 +52,11 @@
    2026-11-21-issue28-29/lab-red.sh` + `lab-green-auto.sh` + `lab-green-manual.sh`,
    issues #28/#29, corte 0.1.20).
 
-6. **[2026-11-21] Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silêncio**
+6. **[2026-11-21] Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silencio**
    Sintoma: Write/Edit gravou CRLF no `pre-commit` (git avisou "CRLF will be
-   replaced by LF"; `file` confirmou) — bash com CRLF falha com `: command
-   not found` só quando o git dispara o hook.
-   Faça em vez disso: após escrever/editar hook, `python -c "b=open(f,'rb').read(); print(b'
-' in b)"`
-   e normalizar para LF antes de provar; `.gitattributes` (`tools/playbook/hooks/* text eol=lf`)
-   protege o COMMIT, não o working copy local que roda.
+   replaced by LF"; `file` confirmou) — bash com CRLF falha com CR literal:
+   `command not found` so quando o git dispara o hook.
+   Faca em vez disso: apos escrever/editar hook, conferir bytes e normalizar —
+   `python -c "b=open('f','rb').read(); print('\r\n in b')"` (True = CRLF presente);
+   normalizar para LF antes de provar; `.gitattributes` (`tools/playbook/hooks/* text eol=lf`)
+   protege o COMMIT, nao o working copy local que roda. Pago no corte 0.1.20.
