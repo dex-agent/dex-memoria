@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:f9591d206785551e49ee7e2e61d4c104df1ff352659912e8b2175fcdfab92412",
-  "sent_revision": "sha256:0296fe8585dfc3f98c384b88877d3e3af18b0dedfd1f89c080a88196cc9c51f2",
+  "sources_revision": "sha256:e981ea62ed97de252b8a1f8109c8feab82984c604fd2041eb80aa3b86859c9a2",
+  "sent_revision": "sha256:cf4d80c6cf5f230e7827eac63289d47823272f39ece872679141c34f2366f1b8",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -52,6 +52,14 @@
       "titulo": "Provar hook de git SEM merge real: fake GIT_DIR + stubs de git/CRG",
       "faca": "mktemp dir com `MERGE_HEAD`/`MERGE_MSG` fake (o `# Conflicts:`",
       "ancora": ".agents/napkin.md#L24",
+      "local": true
+    },
+    {
+      "data": "2026-11-21",
+      "localizador": "",
+      "titulo": "Provar hook de merge com Git REAL: repo descartável + wrapper instrumentador",
+      "faca": "repo descartável com `core.hooksPath` apontando para os",
+      "ancora": ".agents/napkin.md#L41",
       "local": true
     }
   ],
@@ -120,17 +128,17 @@
   "fontes": [
     {
       "caminho": "AGENTS.md",
-      "sha256": "1267c6a9bafabb63a70a93b266237635fd002a8b3f081991f4c23d2bccd0dc19",
+      "sha256": "39b3802fbb1e50d22b3325ada24fe78b0bb426c55d812b6ff41f15d831c7fc35",
       "enviado": true
     },
     {
       "caminho": ".agents/napkin.md",
-      "sha256": "1f9e1e342b010fb4f8353f237d0e451b91b43fea5638d9124a7e11b526ff00c0",
+      "sha256": "1a643584dd0cfd1910661de4a1c6d701fcca0f370c2e360ee1a2ab877988a4a7",
       "enviado": true
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
-      "sha256": "6954fbf7443697274bf24b98e3d9df6c20509d1a765613fdd97404a49ba2d832",
+      "sha256": "483f3d97d9b1488dcd16b432b763796cb3135d909d9152073533d9354d05a031",
       "enviado": false
     }
   ]

@@ -5,7 +5,8 @@
 > em `.agents/GATILHOS-VIVOS.md` — fonte mudou condição de capacidade ⇒ regenere.
 
 - **Objeto**: pacote `dex-memoria` (contrato documental + CLI de memória operacional Dex).
-- **Fotografia**: `0.1.19` @ commit `corte 0.1.19 @ 896fc7b` — 2026-11-18.
+- **Fotografia**: `0.1.20` @ commit `corte 0.1.20` (sha gravado no chore
+  pós-merge) — 2026-11-21.
 - **Ambiente observado**: Windows (win32 x64), Node 24 (contrato exige ≥18), Git Bash.
 - **Fontes vivas**: `SKILL.md` (blob `09b0c013…`), `SPEC.md` (blob `73fd3939…`),
   `bin/dex-memoria.js` (blob `a50987a…`), `bin/memory-v2-capabilities.js`
@@ -26,6 +27,7 @@
 | Transação V2 (`v2 plan\|apply\|resume\|recover`) | operador do vault | request JSON | journal + failpoints + recovery declarados | suíte de testes de transação | 377/367 pass (0 fail; 10 skipped) |
 | **Guard de reparse escopado ao boundary** — 0.1.18 | qualquer workspace sob junction/symlink acima do `.agents` | `v2 remember scope=project` | audita ancestrais DENTRO do vault apenas; reparse acima do vault não bloqueia; reparse interno e alvo fora do boundary continuam `SAFETY_BOUNDARY` | teste junction-acima COMMITTED + teste TOCTOU (l.372) segue FAILED | ISSUE-LOCAL-0002; RED→GREEN provado |
 | **Gate de projeções (blob drift)** — 0.1.19 | mantenedor/release | `npm run check` (todo commit/CI) | recalcula git-blob id (CRLF→LF) de cada fonte citada em CAPACITY/DECISION-FLOW e reprova drift citando par citado×atual + cura na mensagem | RED→GREEN e2e com blob plantado + teste unitário 4/4; pegou drift real do SKILL.md na 1ª execução | issue #20 (classe 3× paga → gate 1×) |
+| **Gate merge-check pelo ciclo de vida real** — 0.1.20 | mantenedor/merge | `git merge` / commit de resolução (hooks `tools/playbook/hooks/`) | merge automático roda a suíte no worktree do resultado (MERGE_HEAD ausente no hook, medido no Git 2.45.1); commit de resolução dispara `pre-commit` que detecta MERGE_HEAD e roda a suíte; hooks `100755` (POSIX); escape `MERGE_CHECK_SKIP=1` | laboratório Git real RED→GREEN (merge quebrado/resolução com suíte vermelha reprovados; verdes commitam) | issues #28/#29; `.agents/EVIDENCIAS/2026-11-21-issue28-29/` |
 | Validação de unidade (`v2 validate`) | escritor (antes de fechar bloco) | `touched_paths` L1+destino | contrato de tags (aninhada, conjunto idêntico, corpo varrido) + backlinks COM contexto (`unit:` + linha L1 esperada, 0.1.16) | suíte `memory-v2-*` RED-first | issues #2/#3 (PR #4) + charset (ISSUE-LOCAL-0001) |
 | Validação de raiz (`v2 validate-root`) | fiscal de vault | request com `root` | ORPHAN_L1_LINE + contrato de tags no root inteiro | suíte + execução no vault real (378 arquivos) | medido 2026-11-07 |
 | **Resolução cross-vault (`vault_root`)** — 0.1.8 | fiscal de vault composto | request com `vault_root` | link fora-da-raiz que resolve no vault vira `evidence.cross_vault_links` (auditável); morto continua `UNRESOLVED_*` | `test/memory-v2-vault-root.test.mjs` (4 cenários RED→GREEN) | issue #5 / PR #6 |
