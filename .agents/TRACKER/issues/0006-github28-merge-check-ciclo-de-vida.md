@@ -12,7 +12,7 @@ vinculos:
   - "GitHub issue #28 (remote_url: https://github.com/dex-agent/dex-memoria/issues/28 — espelho; a verdade mora aqui)"
   - "PR #30 (6627c66) / release v0.1.20"
   - "evidências: .agents/EVIDENCIAS/2026-11-21-issue28-29/"
-  - "irmão de laboratório: ISSUE-LOCAL-0006 do repo code-review-graph (WinError 2 npm.cmd)"
+  - "irmão de laboratório: ISSUE-LOCAL-0006 do repo code-review-graph (WinError 2 npm.cmd) — FECHADO 261121 no corte 2.4.0+dex.2 (resolve_suite_command; GREEN-REAL-CRG_OK no dex-memoria)"
 ---
 
 # GitHub #28 — pre-merge-commit com premissa MERGE_HEAD falsa

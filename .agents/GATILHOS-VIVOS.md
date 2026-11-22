@@ -115,7 +115,10 @@ alcance de projeto). Indice no topo (com campo 0 `Quem`, emenda GO 2026-11-15):
   independente do índice corrente (staleness do índice é ficha irmã acima).
   **E SE?? o gate devolver execution_error (exit 2)?** → hook reporta e segue
   (exit 0): o conserto é da suíte, não do merge — curar a suíte e re-rodar o
-  merge-check manual antes de confiar.
+  merge-check manual antes de confiar. (DESDE o fork CRG 2.4.0+dex.2,
+  2026-11-21, exit 2 não é mais spawn Windows: `resolve_suite_command`
+  resolve npm.cmd — GREEN-REAL-CRG_OK provado na via-d; ISSUE-LOCAL-0006 do
+  code-review-graph fechada.)
   **E SE?? merge automático sem conflito e o gate reprovar (suíte vermelha)?**
   → o commit de merge NÃO nasce; o worktree fica com o resultado aplicado —
   rode `git merge --abort` para voltar ao estado pré-merge, cure a suíte e
