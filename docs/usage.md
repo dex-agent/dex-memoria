@@ -891,12 +891,24 @@ Lembrete de fixture para testes: um alvo cross-vault de teste **nao** pode se
 chamar `memoria`/`lembranca` (com caminho) — esses entram no skip legacy-V1 e o
 teste passa vazio. Use nomes neutros (ex.: `temas/<tema>/nota.md`).
 
-## Identidade Do `request_fingerprint`
+## Tríade De Identidade: `request_fingerprint` × `candidate_id` × `idempotency_key`
 
-O `request_fingerprint` do receipt identifica a **operação** (payload
-normalizado, incluindo `operation_id`), não o conteúdo — ele muda a cada retry
-com `next_operation_id` mesmo com body idêntico. NÃO use para dedup por
-conteúdo (issue #10, item 4).
+Os três campos do receipt respondem a perguntas DIFERENTES — trocá-los entre si
+é a armadilha do issue #10 (item 4):
+
+| Campo | Identifica | Derivação (fonte) | Muda em retry com `next_operation_id`? |
+| --- | --- | --- | --- |
+| `request_fingerprint` | o **pedido** (payload normalizado inteiro, incluindo `operation_id`) | digest do request normalizado (`bin/memory-v2-remember.js`) | **SIM** — body idêntico com operation_id novo é outro pedido |
+| `candidate_id` | o **conteúdo** da unidade (trigger/body/tags/destino da memória) | `hashJson(candidate)` — sem operation_id (`bin/memory-v2-route-executor.js`, `deriveStableIdentities`) | **NÃO** — mesma memória reemitida mantém o mesmo `candidate_id` |
+| `idempotency_key` | a **operação por rota** | `dex-memoria:<operation_id>:<scope>` (`bin/memory-v2-runtime-core.js`, `planMemoryOperation`) | **SIM** — é a trava de re-emissão do comando |
+
+Exemplo de uso: gravar a mesma memória duas vezes (segunda vez com
+`next_operation_id` do recovery) produz `request_fingerprint` e
+`idempotency_key` NOVOS nas duas rotas, mas o MESMO `candidate_id` — **dedup
+por conteúdo consulta `candidate_id`** (ou `content_hash` do destino
+renderizado), nunca `request_fingerprint`. A pergunta certa para cada campo:
+"que pedido foi esse?" (fingerprint) · "que memória é essa?" (candidate_id) ·
+"que comando devo travar?" (idempotency_key).
 
 ## Recuperacao De Rota Simples (v2 remember + v2 recover)
 
@@ -931,6 +943,15 @@ anunciada no 0.1.12 e documentada aqui (issue #14): o dual
 `ROUTE_BUSY + TRANSACTION_ROLLED_BACK/IDEMPOTENCY_CONFLICT` resolve como
 `retry_new_operation` **com** `next_operation_id` (a irmã com transação
 rolada precisa de id novo; antes do 0.1.12 era `retry_same_operation` sem id).
+
+**Guidance do `v2 recover` de 2º nível (0.1.21, issue #10 item 7):** quando o
+próprio `v2 recover` re-falha (ex.: `JOURNAL_CONFLICT` — o journal gravado no
+disco não pertence mais à rota do `command_input`), o receipt FAILED nasce com
+campo aditivo `guidance`: `mode: "manual_resolution"`, `message` com a rota
+documentada (restaurar journal/destinos manualmente **ou** reemitir com nova
+`operation_id`) e `journal_path` referenciando o journal divergente. O recover
+é a última instância automática — sua falha nunca volta muda, e a taxonomia de
+buckets acima NÃO se projeta nesse receipt: quem falhou foi o próprio recover.
 
 Quando uma escrita de `v2 remember` falha no meio (validacao, transporte ou
 journal anterior nao-terminal), o receipt devolve `recovery` **acionavel por

@@ -133,15 +133,21 @@ async function executeMemoryRoute(route, candidate, options = {}) {
 async function recoverMemoryRoute(route, options = {}) {
   const fileSystem = options.file_system || fsp;
   let mutex;
+  let journalPath = null;
   try {
     validateRoute(route);
     await assertSafeAncestors(fileSystem, route.resolved_root, route.resolved_root);
     mutex = await acquireRouteMutex(fileSystem, route, "recover");
     const transactionRoot = path.join(route.resolved_root, ...JOURNAL_DIRECTORY.split("/"), route.transaction_id);
-    const journalPath = path.join(transactionRoot, "journal.json");
+    journalPath = path.join(transactionRoot, "journal.json");
     await assertSafeAncestors(fileSystem, journalPath, route.resolved_root);
     const journal = await readJsonIfExists(fileSystem, journalPath);
-    if (!journal) return failed(route, "JOURNAL_NOT_FOUND", "route journal was not found");
+    if (!journal) {
+      return failed(route, "JOURNAL_NOT_FOUND", "route journal was not found", false, null, null, recoverFailureGuidance(
+        journalPath,
+        "route journal is absent; reissue the operation with a new operation_id (nothing to recover)"
+      ));
+    }
     validateCandidate(journal.candidate);
     const l1Name = await resolveL1FileName(fileSystem, route);
     const paths = resolveTransactionPaths(route, journal.candidate, l1Name);
@@ -158,10 +164,25 @@ async function recoverMemoryRoute(route, options = {}) {
     await writeJsonAtomic(fileSystem, journalPath, journal, route.transaction_id, route.resolved_root);
     return recoveryReceipt(route, journalPath, "ROLLED_BACK");
   } catch (error) {
-    return failed(route, error.code || "RECOVERY_FAILED", error.message || "route recovery failed", true);
+    // issue #10 F7: o recover e a ultima instancia automatica — receipt FAILED
+    // de 2º nivel nasce SEMPRE com guidance de resolucao manual (rota
+    // documentada), nunca mudo. A taxonomia de buckets do remember nao se
+    // projeta aqui: quem falhou foi o proprio recover.
+    return failed(route, error.code || "RECOVERY_FAILED", error.message || "route recovery failed", true, null, null, recoverFailureGuidance(
+      journalPath,
+      "v2 recover could not finish automatically; inspect the stored journal and route targets, restore them manually, or reissue with a new operation_id"
+    ));
   } finally {
     if (mutex) await releaseRouteMutex(fileSystem, mutex);
   }
+}
+
+function recoverFailureGuidance(journalPath, message) {
+  return {
+    mode: "manual_resolution",
+    message,
+    ...(journalPath ? { journal_path: journalPath } : {})
+  };
 }
 
 async function acquireRouteMutex(fileSystem, route, mode) {
@@ -734,7 +755,7 @@ function recoveryReceipt(route, journalPath, recoveryStatus) {
   };
 }
 
-function failed(route, code, message, recoverable = false, causeCode = null, validationDetail = null) {
+function failed(route, code, message, recoverable = false, causeCode = null, validationDetail = null, guidance = null) {
   return {
     contract: "dex.memory.route.failure.v2",
     status: "FAILED",
@@ -747,7 +768,8 @@ function failed(route, code, message, recoverable = false, causeCode = null, val
     message,
     recoverable,
     ...(typeof causeCode === "string" ? { cause_code: causeCode } : {}),
-    ...(validationDetail ? { failure: { detail: validationDetail } } : {})
+    ...(validationDetail ? { failure: { detail: validationDetail } } : {}),
+    ...(guidance ? { guidance } : {})
   };
 }
 
