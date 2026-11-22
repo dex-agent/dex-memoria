@@ -5,13 +5,13 @@
 > em `.agents/GATILHOS-VIVOS.md` — fonte mudou condição de capacidade ⇒ regenere.
 
 - **Objeto**: pacote `dex-memoria` (contrato documental + CLI de memória operacional Dex).
-- **Fotografia**: `0.1.20` @ commit `corte 0.1.20 @ 6627c66` — 2026-11-21.
+- **Fotografia**: `0.1.21` @ commit `corte 0.1.21` — 2026-11-22.
 - **Ambiente observado**: Windows (win32 x64), Node 24 (contrato exige ≥18), Git Bash.
 - **Fontes vivas**: `SKILL.md` (blob `09b0c013…`), `SPEC.md` (blob `73fd3939…`),
   `bin/dex-memoria.js` (blob `a50987a…`), `bin/memory-v2-capabilities.js`
   (blob `382d31c5…`), `bin/memory-v2-remember.js` (blob `5aaaec3…`),
-  `bin/memory-v2-route-executor.js` (blob `87b157cd…`, chokepoint do guard de
-  boundary — ISSUE-LOCAL-0002), `docs/usage.md` (blob `1a38688f…`) — git
+  `bin/memory-v2-route-executor.js` (blob `9dc71bf2…`, chokepoint do guard de
+  boundary — ISSUE-LOCAL-0002), `docs/usage.md` (blob `147b5473…`) — git
   hash-object pos-edicao (issue #16).
 - **Limites**: Linux/macOS e UI Obsidian não observados neste corte; capacidades
   do fluxo `create` são **fixture-only** por contrato (não gravam vault vivo).

@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.1.21 - 2026-11-22
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Reconciliação da issue #10 (dívida da revisão adversarial do PR #8,
+hibernada desde 2026-11-07): mapa finding-a-finding contra o HEAD provou
+**5 dos 8 findings já pagos** pelos cortes 0.1.11-0.1.15 (F1 bucket
+`RETRY_SAME` do `ROUTE_BUSY`; F2 `manual_resolution` com `then_command`;
+F3 `failure_message` ponta a ponta; F5 gate instância-vs-schema; F8
+`next_operation_id` no guidance). Os 3 reais foram curados neste corte:
+
+- **F7 — guidance no receipt FAILED do `v2 recover` de 2º nível.** RED provado
+  executável: journal no disco mutado (rota divergente) + `command_input`
+  íntegro → exit 5 `JOURNAL_CONFLICT` **sem nenhuma rota de resolução**. Cura
+  pela classe inteira (não só o conflito): todo receipt FAILED do recover nasce
+  com campo aditivo `guidance` (`mode: "manual_resolution"`, `message` com a
+  rota documentada — restaurar journal/destinos ou reemitir com nova
+  `operation_id` — e `journal_path` do journal divergente). A taxonomia de
+  buckets do remember NÃO se projeta nesse receipt: quem falhou foi o próprio
+  recover, a última instância automática.
+- **F6 — fluxo dual `command_input` → recover → retry travado por regressão.**
+  Teste E2E novo (`test/memory-v2-dual-recover-retry.test.mjs`): dual com
+  rollback NÃO-terminal na rota project → `PARTIAL_PENDING` +
+  `recover_then_retry_new_operation` → `v2 recover` via `command_input`
+  (`ROLLED_BACK`) → retry com `next_operation_id` → `COMMITTED` nas duas rotas.
+- **F4 — tríade de identidade documentada.**
+  `docs/usage.md` ganha a tabela `request_fingerprint` (pedido, muda em retry)
+  × `candidate_id` (conteúdo, dedup mora aqui) × `idempotency_key` (operação
+  por rota), com derivação por arquivo-fonte e exemplo — mata a ambiguidade
+  "fingerprint content-bound" do finding original sem mudar hash.
+
+Suíte: 379/378/0 + 1 skip conhecido (contagem medida no fechamento do corte).
+
 ## 0.1.20 - 2026-11-21
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
