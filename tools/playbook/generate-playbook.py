@@ -226,7 +226,10 @@ def git_ls_files(repo):
 def sources_table(repo, rels, sent):
     rows = []
     for rel in rels:
-        digest = hashlib.sha256((repo / Path(rel)).read_bytes()).hexdigest()
+        # Digest sobre a forma canonica LF (issue #29): read_bytes cru assinava o
+        # working copy (CRLF no Windows com autocrlf) e divergia do blob versionado
+        # e de clones LF. Normaliza CRLF->LF antes de hashar, igual ao clean filter.
+        digest = hashlib.sha256((repo / Path(rel)).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
         rows.append({"caminho": rel, "sha256": digest, "enviado": rel in sent})
     return rows
 

@@ -76,25 +76,32 @@ alcance de projeto). Indice no topo (com campo 0 `Quem`, emenda GO 2026-11-15):
 
 ## `MERGE-CHECK-HOOK-PRE-MERGE`
 
-- **Quem**: hook `tools/playbook/hooks/pre-merge-commit` (dispara sozinho em
-  todo `git merge` local; mantém: sessão do repo; motor: fork casa
+- **Quem**: hooks `tools/playbook/hooks/pre-merge-commit` (dispara sozinho em
+  todo `git merge` local com commit automático) e `pre-commit` (irmão do
+  playbook, que roda a suíte quando detecta `MERGE_HEAD` no commit de
+  resolução manual); mantém: sessão do repo; motor: fork casa
   `code-review-graph >= 2.4.0+dex.1`, instalado global no PATH — NÃO usar
   `code-review-graph install`, que registra MCP/skills de plataforma e não é
-  gate). Instalado 2026-11-18; todos os ramos provados com stub + suíte real.
+  gate). Instalado 2026-11-18; ciclos de vida reprovados com Git real no corte
+  0.1.20 (issues #28/#29 — laboratório `.agents/EVIDENCIAS/2026-11-21-issue28-29/`).
 - **Por que**: merge que quebra nasce verde na suíte das partes — cada lado
   passa sozinho, a combinação não; sem gate, o commit de merge nasce e o
   estrago aparece downstream. O laboratório três vias (base/ours/theirs)
   detecta conflito textual E semântico antes do commit existir.
-- **Como**: automático. Suíte declarada em `tools/playbook/hooks/merge-check.conf`
-  (`SUITE="npm test"`; vazia = avisa e NÃO bloqueia). Sem `# Conflicts:` no
-  MERGE_MSG → gate completo: `code-review-graph merge-check --repo . --base
-  $BASE --ours $OURS --theirs $THEIRS --test-failure-exit 1 -- $SUITE`. Com
-  resolução manual → suíte direto no worktree (rótulo `resolved-merge`; a
-  camada textual daria falso-positivo ao refazer o merge sem a resolução
-  humana). Bloqueio = 3 linhas com o comando para inspecionar fora do hook.
-  Escapes declarados: `MERGE_CHECK_SKIP=1` ou `git merge --no-verify`.
-  `execution_error` (exit 2) reporta sem bloquear — suíte doente não é
-  veredito de integração.
+- **Como**: automático, pelo ciclo de vida REAL do Git (medido no Git 2.45.1,
+  corte 0.1.20). Suíte declarada em `tools/playbook/hooks/merge-check.conf`
+  (`SUITE="npm test"`; vazia = avisa e NÃO bloqueia). Merge automático: o
+  `pre-merge-commit` roda ANTES de `MERGE_HEAD` existir e o worktree já contém
+  o resultado → suíte direto no worktree. Commit de resolução manual: o git
+  dispara o `pre-commit` (não o pre-merge-commit) com `MERGE_HEAD` presente →
+  o irmão roda a suíte no worktree resolvido. `MERGE_HEAD` presente no
+  pre-merge-commit (ex.: merge --no-commit) → gate completo três vias:
+  `code-review-graph merge-check --repo . --base $BASE --ours $OURS --theirs
+  $THEIRS --test-failure-exit 1 -- $SUITE`. Bloqueio = mensagem com o comando
+  para inspecionar fora do hook. Escapes declarados: `MERGE_CHECK_SKIP=1`,
+  `git merge --no-verify` ou `git commit --no-verify` (o escape do merge-check
+  não desliga o playbook check do pre-commit). `execution_error` (exit 2)
+  reporta sem bloquear — suíte doente não é veredito de integração.
 - **Quando**: todo merge local de branches (hook automático); e ANTES do clique
   de merge em PR remoto (o hook local não vê merge de plataforma — ver E-SE).
 - **Onde**: `tools/playbook/hooks/pre-merge-commit` + `merge-check.conf`;
@@ -109,6 +116,13 @@ alcance de projeto). Indice no topo (com campo 0 `Quem`, emenda GO 2026-11-15):
   **E SE?? o gate devolver execution_error (exit 2)?** → hook reporta e segue
   (exit 0): o conserto é da suíte, não do merge — curar a suíte e re-rodar o
   merge-check manual antes de confiar.
+  **E SE?? merge automático sem conflito e o gate reprovar (suíte vermelha)?**
+  → o commit de merge NÃO nasce; o worktree fica com o resultado aplicado —
+  rode `git merge --abort` para voltar ao estado pré-merge, cure a suíte e
+  refaça o merge.
+  **E SE?? quero provar hook de merge mudando o código dele?** → use Git REAL
+  (napkin item 5: repo descartável + wrapper instrumentador); prova por stub de
+  MERGE_HEAD falseia o ciclo de vida (pago na issue #28).
 
 ## `DEX-MEMORIA-PROVA-W6-ZERO-DEPS`
 

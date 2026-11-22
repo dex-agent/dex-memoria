@@ -3,3 +3,22 @@
 # Design: arena-zcode champion run-20261005-124942-s973103; owner GO 2026-10-05.
 # Covers untracked local sources too (.agents/napkin.md) via sources_revision.
 python -B tools/playbook/generate-playbook.py --repo . --check
+
+# merge-check (issue #28): no commit de resolução de merge o git dispara ESTE
+# hook com MERGE_HEAD presente (medido no Git 2.45.1, lab 2026-11-21) e o
+# pre-merge-commit não roda nesse fluxo — a suíte mora aqui. Escape:
+# MERGE_CHECK_SKIP=1 (não afeta o playbook check acima) ou git commit --no-verify.
+if [ -f "${GIT_DIR:-.git}/MERGE_HEAD" ] && [ "${MERGE_CHECK_SKIP:-0}" != "1" ]; then
+  CONF="$(dirname "$0")/merge-check.conf"
+  SUITE=""
+  if [ -f "$CONF" ]; then . "$CONF"; fi
+  if [ -n "${SUITE:-}" ]; then
+    echo "merge-check gate: commit de resolução de merge (MERGE_HEAD presente) — suíte no worktree."
+    sh -c "$SUITE"; rc=$?
+    if [ "$rc" != "0" ]; then
+      echo "merge-check gate: REPROVADO (suíte falhou no worktree resolvido, exit $rc)." >&2
+      echo "  O commit de resolução NÃO nasceu. Inspecione fora do hook: rode a suíte ($SUITE) no worktree." >&2
+      exit 1
+    fi
+  fi
+fi

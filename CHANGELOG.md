@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.1.20 - 2026-11-21
+
+Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas
+leitor/restore).
+
+Curas das issues #28 e #29 (abertas por `crsantosxx`, provadas com Git real em
+laboratório descartável antes de codar):
+
+- **#28 (P1) — gate merge-check pelo ciclo de vida real do Git.** RED medido
+  no Git 2.45.1: `pre-merge-commit` é invocado ANTES de `MERGE_HEAD` existir
+  no merge automático (o guard `[ ! -f MERGE_HEAD ]` silenciava o gate
+  exatamente quando deveria rodar), e o commit de resolução manual dispara o
+  `pre-commit` (não o `pre-merge-commit`), passando sem suíte. Curas: merge
+  automático (MERGE_HEAD ausente no hook) roda a suíte direto no worktree do
+  resultado; `pre-commit` detecta `MERGE_HEAD` e roda a suíte no commit de
+  resolução (escape `MERGE_CHECK_SKIP=1` preservado nos dois); hooks
+  versionados com bit executável (`100755` — POSIX). Provas GREEN com Git
+  real: merge quebrado reprovado (exit 1, commit de merge não nasce),
+  resolução com suíte vermelha reprovada, casos verdes commitam.
+- **#29 (P2) — digest do PLAYBOOK sobre a forma canônica LF.** O gerador
+  assinava os bytes crus do working copy (CRLF no Windows com autocrlf) e
+  divergia do blob versionado e de clones LF (`1f9e1e34…` publicado ×
+  `7c20528e…` canônico). Cura: normalizar CRLF→LF antes de hashar (mesma
+  forma do clean filter). `--check` verde em checkout CRLF e LF; teste
+  negativo (fonte alterada → DRIFT exit 2); idempotência de 2ª geração
+  byte-a-byte.
+
+Suíte: 377/367/0 (contagem medida no fechamento do corte).
+
 ## 0.1.19 - 2026-11-18
 
 Status do contrato: **V2 writer/selector ativo** (`legacy-v1` apenas

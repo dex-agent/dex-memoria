@@ -28,7 +28,26 @@
    liga o ramo resolved-merge), stub `git` que casa `rev-parse HEAD|MERGE_HEAD|
    merge-base HEAD` devolvendo shas fake, stub `code-review-graph` que LOGA os args
    e sai com o exit do ramo em prova; rodar `PATH=stub:$PATH GIT_DIR=fake bash
-   tools/playbook/hooks/pre-merge-commit`. Provou: args literais do laboratorio,
+   tools/playbook/hooks/pre-merge-commit`. Provou: args literais do laboratório,
    bloqueio 3 linhas exit 1, execution_error nao bloqueia, escape, e ramo f com
    suite real (fail 0) com stub CRG exit 99 provando que ele nao e chamado
    (prova viva: sessao 2026-11-18, commits fa99e4d/9d14d4f).
+   REBAIXADO 2026-11-21 (issue #28): esta receita valida ramos INTERNOS mas
+   falseia a premissa do ciclo de vida — no merge automático REAL o git 2.45.1
+   invoca o hook ANTES de `MERGE_HEAD` existir (o stub criava MERGE_HEAD na mão).
+   Para prova de hook de merge use o item 5 (Git real); esta fica só para ramos
+   internos de parsing.
+
+5. **[2026-11-21] Provar hook de merge com Git REAL: repo descartável + wrapper instrumentador**
+   Sintoma: prova de hook por stub falseou o disparo real (issue #28 — o gate
+   silenciava no merge automático e ninguém percebeu).
+   Faça em vez disso: repo descartável com `core.hooksPath` apontando para os
+   hooks ATUAIS byte-a-byte renomeados `.real` + wrapper de mesmo nome que LOGA
+   `MERGE_HEAD`/`GIT_DIR`/cwd e `exec` o `.real`; executar `git merge` de verdade
+   (automático e com conflito+resolução) e assertar no hooklog/saída. Medido no
+   Git 2.45.1: `pre-merge-commit` roda com `MERGE_HEAD` AUSENTE e `argv=[]`;
+   commit de resolução dispara `pre-commit` COM `MERGE_HEAD` presente; no merge
+   automático o `pre-commit` não roda. Stubs de AMBIENTE (CRG/gerador) são
+   legítimos; stub do DISPARO não é (prova viva: `.agents/EVIDENCIAS/
+   2026-11-21-issue28-29/lab-red.sh` + `lab-green-auto.sh` + `lab-green-manual.sh`,
+   issues #28/#29, corte 0.1.20).
