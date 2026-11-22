@@ -4,8 +4,8 @@ description: "Regras de decisao e procedimentos deste projeto - projecao gerada 
 type: playbook
 generated_by: "tools/playbook/generate-playbook.py"
 authority: derived_projection
-sources_revision: "sha256:e981ea62ed97de252b8a1f8109c8feab82984c604fd2041eb80aa3b86859c9a2"
-sent_revision: "sha256:cf4d80c6cf5f230e7827eac63289d47823272f39ece872679141c34f2366f1b8"
+sources_revision: "sha256:f34aadf2044f5bbbebfbd01890a42318c74943cece7bfc2d3290ada7368ae34b"
+sent_revision: "sha256:595edcc815508a665f65a648a0bb06766d4d90684937a0decec824d98b5d5974"
 do_not_edit: true
 ---
 # Playbook - dex-memoria
@@ -47,6 +47,7 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 - [2026-11-05] Gate textual da suite: Node 24 emite resumo com prefixo INFO, nao '# pass' - Faca: case os dois formatos — `grep -E "^(#|ℹ) fail[[:space:]]"` — e -> `.agents/napkin.md#L16 (local)`
 - [2026-11-18] Provar hook de git SEM merge real: fake GIT_DIR + stubs de git/CRG - Faca: mktemp dir com `MERGE_HEAD`/`MERGE_MSG` fake (o `# Conflicts:` -> `.agents/napkin.md#L24 (local)`
 - [2026-11-21] Provar hook de merge com Git REAL: repo descartável + wrapper instrumentador - Faca: repo descartável com `core.hooksPath` apontando para os -> `.agents/napkin.md#L41 (local)`
+- [2026-11-21] Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silêncio - Faca: após escrever/editar hook, `python -c "b=open(f,'rb').read(); print(b' -> `.agents/napkin.md#L55 (local)`
 
 ## Plano de execucao vigente
 
@@ -57,8 +58,8 @@ Destinatario do projeto: `--check-sent` valida as fontes enviadas neste clone.
 | caminho | sha256 | Enviado? |
 | --- | --- | --- |
 | `AGENTS.md` | `39b3802fbb1e50d22b3325ada24fe78b0bb426c55d812b6ff41f15d831c7fc35` | sim |
-| `.agents/napkin.md` | `1a643584dd0cfd1910661de4a1c6d701fcca0f370c2e360ee1a2ab877988a4a7` | sim |
-| `.agents/PLAN-TASKS/ACTIVE.md` | `483f3d97d9b1488dcd16b432b763796cb3135d909d9152073533d9354d05a031` | nao |
+| `.agents/napkin.md` | `3761d3fd22163eccfa2f740c4e77c3d5bf2da5f99986055ecad8bd6c447c9e09` | sim |
+| `.agents/PLAN-TASKS/ACTIVE.md` | `109a46a62a89cefaa7f1789dc5dcd4be4e03111cdd68a55e2982473ac855db5f` | nao |
 
 ## Superficie enviada vs local
 

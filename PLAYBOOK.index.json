@@ -3,8 +3,8 @@
   "generated_by": "tools/playbook/generate-playbook.py",
   "authority": "derived_projection",
   "repo_name": "dex-memoria",
-  "sources_revision": "sha256:e981ea62ed97de252b8a1f8109c8feab82984c604fd2041eb80aa3b86859c9a2",
-  "sent_revision": "sha256:cf4d80c6cf5f230e7827eac63289d47823272f39ece872679141c34f2366f1b8",
+  "sources_revision": "sha256:f34aadf2044f5bbbebfbd01890a42318c74943cece7bfc2d3290ada7368ae34b",
+  "sent_revision": "sha256:595edcc815508a665f65a648a0bb06766d4d90684937a0decec824d98b5d5974",
   "rules": [
     {
       "seal": "pb-d1ab29bf",
@@ -60,6 +60,14 @@
       "titulo": "Provar hook de merge com Git REAL: repo descartável + wrapper instrumentador",
       "faca": "repo descartável com `core.hooksPath` apontando para os",
       "ancora": ".agents/napkin.md#L41",
+      "local": true
+    },
+    {
+      "data": "2026-11-21",
+      "localizador": "",
+      "titulo": "Escrever hook bash no Windows: editor pode gravar CRLF e o bash quebra em silêncio",
+      "faca": "após escrever/editar hook, `python -c \"b=open(f,'rb').read(); print(b'",
+      "ancora": ".agents/napkin.md#L55",
       "local": true
     }
   ],
@@ -133,12 +141,12 @@
     },
     {
       "caminho": ".agents/napkin.md",
-      "sha256": "1a643584dd0cfd1910661de4a1c6d701fcca0f370c2e360ee1a2ab877988a4a7",
+      "sha256": "3761d3fd22163eccfa2f740c4e77c3d5bf2da5f99986055ecad8bd6c447c9e09",
       "enviado": true
     },
     {
       "caminho": ".agents/PLAN-TASKS/ACTIVE.md",
-      "sha256": "483f3d97d9b1488dcd16b432b763796cb3135d909d9152073533d9354d05a031",
+      "sha256": "109a46a62a89cefaa7f1789dc5dcd4be4e03111cdd68a55e2982473ac855db5f",
       "enviado": false
     }
   ]
