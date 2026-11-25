@@ -60,3 +60,24 @@
    `python -c "b=open('f','rb').read(); print('\r\n in b')"` (True = CRLF presente);
    normalizar para LF antes de provar; `.gitattributes` (`tools/playbook/hooks/* text eol=lf`)
    protege o COMMIT, nao o working copy local que roda. Pago no corte 0.1.20.
+
+## 2026-11-22 — áudio: SUPERSEDEDIDO — a rota "cópia do repo dex-agent" é a ponte morta do incidente 261121 (bot errado)
+
+**⚠️ Este item nasceu errado e foi corrigido no mesmo dia (correção do dono).** A edição
+anterior ensinava "usar a cópia do repo `C:\CodexProjetos\dex-agent\skills\dex-agent-audio-summary`"
+porque a cópia do registry morria com `ERR_MODULE_NOT_FOUND .agents/src/config.js`. O envio por
+essa rota saiu pelo **bot de dev** (uso `dev-dex-agent`, messageId 195) — é
+exatamente a classe do incidente 261121 (áudio pelo bot errado), cuja vacina estrutural
+(dex-audio-motor + dex-contatos) foi instalada em 2026-11-21.
+
+Faça em vez disso: **rota viva = `$dex-audio` (alias) → `dex-audio-motor`**:
+```powershell
+python -B <REGISTRY>/dex-audio-motor/scripts/motor.py enviar --uso audio-resumo --texto-arquivo <resumo.txt> --idempotency-key <chave>
+```
+Destino/segredo vêm SÓ de `dex-contatos` (uso `audio-resumo`/`dex-pai` é a rota do pai;
+`dev-dex-agent` é DEV e não é a rota do pai — números de chat e bots ficam na loja
+`dex-contatos`, nunca neste arquivo). Prova da rota
+viva: message_id 1298 (2026-11-22). Regra de comportamento: **ler `$dex-audio`/SKILL da rota
+antes de TODO envio** — memória de sessão anterior pode estar supersededida (a preferência
+`send-dex-agent-audio-summary.ps1` da sessão de 21/11 estava). Detalhe Git Bash que segue
+válido: caminho Windows no `-texto-arquivo` via `cygpath -w`.
